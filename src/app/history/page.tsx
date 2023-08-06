@@ -3,8 +3,9 @@ import React, { useEffect, useState } from "react";
 import { UserAuth } from "../context/AuthContext";
 import { collection, QuerySnapshot, getDoc, onSnapshot, query } from "firebase/firestore";
 import { db } from "../firebase";
-import Loading from "../components/Loading";
-
+import Loading from "../loading";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCircleHalfStroke, faMoneyBill1Wave, faMagnifyingGlassChart } from "@fortawesome/free-solid-svg-icons";
 interface item {
     id: string;
     name: string;
@@ -63,13 +64,37 @@ const History = () => {
                     return (
                         <div key={i.id} className="m-2 cursor-pointer bg-slate-800 p-2 rounded-xl flex flex-col align-middle justify-center text-center">
                             <p className="font-bold">{i.name}</p>
-                            <p>{i.prize}</p>
-                            <p>{i.cost}</p>
-                            {i.winner ? (
-                                <p className={`${i.paid ? "text-green-700" : "text-yellow-700"} font-bold`}>{i.winner}</p>
-                            ) : (
-                                <p className="text-red-700">Winner not drawn</p>
-                            )}
+                            <p>Prize: {i.prize}</p>
+                            <p>Cost: {i.cost}</p>
+                            <p className={`${!i.winner ? "text-red-700" : i.paid ? "text-green-700" : "text-yellow-700"} font-bold`}>
+                                Winner: {!i.winner ? "not drawn" : i.winner}
+                            </p>
+                            <div className="flex flex-row whitespace-nowrap justify-center">
+                                {!i.paid && i.winner && (
+                                    <div className="w-fit">
+                                        <div className="p-2 m-2 peer bg-blue-500 hover:bg-blue-700 rounded-xl text-white w-fit">
+                                            <FontAwesomeIcon icon={faMoneyBill1Wave} />
+                                        </div>
+                                        <div className="bg-slate-500 bg-opacity-70 hidden peer-hover:block peer-hover:absolute rounded-lg p-2">Mark as paid</div>
+                                    </div>
+                                )}
+                                {!i.winner && (
+                                    <div className="w-fit">
+                                        {/* <p className="text-red-700">Winner not drawn</p> */}
+                                        <div className="p-2 m-2 peer bg-blue-500 hover:bg-blue-700 rounded-xl text-white w-fit">
+                                            <FontAwesomeIcon icon={faCircleHalfStroke} />
+                                        </div>
+                                        <div className="bg-slate-500 bg-opacity-70 hidden peer-hover:block peer-hover:absolute rounded-lg p-2">Draw winner</div>
+                                    </div>
+                                )}
+
+                                <div className="w-fit">
+                                    <div className="p-2 m-2 peer bg-blue-500 hover:bg-blue-700 rounded-xl text-white w-fit ">
+                                        <FontAwesomeIcon icon={faMagnifyingGlassChart} />
+                                    </div>
+                                    <div className="bg-slate-500 bg-opacity-70 hidden peer-hover:block peer-hover:absolute rounded-lg p-2">Statistics</div>
+                                </div>
+                            </div>
                         </div>
                     );
                 })}
