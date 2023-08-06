@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { UserAuth } from "../context/AuthContext";
 import Image from "next/image";
+import TwitchConnect from "./TwitchConnect";
 
 const Navbar = () => {
     const { user, googleSignIn, logOut } = UserAuth();
@@ -29,7 +30,6 @@ const Navbar = () => {
         };
         checkAuthentication();
     }, [user]);
-
     return (
         <div className="h-20 w-full border-b-2 flex items-center justify-between p-2">
             <ul className="flex ">
@@ -46,6 +46,9 @@ const Navbar = () => {
                         </li>
                         <li className="p-2 cursor-pointer">
                             <Link href="/draw">Draw winner</Link>
+                        </li>
+                        <li className="p-2 cursor-pointer">
+                            <TwitchConnect user={user} />
                         </li>
                     </>
                 )}
