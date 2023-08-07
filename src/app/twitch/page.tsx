@@ -19,10 +19,12 @@ export default function TwitchAuth({ searchParams }: any) {
                         }),
                     });
                     // Store the access token and refresh token in local storage
-                    const data = await response.json();
-                    localStorage.setItem("access_token", data.access_token);
-                    localStorage.setItem("refresh_token", data.refresh_token);
-                    window.opener.postMessage({ access_token: data.access_token, refresh_token: data.refresh_token }, "*");
+                    const data = response.status;
+                    if (data === 200) {
+                        window.opener.postMessage({ tw_cookies: "set" }, "*");
+                    } else {
+                        return <div>There was an error logging into twitch. Please wait a few minutes and try again.</div>;
+                    }
                 } catch (error) {
                     console.error("Error fetching Twitch access token:", error);
                 }
