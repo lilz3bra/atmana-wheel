@@ -1,4 +1,3 @@
-import { cookies } from "next/dist/client/components/headers";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
@@ -22,8 +21,10 @@ export async function POST(request: Request) {
         };
         const response = await fetch("https://id.twitch.tv/oauth2/token", sendData);
         const data = await response.json();
-        cookies().set(data.access_token);
-        return NextResponse.json(data);
+        const sendRes = NextResponse.json({ response: "ok" });
+        sendRes.cookies.set({ name: "access_token", value: data.access_token, maxAge: data.expires_in });
+        sendRes.cookies.set({ name: "refresh_token", value: data.refresh_token, maxAge: 60 * 60 * 24 * 365 });
+        return sendRes;
     } else {
         return NextResponse.json({ error: "Something went wrong" }, { status: 403 });
     }
