@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { hasCookie, getCookies } from "cookies-next";
+import { getCookies, deleteCookie } from "cookies-next";
 import { faTwitch } from "@fortawesome/free-brands-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -59,7 +59,12 @@ const TwitchConnect = ({ user }: any) => {
                     const timeToRefresh = data.expires_in;
                     setTimeout(() => {}, timeToRefresh * 1000);
                 } else {
-                    handleTwitchDeauth();
+                    const refreshResp = await fetch(`${BACKEND_URL}/api/refreshTokens`, { method: "POST" });
+                    if (refreshResp.status !== 200) {
+                        deleteCookie("access_token");
+                        deleteCookie("refresh_token");
+                        clearInterval(cookieInterval);
+                    }
                 }
             };
             validateCookies();
