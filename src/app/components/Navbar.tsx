@@ -44,9 +44,6 @@ const Navbar = () => {
                         <li className="p-2 cursor-pointer">
                             <Link href="/create">Create</Link>
                         </li>
-                        <li className="p-2 cursor-pointer">
-                            <Link href="/draw">Draw winner</Link>
-                        </li>
                         <li>
                             <TwitchConnect user={user} />
                         </li>
