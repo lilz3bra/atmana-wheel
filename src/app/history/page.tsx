@@ -1,13 +1,16 @@
 "use client";
 import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+
 import { UserAuth } from "../context/AuthContext";
-import { collection, QuerySnapshot, getDoc, onSnapshot, query } from "firebase/firestore";
+import { collection, QuerySnapshot, getDoc, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "../firebase";
 import Loading from "../loading";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleHalfStroke, faMoneyBill1Wave, faMagnifyingGlassChart } from "@fortawesome/free-solid-svg-icons";
 interface item {
-    id: string;
+    dbId: string;
+    twId: string;
     name: string;
     cost: number;
     prize: string;
@@ -19,34 +22,40 @@ const History = () => {
     const { user } = UserAuth();
     const [loading, setLoading] = useState(true);
     const [items, setItems] = useState<item[]>([]);
+    const [userId, setUserId] = useState("");
+    const router = useRouter();
 
     useEffect(() => {
         const checkAuthentication = async () => {
             await new Promise((resolve) => setTimeout(resolve, 250));
             setLoading(false);
+            if (user !== null && typeof user !== "undefined") setUserId(user.uid);
         };
         checkAuthentication();
     }, [user]);
 
     useEffect(() => {
-        const q = query(collection(db, "giveaways"));
-        const unsubscribe = onSnapshot(q, (QuerySnapshot) => {
-            let itemsArr: item[] = [];
-            QuerySnapshot.docs.map((doc) => {
-                const data = doc.data();
-                itemsArr.push({ id: doc.id, name: data.name, cost: data.cost, prize: data.prize, winner: data.winner, paid: data.paid });
+        if (userId) {
+            const q = query(collection(db, "giveaways"), where("creator", "==", userId));
+            const unsubscribe = onSnapshot(q, (QuerySnapshot) => {
+                let itemsArr: item[] = [];
+                QuerySnapshot.docs.map((doc) => {
+                    const data = doc.data();
+                    itemsArr.push({ dbId: doc.id, twId: data.id, name: data.name, cost: data.cost, prize: data.prize, winner: data.winner, paid: data.paid });
+                });
+                setItems(itemsArr);
             });
-            setItems(itemsArr);
-        });
-        return () => {
-            unsubscribe();
-        };
-    }, []);
+            return () => {
+                unsubscribe();
+            };
+        }
+    }, [userId]);
 
     if (loading) {
         return <Loading />;
     }
     const handleClick = (raffle: item) => {
+        console.log(raffle.dbId);
         if (!raffle.winner) {
             // TODO: implement go to draw when clicking a raffle without a winner
         } else if (!raffle.paid) {
@@ -62,7 +71,7 @@ const History = () => {
             <div className="m-4 flex flex-row ">
                 {items.map((i) => {
                     return (
-                        <div key={i.id} className="m-2 cursor-pointer bg-slate-800 p-2 rounded-xl flex flex-col align-middle justify-center text-center">
+                        <div key={i.dbId} className="m-2 cursor-pointer bg-slate-800 p-2 rounded-xl flex flex-col align-middle justify-center text-center">
                             <p className="font-bold">{i.name}</p>
                             <p>Prize: {i.prize}</p>
                             <p>Cost: {i.cost}</p>
@@ -81,7 +90,7 @@ const History = () => {
                                 {!i.winner && (
                                     <div className="w-fit">
                                         {/* <p className="text-red-700">Winner not drawn</p> */}
-                                        <div className="p-2 m-2 peer bg-blue-500 hover:bg-blue-700 rounded-xl text-white w-fit">
+                                        <div className="p-2 m-2 peer bg-blue-500 hover:bg-blue-700 rounded-xl text-white w-fit" onClick={() => router.push(`wheel/${i.dbId}`)}>
                                             <FontAwesomeIcon icon={faCircleHalfStroke} />
                                         </div>
                                         <div className="bg-slate-500 bg-opacity-70 hidden peer-hover:block peer-hover:absolute rounded-lg p-2">Draw winner</div>
