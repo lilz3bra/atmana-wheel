@@ -57,6 +57,7 @@ const TwitchConnect = ({ user }: any) => {
                 const data = await res.json();
                 if (res.status === 200) {
                     const timeToRefresh = data.expires_in;
+                    localStorage.setItem("id", data.user_id);
                     setTimeout(() => {}, timeToRefresh * 1000);
                 } else {
                     const refreshResp = await fetch(`${BACKEND_URL}/api/refreshTokens`, { method: "POST" });
