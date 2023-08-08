@@ -1,28 +1,18 @@
 import ReactModal from "react-modal";
 import { useState } from "react";
-// import style from "../styles/drawModal.module.css";
 import { useEffect, useLayoutEffect } from "react";
 import { Wheel } from "./Wheel";
 import { useRef } from "react";
 
-interface Entry {
-    name: string;
-    weight: number;
-}
-
 function Modal({ entries, onClose }: { entries: Entry[]; onClose: Function }) {
-    // const BACKEND_URL = window.BACKEND_URL;
-
     const [isOpen, setIsOpen] = useState(true);
     const [isClosing, setIsClosing] = useState(false);
 
     const firstRun = useRef(true);
     const [ent, setEnt] = useState();
-    const root = document.getElementById("main_root") || undefined;
+    const root = document.getElementById("main-content")!;
     const parentRef = useRef();
     const [parentSize, setParentSize] = useState({ width: 500, height: 300 });
-    // const parentWidth = parentRef.current ? parentRef.current.offsetWidth : 500;
-    // const parentHeight = parentRef.current ? parentRef.current.offsetHeight : 300;
 
     const handleCloseModal = () => {
         setIsClosing(true);
@@ -34,13 +24,6 @@ function Modal({ entries, onClose }: { entries: Entry[]; onClose: Function }) {
         console.log(`winner: ${winner}`);
     };
 
-    // useLayoutEffect(() => {
-    //     const parentElement = parentRef.current;
-    //     if (parentElement) {
-    //         const { offsetWidth: width, offsetHeight: height } = parentElement;
-    //         setParentSize({ width, height });
-    //     }
-    // }, []);
     return (
         <ReactModal
             isOpen={isOpen}
