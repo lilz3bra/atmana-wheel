@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Modal from "./modal";
 import { collection, doc, getDoc, onSnapshot, query, where } from "firebase/firestore";
 import { db } from "../../firebase";
+import { getCookie } from "cookies-next";
 
 export default function WheelPage({ params }: any) {
     const [users, setUsers] = useState<Entry[]>();
@@ -36,82 +37,18 @@ export default function WheelPage({ params }: any) {
     useEffect(() => {
         if (raffle) {
             const getParticipants = async (raffleId: string) => {
-                // const res = await fetch("https://api.twitch.tv/helix/channel_points/custom_rewards/redemptions", {});
-                const res = {
-                    data: [
-                        {
-                            broadcaster_name: "torpedo09",
-                            broadcaster_login: "torpedo09",
-                            broadcaster_id: "274637212",
-                            id: "17fa2df1-ad76-4804-bfa5-a40ef63efe63",
-                            user_id: "274637212",
-                            user_name: "nyam",
-                            user_input: "",
-                            status: "FULFILLED",
-                            redeemed_at: "2020-07-01T18:37:32Z",
-                            reward: {
-                                id: "92af127c-7326-4483-a52b-b0da0be61c01",
-                                title: "game analysis",
-                                prompt: "",
-                                cost: 50000,
-                            },
-                        },
-                        {
-                            broadcaster_name: "torpedo09",
-                            broadcaster_login: "torpedo09",
-                            broadcaster_id: "274637212",
-                            id: "17fa2df1-ad76-4804-bfa5-a40ef63efe63",
-                            user_id: "274637212",
-                            user_name: "mini",
-                            user_input: "",
-                            status: "FULFILLED",
-                            redeemed_at: "2020-07-01T18:37:32Z",
-                            reward: {
-                                id: "92af127c-7326-4483-a52b-b0da0be61c01",
-                                title: "game analysis",
-                                prompt: "",
-                                cost: 50000,
-                            },
-                        },
-                        {
-                            broadcaster_name: "torpedo09",
-                            broadcaster_login: "torpedo09",
-                            broadcaster_id: "274637212",
-                            id: "17fa2df1-ad76-4804-bfa5-a40ef63efe63",
-                            user_id: "274637212",
-                            user_name: "nyam",
-                            user_input: "",
-                            status: "FULFILLED",
-                            redeemed_at: "2020-07-01T18:37:32Z",
-                            reward: {
-                                id: "92af127c-7326-4483-a52b-b0da0be61c01",
-                                title: "game analysis",
-                                prompt: "",
-                                cost: 50000,
-                            },
-                        },
-                        {
-                            broadcaster_name: "torpedo09",
-                            broadcaster_login: "torpedo09",
-                            broadcaster_id: "274637212",
-                            id: "17fa2df1-ad76-4804-bfa5-a40ef63efe63",
-                            user_id: "274637212",
-                            user_name: "zebra",
-                            user_input: "",
-                            status: "FULFILLED",
-                            redeemed_at: "2020-07-01T18:37:32Z",
-                            reward: {
-                                id: "92af127c-7326-4483-a52b-b0da0be61c01",
-                                title: "game analysis",
-                                prompt: "",
-                                cost: 50000,
-                            },
-                        },
-                    ],
-                };
-                const users: Entry[] = res.data.reduce((acc, curr) => {
-                    if (curr.status === "FULFILLED") {
-                        const existingUser = acc.find((user) => user.name === curr.user_name);
+                const res = await fetch(
+                    `${process.env.NEXT_PUBLIC_TEST_TWITCH_URL}/mock/channel_points/custom_rewards/redemptions?broadcaster_id=${process.env.NEXT_PUBLIC_TEST_TWITCH_BROADCASTER}&reward_id=c31d8f72-b17c-8189-7e7a-100f0700d6f2&first=50`, // TODO: Change url to real one and use variables
+                    {
+                        headers: { "client-id": process.env.NEXT_PUBLIC_TEST_TWITCH_CLIENT, authorization: "Bearer 89c4f9eef137c34" }, // TODO: change to our clientid and var token
+                    }
+                );
+                const d = await res.json();
+                const data: Array<any> = d.data;
+                const users: Entry[] = data.reduce((acc: any, curr: any) => {
+                    if (curr.status === "UNFULFILLED") {
+                        // TODO: Change to fulfilled
+                        const existingUser = acc.find((user: any) => user.name === curr.user_name);
                         if (existingUser) {
                             existingUser.weight += 1;
                         } else {
@@ -128,7 +65,7 @@ export default function WheelPage({ params }: any) {
 
     return (
         <div id="main-content" className="flex flex-col  justify-center items-center m-4">
-            <p className="text-center">Do you want to close the entries and get the registered participants?</p>
+            <p className="text-center">Do you want to close the redeems and get the registered participants?</p>
             <button onClick={() => setVisible(true)} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 m-2 w-fit mx-auto">
                 Close and draw
             </button>
