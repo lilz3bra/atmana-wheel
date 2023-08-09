@@ -26,7 +26,7 @@ export const Wheel = ({ entries, callback, closing }) => {
     const totalCount = entries.reduce((acc, element) => acc + element.weight, 0);
     const winSFX = new Audio("/assets/tada.mp3");
     const tickSFX = new Audio("/assets/tick.mp3");
-    const [width, setWidth] = useState(window.innerWidth * 0.5);
+    const [width, setWidth] = useState((window.innerWidth * 2) / 3);
     const [height, setHeight] = useState(window.innerHeight * (5 / 6));
 
     useLayoutEffect(() => {
@@ -34,7 +34,7 @@ export const Wheel = ({ entries, callback, closing }) => {
             setWidth(window.innerWidth * 0.5);
             setHeight(window.innerHeight * (5 / 6));
 
-            centerX.current = (window.innerWidth * 0.5) / 2;
+            centerX.current = window.innerWidth * (2 / 3) - 100;
             centerY.current = (window.innerHeight * (5 / 6)) / 2;
             size.current = (window.innerHeight * (5 / 6)) / 2 - 10;
         };
@@ -90,7 +90,7 @@ export const Wheel = ({ entries, callback, closing }) => {
 
         seg_colors.current = genColor(segments.current.length);
         angleCurrent.current = (0.5 / totalCount) * Math.PI * 2;
-        centerX.current = (window.innerWidth * 0.5) / 2;
+        centerX.current = window.innerWidth * 0.5 * (2 / 3) - 100;
         centerY.current = (window.innerHeight * (5 / 6)) / 2;
         size.current = (window.innerHeight * (5 / 6)) / 2 - 10;
 
@@ -232,7 +232,7 @@ export const Wheel = ({ entries, callback, closing }) => {
             ctx.fillText(segments.current[pointed].username, centerX.current + size.current + 25, centerY.current);
             winner.current = segments.current[pointed].username;
             if (lastPointed.current !== winner.current) {
-                tickSFX.volume = 0.75;
+                tickSFX.volume = 0.25;
                 tickSFX.play();
                 lastPointed.current = winner.current;
             }
@@ -266,7 +266,8 @@ export const Wheel = ({ entries, callback, closing }) => {
         ctx.fillStyle = "#000000";
         // ctx.translate(size / 2 + 20, 0); // This line is updated
         // ctx.rotate(-((lastAngle + angle) / 2)); // This line is added
-        ctx.fillText(value.username.substr(0, 20), size.current / 2 + 20, 0); // This line is updated
+        const username = value.username.substr(0, 15) + (value.username.length > 15 ? "..." : "");
+        ctx.fillText(username, size.current / 2 + 20, 0, size.current / 2 + 20); // This line is updated
         ctx.restore();
 
         ctx.restore();
