@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useRef } from "react";
 
-export default function TwitchAuth({ searchParams }: any) {
+export default function TwitchAuth({ params }: any) {
     const firstRun = useRef(true);
     const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
     const REDIRECT_URL = process.env.NEXT_PUBLIC_REDIRECT_URL;
@@ -9,8 +9,8 @@ export default function TwitchAuth({ searchParams }: any) {
         if (firstRun.current) {
             firstRun.current = false;
             const fetchTokens = async () => {
-                const code: string = searchParams.code;
-                console.log(code);
+                const code: string = params.code;
+                console.log(code, params);
                 try {
                     const response = await fetch(`${BACKEND_URL}/api/twitch`, {
                         method: "POST",
