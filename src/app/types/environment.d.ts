@@ -9,8 +9,8 @@ namespace NodeJS {
         NEXT_PUBLIC_TEST_TWITCH_CLIENT: string;
         NEXT_PUBLIC_TEST_TWITCH_SECRET: string;
         NEXT_PUBLIC_TEST_TWITCH_BROADCASTER: string;
-        apiKey: string;
-        authDomain: string;
+        API_KEY: string;
+        AUTH_DOMAIN: string;
         projectId: string;
         storageBucket: string;
         messagingSenderId: string;

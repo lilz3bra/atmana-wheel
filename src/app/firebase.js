@@ -8,10 +8,10 @@ import { getFirestore } from "firebase/firestore";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-    apiKey: process.env.apiKey,
-    authDomain: process.env.authDomain,
-    projectId: process.env.projectId,
-    storageBucket: process.env.storageBucket,
+    apiKey: "AIzaSyDSSMHHkGpRedo0f2yFAGrTqrPwNFoVTA4",
+    authDomain: process.env.AUTH_DOMAIN,
+    projectId: "atmana-wheel",
+    storageBucket: "atmana-wheel.appspot.com",
     messagingSenderId: process.env.messagingSenderId,
     appId: process.env.appId,
 };
