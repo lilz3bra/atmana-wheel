@@ -10,6 +10,7 @@ export default function TwitchAuth({ searchParams }: any) {
             firstRun.current = false;
             const fetchTokens = async () => {
                 const code: string = searchParams.code;
+                console.log(code);
                 try {
                     const response = await fetch(`${BACKEND_URL}/api/twitch`, {
                         method: "POST",
