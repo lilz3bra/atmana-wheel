@@ -8,14 +8,14 @@ import { getFirestore } from "firebase/firestore";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyDSSMHHkGpRedo0f2yFAGrTqrPwNFoVTA4",
-    authDomain: "atmana-wheel.firebaseapp.com",
-    projectId: "atmana-wheel",
-    storageBucket: "atmana-wheel.appspot.com",
-    messagingSenderId: process.env.messagingSenderId,
-    appId: process.env.appId,
+    apiKey: process.env.NEXT_PUBLIC_API_KEY,
+    authDomain: process.env.NEXT_PUBLIC_AUTH_DOMAIN,
+    projectId: process.env.NEXT_PUBLIC_projectId,
+    storageBucket: process.env.NEXT_PUBLIC_storageBucket,
+    messagingSenderId: process.env.NEXT_PUBLIC_messagingSenderId,
+    appId: process.env.NEXT_PUBLIC_appId,
 };
-
+console.log(firebaseConfig);
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
