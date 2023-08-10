@@ -1,18 +1,12 @@
 import ReactModal from "react-modal";
 import { useState } from "react";
-import { useEffect, useLayoutEffect } from "react";
 import { Wheel } from "./Wheel";
-import { useRef } from "react";
 
 function Modal({ entries, onClose }: { entries: Entry[]; onClose: Function }) {
     const [isOpen, setIsOpen] = useState(true);
     const [isClosing, setIsClosing] = useState(false);
 
-    const firstRun = useRef(true);
-    const [ent, setEnt] = useState();
     const root = document.getElementById("main-content")!;
-    const parentRef = useRef();
-    const [parentSize, setParentSize] = useState({ width: 500, height: 300 });
 
     const handleCloseModal = () => {
         setIsClosing(true);
