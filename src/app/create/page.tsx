@@ -65,17 +65,13 @@ const Create = () => {
             headers: { authorization: "Bearer " + getCookie("access_token"), "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, "content-type": "application/json" },
             body: params,
         });
+        const d = await response.json();
         if (response.status === 200) {
-            const d = await response.json();
             const data = d.data[0];
             await saveToDb(data.id);
             setCreationResponse("Redemption created sucesstully");
-        } else if (response.status === 400) {
-            setCreationResponse("Missing parameters or rewards limit reached");
-        } else if (response.status === 401) {
-            setCreationResponse("There was a problem authenticating with twitch");
-        } else if (response.status === 403) {
-            setCreationResponse("You need to be a twitch partner or affiliate");
+        } else {
+            setCreationResponse(d.message);
         }
     };
     if (loading) {
