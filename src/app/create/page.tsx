@@ -53,15 +53,16 @@ const Create = () => {
             global_cooldown_seconds: 0,
             should_redemptions_skip_request_queue: true,
         });
-        const userID = localStorage.getItem("id");
         // const response = await fetch(`https://api.twitch.tv/helix/channel_points/custom_rewards?broadcaster_id=${userID}`, {
         //     method: "POST",
         //     headers: { authorization: "Bearer " + getCookie("access_token"), "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY },
         //     body: params,
         // });
-        const response = await fetch(`https://api.twitch.tv/helix/channel_points/custom_rewards?broadcaster_id=${userID}`, {
+        const cookie = "Bearer " + (process.env.NEXT_PUBLIC_COOKIE ? process.env.NEXT_PUBLIC_COOKIE : getCookie("access_token"));
+        const broadcaster = process.env.NEXT_PUBLIC_TWITCH_BROADCASTER ? process.env.NEXT_PUBLIC_TWITCH_BROADCASTER : localStorage.getItem("id");
+        const response = await fetch(`${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards?broadcaster_id=${broadcaster}`, {
             method: "POST",
-            headers: { authorization: "Bearer " + getCookie("access_token"), "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, "content-type": "application/json" },
+            headers: { "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, authorization: cookie, "content-type": "application/json" },
             body: params,
         });
         if (response.status === 200) {
