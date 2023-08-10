@@ -29,7 +29,9 @@ const TwitchConnect = ({ user }: any) => {
                 // Check if the message contains the data we need
                 if (event.data.tw_cookies === "set") {
                     // Close the popup window
-                    authWindow?.close();
+                    // authWindow?.close();
+                    console.log(event.data);
+
                     setLoading(false);
                     setTwitchAuth(true);
                 }
