@@ -29,9 +29,7 @@ const TwitchConnect = ({ user }: any) => {
                 // Check if the message contains the data we need
                 if (event.data.tw_cookies === "set") {
                     // Close the popup window
-                    // authWindow?.close();
-                    console.log(event.data);
-
+                    authWindow?.close();
                     setLoading(false);
                     setTwitchAuth(true);
                 }
@@ -44,10 +42,11 @@ const TwitchConnect = ({ user }: any) => {
     const handleTwitchDeauth = async () => {
         setLoading(true);
 
-        const loadUrl = await fetch(`${BACKEND_URL}/api/twitchDeauth`, { method: "POST" });
+        await fetch(`${BACKEND_URL}/api/twitchDeauth`, { method: "POST" });
 
-        if (loadUrl.status === 200) setTwitchAuth(false);
+        setTwitchAuth(false);
         setLoading(false);
+        localStorage.removeItem("id");
     };
 
     useEffect(() => {
@@ -74,7 +73,14 @@ const TwitchConnect = ({ user }: any) => {
             const cookieInterval = setInterval(validateCookies, 3600000);
             return () => clearInterval(cookieInterval);
         }
-    }, []);
+    }, [twitchAuth]);
+
+    // useEffect(() => {
+    //     const { access_token, refresh_token } = getCookies();
+    //     if (access_token || refresh_token) {
+    //         setTwitchAuth(true);
+    //     }
+    // }, []);
 
     return (
         <button
