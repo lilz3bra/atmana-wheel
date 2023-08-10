@@ -53,10 +53,10 @@ const History = () => {
         }
     }, [userId]);
 
-    if (loading) {
+    if (loading && user) {
         return <Loading />;
     }
-    if (!user && !loading) {
+    if (!user) {
         return <div>You need to log in to see this page</div>;
     } else {
         // TODO: implement filters

@@ -77,7 +77,7 @@ const Create = () => {
             setCreationResponse("You need to be a twitch partner or affiliate");
         }
     };
-    if (loading) {
+    if (loading && user) {
         return <Loading />;
     }
     if (!user) {
