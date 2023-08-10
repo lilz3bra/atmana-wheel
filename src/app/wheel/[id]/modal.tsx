@@ -1,8 +1,9 @@
 import ReactModal from "react-modal";
 import { useState } from "react";
 import { Wheel } from "./Wheel";
+import { doc, updateDoc } from "firebase/firestore";
 
-function Modal({ entries, onClose }: { entries: Entry[]; onClose: Function }) {
+function Modal({ entries, onClose, returnCallback }: { entries: Entry[]; onClose: Function; returnCallback: Function }) {
     const [isOpen, setIsOpen] = useState(true);
     const [isClosing, setIsClosing] = useState(false);
 
@@ -12,10 +13,6 @@ function Modal({ entries, onClose }: { entries: Entry[]; onClose: Function }) {
         setIsClosing(true);
         setIsOpen(false);
         onClose();
-    };
-
-    const updateDb = (winner: Array<Object>) => {
-        console.log(`winner: ${winner}`);
     };
 
     return (
@@ -32,7 +29,7 @@ function Modal({ entries, onClose }: { entries: Entry[]; onClose: Function }) {
                 onClick={handleCloseModal}>
                 X
             </button>
-            {entries ? <Wheel entries={entries} callback={updateDb} closing={isClosing} /> : null}
+            {entries ? <Wheel entries={entries} callback={returnCallback} closing={isClosing} /> : null}
         </ReactModal>
     );
 }

@@ -53,12 +53,12 @@ export default function WheelPage({ params }: any) {
 
     const getParticipants = async () => {
         if (raffle) {
+            const cookie = "Bearer " + (process.env.NEXT_PUBLIC_COOKIE ? process.env.NEXT_PUBLIC_COOKIE : getCookie("access_token"));
+            const broadcaster = process.env.NEXT_PUBLIC_TWITCH_BROADCASTER ? process.env.NEXT_PUBLIC_TWITCH_BROADCASTER : localStorage.getItem("id");
             const res = await fetch(
-                `https://api.twitch.tv/helix/channel_points/custom_rewards/redemptions?broadcaster_id=${localStorage.getItem("id")}&reward_id=${
-                    raffle.twId
-                }&first=50&status=FULFILLED`, // TODO: Change url to real one and use variables
+                `${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards/redemptions?broadcaster_id=${broadcaster}&reward_id=${raffle.twId}&first=50&status=FULFILLED`, // TODO: Change url to real one and use variables
                 {
-                    headers: { "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, authorization: "Bearer " + getCookie("access_token") }, // TODO: change to our clientid and var token
+                    headers: { "Client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, Authorization: cookie },
                 }
             );
             if (res.status === 200) {
@@ -86,11 +86,13 @@ export default function WheelPage({ params }: any) {
     }, [raffle]);
 
     const deleteReward = async () => {
+        const cookie = "Bearer " + (process.env.NEXT_PUBLIC_COOKIE ? process.env.NEXT_PUBLIC_COOKIE : getCookie("access_token"));
+        const broadcaster = process.env.NEXT_PUBLIC_TWITCH_BROADCASTER ? process.env.NEXT_PUBLIC_TWITCH_BROADCASTER : localStorage.getItem("id");
         const res = await fetch(
-            `https://api.twitch.tv/helix/channel_points/custom_rewards/redemptions?broadcaster_id=${localStorage.getItem("id")}&id=${raffle?.twId}`, // TODO: Change url to real one and use variables
+            `${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards/redemptions?broadcaster_id=${broadcaster}&id=${raffle?.twId}`, // TODO: Change url to real one and use variables
             {
                 method: "DELETE",
-                headers: { "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, authorization: "Bearer " + getCookie("access_token") }, // TODO: change to our clientid and var token
+                headers: { "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, authorization: cookie }, // TODO: change to our clientid and var token
             }
         );
         const d = await res.json();
@@ -102,6 +104,11 @@ export default function WheelPage({ params }: any) {
         deleteReward();
         setVisible(true);
     };
+
+    const updateDb = (winner: Array<Object>) => {
+        console.log(`winner: ${winner}`);
+    };
+
     if (!user && !loading) {
         return <div>You need to log in to see this page</div>;
     } else {
@@ -136,7 +143,7 @@ export default function WheelPage({ params }: any) {
                                   })
                                 : loading && <Loading />}
                         </div>
-                        {visible && typeof users !== "undefined" ? <Modal entries={users} onClose={onClose} /> : null}
+                        {visible && typeof users !== "undefined" ? <Modal entries={users} onClose={onClose} returnCallback={updateDb} /> : null}
                     </>
                 )}
             </div>
