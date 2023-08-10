@@ -1,16 +1,19 @@
 "use client";
 import React, { useEffect, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 
-export default function TwitchAuth({ params }: any) {
+export default function TwitchAuth({ params }: { params: { code: string } }) {
     const firstRun = useRef(true);
+    const searchParams = useSearchParams();
+
+    const code = searchParams.get("code");
     const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
     const REDIRECT_URL = process.env.NEXT_PUBLIC_REDIRECT_URL;
     useEffect(() => {
         if (firstRun.current) {
             firstRun.current = false;
             const fetchTokens = async () => {
-                const code: string = params.code;
-                console.log(code, params);
+                console.log(code);
                 try {
                     const response = await fetch(`${BACKEND_URL}/api/twitch`, {
                         method: "POST",
