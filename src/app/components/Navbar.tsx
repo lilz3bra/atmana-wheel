@@ -62,7 +62,7 @@ const Navbar = () => {
                 <ul className="flex">
                     <div className="p-2 flex align-middle ">
                         <p className="p-2">Welcome, {user.displayName} </p>
-                        {/* <Image src={user.photoURL} alt="User profile picture" width={32} height={32} className="rounded-full mx-2" /> */}
+                        <Image src={user.photoURL} alt="User profile picture" width={32} height={32} className="rounded-full mx-2" />
                         <p className="cursor-pointer p-2  hover:bg-blue-700 rounded-xl" onClick={handleSingOut}>
                             Logout
                         </p>
