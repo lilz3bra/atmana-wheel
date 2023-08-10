@@ -33,7 +33,6 @@ const Create = () => {
                 cost: Number.parseInt(data.cost),
                 creator: data.creator,
             };
-            console.log(giveawayConfig, data.id);
             await addDoc(collection(db, "giveaways"), giveawayConfig);
         }
     };
