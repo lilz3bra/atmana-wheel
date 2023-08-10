@@ -75,13 +75,6 @@ const TwitchConnect = ({ user }: any) => {
         }
     }, [twitchAuth]);
 
-    // useEffect(() => {
-    //     const { access_token, refresh_token } = getCookies();
-    //     if (access_token || refresh_token) {
-    //         setTwitchAuth(true);
-    //     }
-    // }, []);
-
     return (
         <button
             onClick={twitchAuth ? handleTwitchDeauth : handleTwitchAuth}
