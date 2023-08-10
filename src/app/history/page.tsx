@@ -7,7 +7,7 @@ import { collection, QuerySnapshot, getDoc, onSnapshot, query, where } from "fir
 import { db } from "../firebase";
 import Loading from "../loading";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleHalfStroke, faMoneyBill1Wave, faMagnifyingGlassChart } from "@fortawesome/free-solid-svg-icons";
+import { faCircleHalfStroke, faMoneyBill1Wave, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 interface item {
     dbId: string;
     twId: string;
@@ -19,16 +19,16 @@ interface item {
 }
 
 const History = () => {
-    const { user } = UserAuth();
     const [loading, setLoading] = useState(true);
     const [items, setItems] = useState<item[]>([]);
-    const [userId, setUserId] = useState("");
     const router = useRouter();
+    const [userId, setUserId] = useState("");
+    const { user } = UserAuth();
 
     useEffect(() => {
         const checkAuthentication = async () => {
             await new Promise((resolve) => setTimeout(resolve, 250));
-            setLoading(false);
+            // setLoading(false);
             if (user !== null && typeof user !== "undefined") setUserId(user.uid);
         };
         checkAuthentication();
@@ -36,6 +36,7 @@ const History = () => {
 
     useEffect(() => {
         if (userId) {
+            setLoading(true);
             const q = query(collection(db, "giveaways"), where("creator", "==", userId));
             const unsubscribe = onSnapshot(q, (QuerySnapshot) => {
                 let itemsArr: item[] = [];
@@ -44,6 +45,7 @@ const History = () => {
                     itemsArr.push({ dbId: doc.id, twId: data.id, name: data.name, cost: data.cost, prize: data.prize, winner: data.winner, paid: data.paid });
                 });
                 setItems(itemsArr);
+                setLoading(false);
             });
             return () => {
                 unsubscribe();
@@ -54,16 +56,7 @@ const History = () => {
     if (loading) {
         return <Loading />;
     }
-    const handleClick = (raffle: item) => {
-        console.log(raffle.dbId);
-        if (!raffle.winner) {
-            // TODO: implement go to draw when clicking a raffle without a winner
-        } else if (!raffle.paid) {
-            // TODO: implement marking as paid
-        }
-    };
-
-    if (!user) {
+    if (!user && !loading) {
         return <div>You need to log in to see this page</div>;
     } else {
         // TODO: implement filters
@@ -99,9 +92,9 @@ const History = () => {
 
                                 <div className="w-fit">
                                     <div className="p-2 m-2 peer bg-blue-500 hover:bg-blue-700 rounded-xl text-white w-fit ">
-                                        <FontAwesomeIcon icon={faMagnifyingGlassChart} />
+                                        <FontAwesomeIcon icon={faTrashCan} />
                                     </div>
-                                    <div className="bg-slate-500 bg-opacity-70 hidden peer-hover:block peer-hover:absolute rounded-lg p-2">Statistics</div>
+                                    <div className="bg-slate-500 bg-opacity-70 hidden peer-hover:block peer-hover:absolute rounded-lg p-2">Delete</div>
                                 </div>
                             </div>
                         </div>
