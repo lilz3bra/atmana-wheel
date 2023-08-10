@@ -9,5 +9,11 @@ namespace NodeJS {
         NEXT_PUBLIC_TEST_TWITCH_CLIENT: string;
         NEXT_PUBLIC_TEST_TWITCH_SECRET: string;
         NEXT_PUBLIC_TEST_TWITCH_BROADCASTER: string;
+        apiKey: string;
+        authDomain: string;
+        projectId: string;
+        storageBucket: string;
+        messagingSenderId: string;
+        appId: string;
     }
 }
