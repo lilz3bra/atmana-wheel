@@ -122,7 +122,15 @@ const Create = () => {
                             }}
                         />
                     </label>
-                    <input className="m-2 rounded-full text-black text-center" disabled={!data.streamLimitEnabled} type="number" name="user-limit" id="user-limit" min={0} />
+                    <input
+                        className="m-2 rounded-full text-black text-center"
+                        disabled={!data.streamLimitEnabled}
+                        type="number"
+                        name="user-limit"
+                        id="user-limit"
+                        min={1}
+                        onChange={(e) => setData({ ...data, streamLimit: Number(e.target.value) })}
+                    />
 
                     <label htmlFor="max-per-user" className="text-center">
                         Limit per user redeems{" "}
@@ -134,7 +142,15 @@ const Create = () => {
                             }}
                         />
                     </label>
-                    <input className="m-2 rounded-full text-black text-center" disabled={!data.userLimitEnabled} type="number" name="stream-limit" id="stream-limit" min={0} />
+                    <input
+                        className="m-2 rounded-full text-black text-center"
+                        disabled={!data.userLimitEnabled}
+                        type="number"
+                        name="stream-limit"
+                        id="stream-limit"
+                        min={1}
+                        onChange={(e) => setData({ ...data, userLimit: Number(e.target.value) })}
+                    />
                     <button type="submit" className="bg-blue-500 hover:bg-blue-700 rounded-full m-2">
                         Create
                     </button>
