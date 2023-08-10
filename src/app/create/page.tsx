@@ -17,7 +17,7 @@ const Create = () => {
     useEffect(() => {
         const checkAuthentication = async () => {
             await new Promise((resolve) => setTimeout(resolve, 250));
-            setData({ ...data, creator: user.uid });
+            if (user) setData({ ...data, creator: user.uid });
 
             setLoading(false);
         };
@@ -40,78 +40,43 @@ const Create = () => {
 
     const createRedemption = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        // const params = new URLSearchParams({
-        //     title: data.name,
-        //     cost: data.cost.toString(),
-        //     // is_user_input_required: false,
-        //     // prompt: "",
-        //     // background_color: "#FFAABB",
-        //     is_max_per_stream_enabled: String(data.streamLimitEnabled),
-        //     max_per_stream: data.streamLimit.toString(),
-        //     is_max_per_user_per_stream_enabled: String(data.userLimitEnabled),
-        //     max_per_user_per_stream: data.userLimit.toString(),
-        //     // is_global_cooldown_enabled: false,
-        //     // global_cooldown_seconds: 0,
-        //     should_redemptions_skip_request_queue: "true",
-        // });
+        const params = JSON.stringify({
+            title: data.name,
+            cost: Number(data.cost),
+            is_user_input_required: false,
+            prompt: "",
+            background_color: "#2590EB",
+            is_max_per_stream_enabled: data.streamLimitEnabled,
+            max_per_stream: data.streamLimit,
+            is_max_per_user_per_stream_enabled: data.userLimitEnabled,
+            max_per_user_per_stream: data.userLimit,
+            is_global_cooldown_enabled: false,
+            global_cooldown_seconds: 0,
+            should_redemptions_skip_request_queue: true,
+        });
         const userID = localStorage.getItem("id");
         // const response = await fetch(`https://api.twitch.tv/helix/channel_points/custom_rewards?broadcaster_id=${userID}`, {
         //     method: "POST",
         //     headers: { authorization: "Bearer " + getCookie("access_token"), "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY },
         //     body: params,
         // });
-        // if (response.status === 200) {
-        const response = {
-            data: [
-                {
-                    broadcaster_name: "torpedo09",
-                    broadcaster_login: "torpedo09",
-                    broadcaster_id: "274637212",
-                    id: "afaa7e34-6b17-49f0-a19a-d1e76eaaf673",
-                    image: null,
-                    background_color: "#00E5CB",
-                    is_enabled: true,
-                    cost: 50000,
-                    title: "game analysis 1v1",
-                    prompt: "",
-                    is_user_input_required: false,
-                    max_per_stream_setting: {
-                        is_enabled: false,
-                        max_per_stream: 0,
-                    },
-                    max_per_user_per_stream_setting: {
-                        is_enabled: false,
-                        max_per_user_per_stream: 0,
-                    },
-                    global_cooldown_setting: {
-                        is_enabled: false,
-                        global_cooldown_seconds: 0,
-                    },
-                    is_paused: false,
-                    is_in_stock: true,
-                    default_image: {
-                        url_1x: "https://static-cdn.jtvnw.net/custom-reward-images/default-1.png",
-                        url_2x: "https://static-cdn.jtvnw.net/custom-reward-images/default-2.png",
-                        url_4x: "https://static-cdn.jtvnw.net/custom-reward-images/default-4.png",
-                    },
-                    should_redemptions_skip_request_queue: false,
-                    redemptions_redeemed_current_stream: null,
-                    cooldown_expires_at: null,
-                },
-            ],
-        };
-        const data = response.data[0];
-        // const data = await response.json();
-
-        await saveToDb(data.id);
-        setCreationResponse("Redemption created sucesstully");
-        // } else if (response.status === 400) {
-        //     setCreationResponse("Missing parameters or rewards limit reached");
-        // } else if (response.status === 401) {
-        //     setCreationResponse("There was a problem authenticating with twitch");
-        // } else if (response.status === 403) {
-        //     setCreationResponse("You need to be a twitch partner or affiliate");
-        // }
+        const response = await fetch(`https://api.twitch.tv/helix/channel_points/custom_rewards?broadcaster_id=${userID}`, {
+            method: "POST",
+            headers: { authorization: "Bearer " + getCookie("access_token"), "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, "content-type": "application/json" },
+            body: params,
+        });
+        if (response.status === 200) {
+            const d = await response.json();
+            const data = d.data[0];
+            await saveToDb(data.id);
+            setCreationResponse("Redemption created sucesstully");
+        } else if (response.status === 400) {
+            setCreationResponse("Missing parameters or rewards limit reached");
+        } else if (response.status === 401) {
+            setCreationResponse("There was a problem authenticating with twitch");
+        } else if (response.status === 403) {
+            setCreationResponse("You need to be a twitch partner or affiliate");
+        }
     };
     if (loading) {
         return <Loading />;
@@ -152,7 +117,7 @@ const Create = () => {
                         min={1}
                     />
                     <label htmlFor="max-per-stream" className="text-center">
-                        Limit total claims{" "}
+                        Limit total redeems{" "}
                         <input
                             type="checkbox"
                             id="max-per-stream"
@@ -164,7 +129,7 @@ const Create = () => {
                     <input className="m-2 rounded-full text-black text-center" disabled={!data.streamLimitEnabled} type="number" name="user-limit" id="user-limit" min={0} />
 
                     <label htmlFor="max-per-user" className="text-center">
-                        Limit per user claims{" "}
+                        Limit per user redeems{" "}
                         <input
                             type="checkbox"
                             id="max-per-user"
