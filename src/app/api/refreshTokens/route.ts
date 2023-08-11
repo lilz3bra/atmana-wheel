@@ -10,7 +10,7 @@ export async function POST(request: Request) {
             grant_type: "refresh_token",
             refresh_token: refresh_token.value,
         });
-        const response = await fetch("https://id.twitch.tv/oauth2/revoke", { method: "POST", body: preparedBody });
+        const response = await fetch("https://id.twitch.tv/oauth2/token", { method: "POST", body: preparedBody });
         let sendRes;
         if (response.status === 200) {
             sendRes = NextResponse.json({}, { status: 200 });
