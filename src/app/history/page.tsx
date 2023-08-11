@@ -156,7 +156,7 @@ const History = () => {
                                         <div className="p-2 m-2 peer bg-blue-500 hover:bg-blue-700 rounded-xl text-white w-fit " onClick={() => deleteReward(i)}>
                                             <FontAwesomeIcon icon={faTrashCan} />
                                         </div>
-                                        <div className="bg-slate-500 bg-opacity-70 hidden peer-hover:block peer-hover:absolute rounded-lg p-2">Delete from database</div>
+                                        <div className="bg-slate-500 bg-opacity-70 hidden peer-hover:block peer-hover:absolute rounded-lg p-2">Delete</div>
                                     </div>
                                 </div>
                             </div>
