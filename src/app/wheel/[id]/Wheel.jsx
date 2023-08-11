@@ -23,12 +23,16 @@ export const Wheel = ({ entries, callback, closing }) => {
     const spinStart = useRef(0);
     const centerX = useRef(200);
     const centerY = useRef(200);
-    const totalCount = entries.reduce((acc, element) => acc + element.weight, 0);
+    let totalCount = 0;
+
     const winSFX = new Audio("/assets/tada.mp3");
     const tickSFX = new Audio("/assets/tick.mp3");
     const [width, setWidth] = useState((window.innerWidth * 2) / 3);
     const [height, setHeight] = useState(window.innerHeight * (5 / 6));
 
+    Object.keys(entries).forEach((name) => {
+        totalCount += entries[name];
+    });
     useLayoutEffect(() => {
         const handleResize = () => {
             setWidth(window.innerWidth * 0.5);
@@ -81,11 +85,10 @@ export const Wheel = ({ entries, callback, closing }) => {
         // draw on the canvas here
 
         canvas.addEventListener("click", spin);
-
-        segments.current = entries.map((element) => ({
-            username: element.name,
-            count: element.weight,
-            angle: (element.weight / totalCount) * Math.PI * 2,
+        segments.current = Object.entries(entries).map(([name, weight]) => ({
+            username: name,
+            count: weight,
+            angle: (weight / totalCount) * Math.PI * 2,
         }));
 
         seg_colors.current = genColor(segments.current.length);

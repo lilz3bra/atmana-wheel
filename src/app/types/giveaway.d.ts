@@ -11,3 +11,5 @@ interface Entry {
     name: string;
     weight: number;
 }
+
+type UsersList = { [name: string]: number };

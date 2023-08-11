@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Wheel } from "./Wheel";
 import { doc, updateDoc } from "firebase/firestore";
 
-function Modal({ entries, onClose, returnCallback }: { entries: Entry[]; onClose: Function; returnCallback: Function }) {
+function Modal({ entries, onClose, returnCallback }: { entries: UsersList; onClose: Function; returnCallback: Function }) {
     const [isOpen, setIsOpen] = useState(true);
     const [isClosing, setIsClosing] = useState(false);
 
