@@ -32,6 +32,9 @@ const Create = () => {
                 prize: data.prize.trim(),
                 cost: Number.parseInt(data.cost),
                 creator: data.creator,
+                winner: "",
+                paid: false,
+                hidden: false,
             };
             await addDoc(collection(db, "giveaways"), giveawayConfig);
         }
