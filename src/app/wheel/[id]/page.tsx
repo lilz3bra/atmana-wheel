@@ -51,12 +51,13 @@ export default function WheelPage({ params }: any) {
         fetchRaffleData();
     }, [params]);
 
-    const getParticipants = async () => {
+    const getParticipants = async (next = "") => {
         if (raffle) {
+            const after = next === "" ? "" : `&after=${next}`;
             const cookie = "Bearer " + (process.env.NEXT_PUBLIC_COOKIE ? process.env.NEXT_PUBLIC_COOKIE : getCookie("access_token"));
             const broadcaster = process.env.NEXT_PUBLIC_TWITCH_BROADCASTER ? process.env.NEXT_PUBLIC_TWITCH_BROADCASTER : localStorage.getItem("id");
             const res = await fetch(
-                `${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards/redemptions?broadcaster_id=${broadcaster}&reward_id=${raffle.twId}&first=50&status=FULFILLED`, // TODO: Change url to real one and use variables
+                `${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards/redemptions?broadcaster_id=${broadcaster}&reward_id=${raffle.twId}&first=50&status=FULFILLED${after}`, // TODO: Change url to real one and use variables
                 {
                     headers: { "Client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, Authorization: cookie },
                 }
@@ -64,8 +65,11 @@ export default function WheelPage({ params }: any) {
             if (res.status === 200) {
                 const d = await res.json();
                 const data: Array<any> = d.data;
-                const users: Entry[] = data.reduce((acc: any, curr: any) => {
-                    // TODO: Change to fulfilled
+                if (d.pagination) {
+                    next = d.pagination.cursor;
+                    getParticipants(next);
+                }
+                const usersLoc: Entry[] = data.reduce((acc: any, curr: any) => {
                     const existingUser = acc.find((user: any) => user.name === curr.user_name);
                     if (existingUser) {
                         existingUser.weight += 1;
@@ -74,7 +78,9 @@ export default function WheelPage({ params }: any) {
                     }
                     return acc;
                 }, [] as Entry[]);
-                setUsers(users);
+                if (usersLoc.length > 0) {
+                    setUsers((prevUsers) => (prevUsers ? [...prevUsers, ...usersLoc] : usersLoc));
+                }
             }
         }
     };
@@ -126,7 +132,7 @@ export default function WheelPage({ params }: any) {
                     <>
                         <p className="text-center">Do you want to close the redeems and get the registered participants?</p>
                         <div className="flex flex-row m-2 justify-between items-center">
-                            <button onClick={getParticipants} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 mx-2 w-fit">
+                            <button onClick={() => getParticipants} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 mx-2 w-fit">
                                 <FontAwesomeIcon icon={faArrowsRotate} />
                             </button>
                             <button onClick={closeAndDraw} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 mx-2 w-fit ">

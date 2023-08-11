@@ -71,7 +71,7 @@ const History = () => {
             }
         );
         const d = await res.json();
-        console.log(d);
+        console.log(d, d?.message);
     };
 
     if (loading && user) {
