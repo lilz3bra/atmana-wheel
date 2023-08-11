@@ -119,11 +119,13 @@ export default function WheelPage({ params }: any) {
     const deleteReward = async () => {
         const cookie = "Bearer " + (process.env.NEXT_PUBLIC_COOKIE ? process.env.NEXT_PUBLIC_COOKIE : getCookie("access_token"));
         const broadcaster = process.env.NEXT_PUBLIC_TWITCH_BROADCASTER ? process.env.NEXT_PUBLIC_TWITCH_BROADCASTER : localStorage.getItem("id");
+        const bod = new URLSearchParams({ is_enabled: "false" });
         const res = await fetch(
             `${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards?broadcaster_id=${broadcaster}&id=${raffle?.twId}`, // TODO: Change url to real one and use variables
             {
-                method: "DELETE",
-                headers: { "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, authorization: cookie }, // TODO: change to our clientid and var token
+                method: "PATCH",
+                headers: { "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, authorization: cookie, "content-type": "application/json" },
+                body: bod,
             }
         );
         const d = await res.json();
