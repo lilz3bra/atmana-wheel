@@ -24,7 +24,7 @@ const History = () => {
     const router = useRouter();
     const [userId, setUserId] = useState("");
     const { user } = UserAuth();
-    const [filter, setFilter] = useState(false);
+    const [filter, setFilter] = useState("");
 
     useEffect(() => {
         const checkAuthentication = async () => {
@@ -38,10 +38,25 @@ const History = () => {
     useEffect(() => {
         if (userId) {
             setLoading(true);
-            const q = query(collection(db, "giveaways"), where("creator", "==", userId));
+            let q;
+            switch (filter) {
+                case "paid":
+                    q = query(collection(db, "giveaways"), where("creator", "==", userId), where("paid", "==", true));
+                    break;
+                case "winnerunpaid":
+                    q = query(collection(db, "giveaways"), where("creator", "==", userId), where("paid", "==", false));
+                    break;
+                case "notdrawn":
+                    q = query(collection(db, "giveaways"), where("creator", "==", userId), where("winner", "==", ""));
+                    break;
+                default:
+                    q = query(collection(db, "giveaways"), where("creator", "==", userId));
+                    break;
+            }
+
             const unsubscribe = onSnapshot(q, (QuerySnapshot) => {
                 let itemsArr: item[] = [];
-                QuerySnapshot.docs.map((doc) => {
+                QuerySnapshot.docs.forEach((doc) => {
                     const data = doc.data();
                     itemsArr.push({ dbId: doc.id, twId: data.id, name: data.name, cost: data.cost, prize: data.prize, winner: data.winner, paid: data.paid });
                 });
@@ -52,7 +67,7 @@ const History = () => {
                 unsubscribe();
             };
         }
-    }, [userId]);
+    }, [userId, filter]);
 
     const markPaid = async (raffle: item) => {
         console.log(raffle);
@@ -74,6 +89,10 @@ const History = () => {
         console.log(d, d?.message);
     };
 
+    const handleOptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setFilter(event.target.value);
+    };
+
     if (loading && user) {
         return <Loading />;
     }
@@ -83,32 +102,27 @@ const History = () => {
         // TODO: implement filters
         return (
             <>
-                {/* <div className="flex items-center justify-center">
-                    Filter
-                    <select>
-                        <option>asd</option>
-                    </select> */}
-                {/* <label htmlFor="max-per-stream" className="text-center">
-                        Limit total redeems{" "}
-                        <input
-                            type="checkbox"
-                            id="max-per-stream"
-                            onChange={() => {
-                                setFilter({ ...filter, streamLimitEnabled: !filter.streamLimitEnabled });
-                            }}
-                        />
-                    </label>{" "}
-                    <label htmlFor="max-per-stream" className="text-center">
-                        Limit total redeems{" "}
-                        <input
-                            type="checkbox"
-                            id="max-per-stream"
-                            onChange={() => {
-                                setFilter({ ...filter, streamLimitEnabled: !filter.streamLimitEnabled });
-                            }}
-                        />
-                    </label> */}
-                {/* </div> */}
+                <div className="flex items-center justify-center">
+                    Show
+                    <div>
+                        <label className="m-2">
+                            <input type="radio" value="" checked={filter === ""} onChange={handleOptionChange} />
+                            All
+                        </label>
+                        <label className="m-2">
+                            <input type="radio" value="winnerunpaid" checked={filter === "winnerunpaid"} onChange={handleOptionChange} />
+                            Unpaid
+                        </label>
+                        <label className="m-2">
+                            <input type="radio" value="paid" checked={filter === "paid"} onChange={handleOptionChange} />
+                            Paid
+                        </label>
+                        <label className="m-2">
+                            <input type="radio" value="notdrawn" checked={filter === "notdrawn"} onChange={handleOptionChange} />
+                            Not drawn
+                        </label>
+                    </div>
+                </div>
                 <div className="m-4 flex flex-row ">
                     {items.map((i) => {
                         return (
