@@ -5,7 +5,6 @@ import { db } from "../firebase";
 import Loading from "../loading";
 import { UserAuth } from "../context/AuthContext";
 import { getCookie } from "cookies-next";
-import { json } from "stream/consumers";
 
 const Create = () => {
     const [limitPerStream, setLimitPerStream] = useState(false);
@@ -70,7 +69,7 @@ const Create = () => {
         if (response.status === 200) {
             const data = d.data[0];
             await saveToDb(data.id);
-            setCreationResponse(JSON.stringify(d, null, 2));
+            setCreationResponse("Redemption created sucesstully");
         } else {
             setCreationResponse(d.message);
         }
