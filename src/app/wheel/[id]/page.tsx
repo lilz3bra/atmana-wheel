@@ -11,7 +11,7 @@ import Loading from "@/app/loading";
 import { UserAuth } from "@/app/context/AuthContext";
 
 export default function WheelPage({ params }: any) {
-    const [users, setUsers] = useState<Entry[]>();
+    const [users, setUsers] = useState<UsersList>();
     const [loading, setLoading] = useState(true);
     const [visible, setVisible] = useState(false);
     const [raffle, setRaffle] = useState<giveaway>();
@@ -51,38 +51,63 @@ export default function WheelPage({ params }: any) {
         fetchRaffleData();
     }, [params]);
 
-    const getParticipants = async (next = "") => {
-        if (raffle) {
-            const after = next === "" ? "" : `&after=${next}`;
-            const cookie = "Bearer " + (process.env.NEXT_PUBLIC_COOKIE ? process.env.NEXT_PUBLIC_COOKIE : getCookie("access_token"));
-            const broadcaster = process.env.NEXT_PUBLIC_TWITCH_BROADCASTER ? process.env.NEXT_PUBLIC_TWITCH_BROADCASTER : localStorage.getItem("id");
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards/redemptions?broadcaster_id=${broadcaster}&reward_id=${raffle.twId}&first=50&status=FULFILLED${after}`, // TODO: Change url to real one and use variables
-                {
-                    headers: { "Client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, Authorization: cookie },
-                }
+    const getParticipants = async () => {
+        const result: UsersList = await getPages();
+        setUsers(result);
+    };
+
+    const UsersElement = () => {
+        const userElements: JSX.Element[] = [];
+        Object.keys(users!).forEach((name) => {
+            const weight = users![name];
+            userElements.push(
+                <p key={name}>
+                    {name}: {weight} entr{weight > 1 ? "ies" : "y"}
+                </p>
             );
-            if (res.status === 200) {
-                const d = await res.json();
-                const data: Array<any> = d.data;
-                if (d.pagination) {
-                    next = d.pagination.cursor;
-                    getParticipants(next);
-                }
-                const usersLoc: Entry[] = data.reduce((acc: any, curr: any) => {
-                    const existingUser = acc.find((user: any) => user.name === curr.user_name);
-                    if (existingUser) {
-                        existingUser.weight += 1;
-                    } else {
-                        acc.push({ name: curr.user_name, weight: 1 });
-                    }
-                    return acc;
-                }, [] as Entry[]);
-                if (usersLoc.length > 0) {
-                    setUsers((prevUsers) => (prevUsers ? [...prevUsers, ...usersLoc] : usersLoc));
-                }
+        });
+        return <>{userElements}</>;
+    };
+
+    const getPages = async (cursor?: string, accumulatedData: UsersList = {}): Promise<UsersList> => {
+        const after = typeof cursor === "undefined" ? "" : `&after=${cursor}`;
+        const cookie = "Bearer " + (process.env.NEXT_PUBLIC_COOKIE ? process.env.NEXT_PUBLIC_COOKIE : getCookie("access_token"));
+        const broadcaster = process.env.NEXT_PUBLIC_TWITCH_BROADCASTER ? process.env.NEXT_PUBLIC_TWITCH_BROADCASTER : localStorage.getItem("id");
+        const res = await fetch(
+            `${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards/redemptions?broadcaster_id=${broadcaster}&reward_id=${
+                raffle!.twId
+            }&first=1&status=FULFILLED${after}`,
+            {
+                headers: { "Client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, Authorization: cookie },
             }
+        );
+        const d = await res.json();
+        const data: any[] = d.data;
+        if (data.length > 0) {
+            const newData = sumData(data, accumulatedData);
+            const updatedData = { ...accumulatedData, ...newData };
+
+            if (d.pagination && d.pagination.cursor) {
+                return getPages(d.pagination.cursor, updatedData);
+            } else {
+                return updatedData;
+            }
+        } else {
+            return accumulatedData;
         }
+    };
+
+    const sumData = (data: any[], accumulatedData: UsersList): UsersList => {
+        data.forEach((entry) => {
+            // Accumulate data as needed
+            const userName = entry.user_name;
+
+            // Accumulate in the object
+            if (userName) {
+                accumulatedData[userName] = (accumulatedData[userName] || 0) + 1;
+            }
+        });
+        return accumulatedData;
     };
 
     useEffect(() => {
@@ -139,18 +164,8 @@ export default function WheelPage({ params }: any) {
                                 Close and draw
                             </button>
                         </div>
-                        <h1 className="font-bold text-xl text-center m-4">{users?.length} Participants</h1>
-                        <div className="m-auto w-2/3 h-1/2 justify-center text-center">
-                            {typeof users !== "undefined"
-                                ? users.map((user) => {
-                                      return (
-                                          <p key={user.name}>
-                                              {user.name}: {user.weight} entr{user.weight > 1 ? "ies" : "y"}
-                                          </p>
-                                      );
-                                  })
-                                : loading && <Loading />}
-                        </div>
+                        <h1 className="font-bold text-xl text-center m-4">{Object.keys(users).length} Participants</h1>
+                        <div className="m-auto w-2/3 h-1/2 justify-center text-center">{typeof users !== "undefined" ? <UsersElement /> : loading && <Loading />}</div>
                         {visible && typeof users !== "undefined" ? <Modal entries={users} onClose={onClose} returnCallback={updateDb} /> : null}
                     </>
                 )}
