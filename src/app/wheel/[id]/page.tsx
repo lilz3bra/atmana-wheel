@@ -76,7 +76,7 @@ export default function WheelPage({ params }: any) {
         const res = await fetch(
             `${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards/redemptions?broadcaster_id=${broadcaster}&reward_id=${
                 raffle!.twId
-            }&first=1&status=FULFILLED${after}`,
+            }&first=50&status=FULFILLED${after}`,
             {
                 headers: { "Client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, Authorization: cookie },
             }
