@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Modal from "./modal";
-import { collection, doc, getDoc, onSnapshot, query, where } from "firebase/firestore";
+import { collection, doc, getDoc, onSnapshot, query, updateDoc, where } from "firebase/firestore";
 import { db } from "../../firebase";
 import { getCookie } from "cookies-next";
 import { Icon } from "@fortawesome/fontawesome-svg-core";
@@ -107,6 +107,8 @@ export default function WheelPage({ params }: any) {
 
     const updateDb = (winner: Array<Object>) => {
         console.log(`winner: ${winner}`);
+        const docRef = doc(db, "giveaways", raffle!.dbId);
+        updateDoc(docRef, { winner });
     };
 
     if (!user && !loading) {
