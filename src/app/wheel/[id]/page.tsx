@@ -81,7 +81,6 @@ export default function WheelPage({ params }: any) {
                 headers: { "Client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, Authorization: cookie },
             }
         );
-        console.log(res.status);
         const d = await res.json();
         const data: any[] = d.data;
         if (data.length > 0) {

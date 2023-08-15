@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import Link from "next/link";
 import { UserAuth } from "../context/AuthContext";
 import Image from "next/image";
 import TwitchConnect from "./TwitchConnect";
