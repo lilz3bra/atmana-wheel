@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getCookie } from "cookies-next";
 import { UserAuth } from "../context/AuthContext";
-import { collection, updateDoc, doc, onSnapshot, query, where } from "firebase/firestore";
+import { collection, updateDoc, doc, onSnapshot, query, where, deleteDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import Loading from "../loading";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -70,7 +70,6 @@ const History = () => {
     }, [userId, filter]);
 
     const markPaid = async (raffle: item) => {
-        console.log(raffle);
         const docRef = doc(db, "giveaways", raffle!.dbId);
         updateDoc(docRef, { paid: true });
     };
@@ -85,8 +84,8 @@ const History = () => {
                 headers: { "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, authorization: cookie }, // TODO: change to our clientid and var token
             }
         );
-        const d = await res.json();
-        console.log(d, d?.message);
+        const documentRef = doc(db, "giveaways", raffle.dbId);
+        await deleteDoc(documentRef);
     };
 
     const handleOptionChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -99,7 +98,6 @@ const History = () => {
     if (!user) {
         return <div>You need to log in to see this page</div>;
     } else {
-        // TODO: implement filters
         return (
             <>
                 <div className="flex items-center justify-center">
@@ -156,7 +154,7 @@ const History = () => {
                                         <div className="p-2 m-2 peer bg-blue-500 hover:bg-blue-700 rounded-xl text-white w-fit " onClick={() => deleteReward(i)}>
                                             <FontAwesomeIcon icon={faTrashCan} />
                                         </div>
-                                        <div className="bg-slate-500 bg-opacity-70 hidden peer-hover:block peer-hover:absolute rounded-lg p-2">Delete from database</div>
+                                        <div className="bg-slate-500 bg-opacity-70 hidden peer-hover:block peer-hover:absolute rounded-lg p-2">Delete</div>
                                     </div>
                                 </div>
                             </div>
