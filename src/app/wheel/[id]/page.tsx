@@ -81,6 +81,7 @@ export default function WheelPage({ params }: any) {
                 headers: { "Client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, Authorization: cookie },
             }
         );
+        console.log(res.status);
         const d = await res.json();
         const data: any[] = d.data;
         if (data.length > 0) {
@@ -147,7 +148,7 @@ export default function WheelPage({ params }: any) {
     } else {
         return (
             <div id="main-content" className="flex flex-col  justify-center items-center m-4">
-                {loading ? (
+                {loading || typeof users === "undefined" ? (
                     <Loading />
                 ) : !users ? (
                     <div id="main-content" className="flex flex-col  justify-center items-center m-4 text-4xl">
