@@ -147,7 +147,7 @@ export default function WheelPage({ params }: any) {
     } else {
         return (
             <div id="main-content" className="flex flex-col  justify-center items-center m-4">
-                {loading ? (
+                {loading || typeof users === "undefined" ? (
                     <Loading />
                 ) : !users ? (
                     <div id="main-content" className="flex flex-col  justify-center items-center m-4 text-4xl">
@@ -157,7 +157,7 @@ export default function WheelPage({ params }: any) {
                     <>
                         <p className="text-center">Do you want to close the redeems and get the registered participants?</p>
                         <div className="flex flex-row m-2 justify-between items-center">
-                            <button onClick={() => getParticipants} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 mx-2 w-fit">
+                            <button onClick={getParticipants} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 mx-2 w-fit">
                                 <FontAwesomeIcon icon={faArrowsRotate} />
                             </button>
                             <button onClick={closeAndDraw} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 mx-2 w-fit ">
