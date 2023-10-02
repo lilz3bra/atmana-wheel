@@ -60,9 +60,10 @@ export default function WheelPage({ params }: any) {
         const userElements: JSX.Element[] = [];
         Object.keys(users!).forEach((name) => {
             const weight = users![name];
+            const percentage = Math.round((weight / users!.length) * 100);
             userElements.push(
                 <p key={name}>
-                    {name}: {weight} entr{weight > 1 ? "ies" : "y"}
+                    <span className="font-bold">{name}</span>: {weight} entr{weight > 1 ? "ies" : "y"} <span className="italic">({percentage}%)</span>
                 </p>
             );
         });
@@ -165,7 +166,7 @@ export default function WheelPage({ params }: any) {
                             </button>
                         </div>
                         <h1 className="font-bold text-xl text-center m-4">{Object.keys(users).length} Participants</h1>
-                        <div className="m-auto w-2/3 h-1/2 justify-center text-center">{typeof users !== "undefined" ? <UsersElement /> : loading && <Loading />}</div>
+                        <div className="m-auto w-2/3 h-1/2 justify-center text-center gap-2">{typeof users !== "undefined" ? <UsersElement /> : loading && <Loading />}</div>
                         {visible && typeof users !== "undefined" ? <Modal entries={users} onClose={onClose} returnCallback={updateDb} /> : null}
                     </>
                 )}
