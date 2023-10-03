@@ -12,7 +12,6 @@ import { UserAuth } from "@/app/context/AuthContext";
 
 export default function WheelPage({ params }: any) {
     const [users, setUsers] = useState<UsersList>();
-    const [total, setTotal] = useState(0);
     const [loading, setLoading] = useState(true);
     const [visible, setVisible] = useState(false);
     const [raffle, setRaffle] = useState<giveaway>();
@@ -59,9 +58,14 @@ export default function WheelPage({ params }: any) {
 
     const UsersElement = () => {
         const userElements: JSX.Element[] = [];
+        let tot = 0;
         Object.keys(users!).forEach((name) => {
             const weight = users![name];
-            const percentage = Math.round((weight / total) * 100);
+            tot += weight;
+        });
+        Object.keys(users!).forEach((name) => {
+            const weight = users![name];
+            const percentage = Math.round((weight / tot) * 100);
             userElements.push(
                 <p key={name}>
                     <span className="font-bold">{name}</span>: {weight} entr{weight > 1 ? "ies" : "y"} <span className="italic">({percentage}%)</span>
@@ -100,17 +104,14 @@ export default function WheelPage({ params }: any) {
     };
 
     const sumData = (data: any[], accumulatedData: UsersList): UsersList => {
-        let subTotal = 0;
         data.forEach((entry) => {
             // Accumulate data as needed
             const userName = entry.user_name;
-            subTotal += 1;
             // Accumulate in the object
             if (userName) {
                 accumulatedData[userName] = (accumulatedData[userName] || 0) + 1;
             }
         });
-        setTotal(total + subTotal);
         return accumulatedData;
     };
 
