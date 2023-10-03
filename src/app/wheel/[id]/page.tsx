@@ -110,7 +110,7 @@ export default function WheelPage({ params }: any) {
                 accumulatedData[userName] = (accumulatedData[userName] || 0) + 1;
             }
         });
-        setTotal(subTotal);
+        setTotal(total + subTotal);
         return accumulatedData;
     };
 
