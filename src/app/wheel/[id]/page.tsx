@@ -65,7 +65,10 @@ export default function WheelPage({ params }: any) {
         });
         Object.keys(users!).forEach((name) => {
             const weight = users![name];
-            const percentage = Math.round((weight / tot) * 100);
+            const perc = (weight / tot) * 100;
+            const wholePart = Math.trunc(perc);
+            const decimalPart = (Math.trunc(perc * 100) - wholePart * 100) / 100;
+            const percentage = wholePart + decimalPart;
             userElements.push(
                 <p key={name}>
                     <span className="font-bold">{name}</span>: {weight} entr{weight > 1 ? "ies" : "y"} <span className="italic">({percentage}%)</span>
@@ -142,7 +145,6 @@ export default function WheelPage({ params }: any) {
     };
 
     const updateDb = (winner: Array<Object>) => {
-        console.log(`winner: ${winner}`);
         const docRef = doc(db, "giveaways", raffle!.dbId);
         updateDoc(docRef, { winner });
     };
