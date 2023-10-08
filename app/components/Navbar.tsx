@@ -1,58 +1,59 @@
+"use client";
 import React, { useEffect, useState } from "react";
-import { UserAuth } from "../context/AuthContext";
 import Image from "next/image";
-import TwitchConnect from "./TwitchConnect";
 import { useRouter } from "next/navigation";
+import { SignInButton } from "./Buttons";
 
 const Navbar = () => {
-    const { user, googleSignIn, logOut } = UserAuth();
+    // const { user, googleSignIn, logOut } = UserAuth();
     const [loading, setLoading] = useState(true);
     const router = useRouter();
 
-    const handleSingIn = async () => {
-        try {
-            await googleSignIn();
-        } catch (error) {
-            console.log(error);
-        }
-    };
-    const handleSingOut = async () => {
-        try {
-            await logOut();
-        } catch (error) {
-            console.log(error);
-        }
-    };
+    // const handleSingIn = async () => {
+    //     try {
+    //         await googleSignIn();
+    //     } catch (error) {
+    //         console.log(error);
+    //     }
+    // };
+    // const handleSingOut = async () => {
+    //     try {
+    //         await logOut();
+    //     } catch (error) {
+    //         console.log(error);
+    //     }
+    // };
 
-    useEffect(() => {
-        const checkAuthentication = async () => {
-            await new Promise((resolve) => setTimeout(resolve, 250));
-            setLoading(false);
-        };
-        checkAuthentication();
-    }, [user]);
+    // useEffect(() => {
+    //     const checkAuthentication = async () => {
+    //         await new Promise((resolve) => setTimeout(resolve, 250));
+    //         setLoading(false);
+    //     };
+    //     checkAuthentication();
+    // }, [user]);
     return (
         <div className="h-20 w-full border-b-2 flex items-center justify-between p-2">
             <ul className="flex ">
                 <li className="p-2 cursor-pointer hover:bg-blue-700 rounded-xl" onClick={() => router.push(`/`)}>
                     Home
                 </li>
-                {!user ? null : (
-                    <>
-                        <li className="p-2 cursor-pointer hover:bg-blue-700 rounded-xl" onClick={() => router.push(`/history`)}>
-                            History
-                        </li>
-                        <li className="p-2 cursor-pointer hover:bg-blue-700 rounded-xl" onClick={() => router.push(`/create`)}>
-                            Create
-                        </li>
-                        <li>
-                            <TwitchConnect user={user} />
-                        </li>
-                    </>
-                )}
+                {/* {!user ? null : ( */}
+                <>
+                    <li className="p-2 cursor-pointer hover:bg-blue-700 rounded-xl" onClick={() => router.push(`/history`)}>
+                        History
+                    </li>
+                    <li className="p-2 cursor-pointer hover:bg-blue-700 rounded-xl" onClick={() => router.push(`/create`)}>
+                        Create
+                    </li>
+                    <li>
+                        {/* <TwitchConnect user={user} /> */}
+                        <SignInButton />
+                    </li>
+                </>
+                {/* )} */}
             </ul>
-            {loading ? null : !user ? (
-                <ul className="flex">
+            {/* {loading ? null : !user ? ( */}
+            {/* <ul className="flex">
                     <li className="p2 cursor-pointer" onClick={handleSingIn}>
                         Login
                     </li>
@@ -67,7 +68,7 @@ const Navbar = () => {
                         </p>
                     </div>
                 </ul>
-            )}
+            )} */}
         </div>
     );
 };
