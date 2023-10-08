@@ -2,10 +2,10 @@
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getCookie } from "cookies-next";
-import { UserAuth } from "../context/AuthContext";
+import { UserAuth } from "../../context/AuthContext";
 import { collection, updateDoc, doc, onSnapshot, query, where, deleteDoc } from "firebase/firestore";
-import { db } from "../firebase";
-import Loading from "../loading";
+import { db } from "../../firebase";
+import Loading from "../../loading";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleHalfStroke, faMoneyBill1Wave, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 interface item {

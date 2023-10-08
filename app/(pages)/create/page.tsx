@@ -1,9 +1,9 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { collection, addDoc } from "firebase/firestore";
-import { db } from "../firebase";
-import Loading from "../loading";
-import { UserAuth } from "../context/AuthContext";
+import { db } from "../../firebase";
+import Loading from "../../loading";
+import { UserAuth } from "../../context/AuthContext";
 import { getCookie } from "cookies-next";
 
 const Create = () => {
