@@ -28,12 +28,14 @@ export async function PUT(req: Request) {
     const data = await req.json();
 
     const thisUser = await prisma.account.findFirst({ where: { id: currentUser } });
-    const res = await fetch(`${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards?broadcaster_id=${thisUser?.providerAccountId}`, {
+    const url = `${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards?broadcaster_id=${thisUser?.providerAccountId}`;
+    const option = {
         method: "POST",
         headers: { authorization: "Bearer " + thisUser?.access_token, "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY },
         body: data,
-    });
-    console.warn(res);
+    };
+    const res = await fetch(url, option);
+    console.warn(url, option);
     const responseData = await res.json();
 
     return NextResponse.json(responseData, { status: res.status });
