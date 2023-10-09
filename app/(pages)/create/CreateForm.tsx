@@ -31,11 +31,11 @@ const CreateForm = () => {
             body: params,
         });
         const d = await response.json();
-        if (response.status === 200) {
+        if (d.error) {
+            setCreationResponse(d.message);
+        } else {
             setCreationResponse("Redemption created sucesstully");
             console.log(d);
-        } else {
-            setCreationResponse(d.message);
         }
     };
 

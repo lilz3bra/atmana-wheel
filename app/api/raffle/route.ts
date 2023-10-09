@@ -21,7 +21,7 @@ import { NextResponse } from "next/server";
  */
 export async function PUT(req: Request) {
     const session = await getServerSession();
-    if (!session) return NextResponse.json({ error: "Unauthorized" });
+    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const currentUser = session?.user?.id;
 
@@ -34,5 +34,9 @@ export async function PUT(req: Request) {
         body: data,
     });
     const responseData = await res.json();
-    return NextResponse.json(responseData);
+    if (res.status === 200) {
+        return NextResponse.json(responseData);
+    } else {
+        return NextResponse.json(responseData, { status: res.status });
+    }
 }
