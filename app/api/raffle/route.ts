@@ -34,9 +34,6 @@ export async function PUT(req: Request) {
         body: data,
     });
     const responseData = await res.json();
-    if (res.status === 200) {
-        return NextResponse.json(responseData);
-    } else {
-        return NextResponse.json(responseData, { status: res.status });
-    }
+
+    return NextResponse.json(responseData, { status: res.status });
 }
