@@ -28,7 +28,7 @@ export async function PUT(req: Request) {
 
     const data = await req.json();
 
-    const thisUser = await prisma.account.findFirst({ where: { userId: currentUser } });
+    const thisUser = await prisma.account.findFirst({ where: { userId: currentUser }, select: { providerAccountId: true, access_token: true } });
     const url = `${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards?broadcaster_id=${thisUser?.providerAccountId}`;
     const option = {
         method: "POST",
@@ -38,8 +38,9 @@ export async function PUT(req: Request) {
     const res = await fetch(url, option);
     const responseData = await res.json();
     if (res.status !== 200) {
-        console.warn(url, option);
+        console.warn(url, option, currentUser);
     } else {
+        console.log(responseData);
         const db = responseData.prisma.giveaways.create({
             data: { name: data.title, cost: data.cost, prize: data.prize, paid: false, hidden: false, creatorId: currentUser, winner: null, twId: responseData.data[0].id },
         });
