@@ -32,8 +32,8 @@ export async function PUT(req: Request) {
     const url = `${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards?broadcaster_id=${thisUser?.providerAccountId}`;
     const option = {
         method: "POST",
-        headers: { authorization: "Bearer " + thisUser?.access_token, "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY },
-        body: data,
+        headers: { authorization: "Bearer " + thisUser?.access_token, "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, "Content-Type": "application/json" },
+        body: JSON.stringify(data),
     };
     const res = await fetch(url, option);
     if (res.status !== 200) console.warn(url, option);
