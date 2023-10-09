@@ -33,7 +33,7 @@ export async function PUT(req: Request) {
     const option = {
         method: "POST",
         headers: { authorization: "Bearer " + thisUser?.access_token, "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(data.twData),
     };
     const res = await fetch(url, option);
     const responseData = await res.json();
@@ -43,7 +43,7 @@ export async function PUT(req: Request) {
         const twitchId = responseData.data[0].id;
         console.log(twitchId);
         const db = await prisma.giveaways.create({
-            data: { name: data.title, cost: data.cost, prize: data.prize, paid: false, hidden: false, creatorId: currentUser, winner: null, twitchId: twitchId },
+            data: { name: data.twData.title, cost: data.twData.cost, prize: data.prize, paid: false, hidden: false, creatorId: currentUser, winner: null, twitchId: twitchId },
         });
     }
 
