@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
+import { authOptions } from "../auth/[...nextauth]/route";
 
 /**
  * 
@@ -20,20 +21,22 @@ import { NextResponse } from "next/server";
             }
  */
 export async function PUT(req: Request) {
-    const session = await getServerSession();
+    const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const currentUser = session?.user?.id;
 
     const data = await req.json();
 
-    const thisUser = await prisma.account.findFirst({ where: { id: currentUser } });
-    const res = await fetch(`${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards?broadcaster_id=${thisUser?.providerAccountId}`, {
+    const thisUser = await prisma.account.findFirst({ where: { userId: currentUser } });
+    const url = `${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards?broadcaster_id=${thisUser?.providerAccountId}`;
+    const option = {
         method: "POST",
-        headers: { authorization: "Bearer " + thisUser?.access_token, "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY },
-        body: data,
-    });
-    console.warn(thisUser?.access_token);
+        headers: { authorization: "Bearer " + thisUser?.access_token, "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+    };
+    const res = await fetch(url, option);
+    if (res.status !== 200) console.warn(url, option);
     const responseData = await res.json();
 
     return NextResponse.json(responseData, { status: res.status });
