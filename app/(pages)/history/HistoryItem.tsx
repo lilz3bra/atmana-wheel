@@ -1,7 +1,7 @@
 "use client";
 import { faCircleHalfStroke, faMoneyBill1Wave, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import router from "next/router";
+import { useRouter } from "next/navigation";
 import React from "react";
 
 interface item {
@@ -19,6 +19,7 @@ interface Props {
 }
 
 const HistoryItem = ({ item, filter }: Props) => {
+    const router = useRouter();
     const deleteReward = async (raffle: item) => {
         // const cookie = "Bearer " + (process.env.NEXT_PUBLIC_COOKIE ? process.env.NEXT_PUBLIC_COOKIE : getCookie("access_token"));
         // const broadcaster = process.env.NEXT_PUBLIC_TWITCH_BROADCASTER ? process.env.NEXT_PUBLIC_TWITCH_BROADCASTER : localStorage.getItem("id");
