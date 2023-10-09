@@ -33,7 +33,7 @@ export async function PUT(req: Request) {
         headers: { authorization: "Bearer " + thisUser?.access_token, "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY },
         body: data,
     });
-    console.warn(thisUser?.access_token);
+    console.warn(res);
     const responseData = await res.json();
 
     return NextResponse.json(responseData, { status: res.status });
