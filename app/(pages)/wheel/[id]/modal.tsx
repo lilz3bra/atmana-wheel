@@ -1,7 +1,6 @@
 import ReactModal from "react-modal";
 import { useState } from "react";
 import { Wheel } from "./Wheel";
-import { doc, updateDoc } from "firebase/firestore";
 
 function Modal({ entries, onClose, returnCallback }: { entries: UsersList; onClose: Function; returnCallback: Function }) {
     const [isOpen, setIsOpen] = useState(true);
