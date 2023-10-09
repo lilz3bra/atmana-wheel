@@ -40,9 +40,10 @@ export async function PUT(req: Request) {
     if (res.status !== 200) {
         console.warn(url, option, currentUser);
     } else {
-        console.log(responseData);
-        const db = responseData.prisma.giveaways.create({
-            data: { name: data.title, cost: data.cost, prize: data.prize, paid: false, hidden: false, creatorId: currentUser, winner: null, twId: responseData.data[0].id },
+        const twitchId = responseData.data[0].id;
+
+        const db = await responseData.prisma.giveaways.create({
+            data: { name: data.title, cost: data.cost, prize: data.prize, paid: false, hidden: false, creatorId: currentUser, winner: null, twId: twitchId },
         });
     }
 
