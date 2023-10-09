@@ -36,8 +36,14 @@ export async function PUT(req: Request) {
         body: JSON.stringify(data),
     };
     const res = await fetch(url, option);
-    if (res.status !== 200) console.warn(url, option);
     const responseData = await res.json();
+    if (res.status !== 200) {
+        console.warn(url, option);
+    } else {
+        const db = responseData.prisma.giveaways.create({
+            data: { name: data.title, cost: data.cost, prize: data.prize, paid: false, hidden: false, creatorId: currentUser, winner: null, twId: responseData.data[0].id },
+        });
+    }
 
     return NextResponse.json(responseData, { status: res.status });
 }
