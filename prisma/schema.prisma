@@ -48,6 +48,7 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
+  giveaways     Giveaways[]
 
   @@map("users")
 }
@@ -60,5 +61,20 @@ model VerificationToken {
 
   @@unique([identifier, token])
   @@map("verificationtokens")
+}
+
+model Giveaways {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+name String
+cost Int
+prize String
+paid Boolean
+hidden Boolean
+  twitchId String  
+creatorId String    @db.ObjectId
+creator User    @relation(fields: [creatorId], references: [id])
+winner String?
+
+
 }
 
