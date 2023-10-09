@@ -12,18 +12,21 @@ const CreateForm = () => {
     const createRedemption = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const params = JSON.stringify({
-            title: data.name,
-            cost: Number(data.cost),
-            is_user_input_required: false,
-            prompt: "",
-            background_color: "#2590EB",
-            is_max_per_stream_enabled: data.streamLimitEnabled,
-            max_per_stream: data.streamLimit,
-            is_max_per_user_per_stream_enabled: data.userLimitEnabled,
-            max_per_user_per_stream: data.userLimit,
-            is_global_cooldown_enabled: false,
-            global_cooldown_seconds: 0,
-            should_redemptions_skip_request_queue: true,
+            twData: {
+                title: data.name,
+                cost: Number(data.cost),
+                is_user_input_required: false,
+                prompt: "",
+                background_color: "#2590EB",
+                is_max_per_stream_enabled: data.streamLimitEnabled,
+                max_per_stream: data.streamLimit,
+                is_max_per_user_per_stream_enabled: data.userLimitEnabled,
+                max_per_user_per_stream: data.userLimit,
+                is_global_cooldown_enabled: false,
+                global_cooldown_seconds: 0,
+                should_redemptions_skip_request_queue: true,
+            },
+            prize: data.prize,
         });
 
         const response = await fetch(`/api/raffle`, {
