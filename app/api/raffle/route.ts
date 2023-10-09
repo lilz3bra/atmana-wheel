@@ -41,9 +41,9 @@ export async function PUT(req: Request) {
         console.warn(url, option, currentUser);
     } else {
         const twitchId = responseData.data[0].id;
-
-        const db = await responseData.prisma.giveaways.create({
-            data: { name: data.title, cost: data.cost, prize: data.prize, paid: false, hidden: false, creatorId: currentUser, winner: null, twId: twitchId },
+        console.log(twitchId);
+        const db = await prisma.giveaways.create({
+            data: { name: data.title, cost: data.cost, prize: data.prize, paid: false, hidden: false, creatorId: currentUser, winner: null, twitchId: twitchId },
         });
     }
 
