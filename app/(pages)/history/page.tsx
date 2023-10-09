@@ -15,6 +15,7 @@ const History = async () => {
     const fetchedItems = await prisma.giveaways.findMany({
         where: {
             creatorId: currentUser,
+            hidden: false,
         },
     });
 
