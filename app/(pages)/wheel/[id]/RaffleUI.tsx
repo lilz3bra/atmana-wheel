@@ -38,7 +38,7 @@ const RaffleUI = ({ giveaway }: Props) => {
     };
 
     const updateDb = async (winner: Array<Object>) => {
-        const res = await fetch(`/api/raffle?raffleId=${giveaway.twitchId}`, { method: "POST", body: JSON.stringify({ winner: winner[0] }) });
+        const res = await fetch(`/api/raffle?raffleId=${giveaway.id}`, { method: "POST", body: JSON.stringify({ winner: winner[0] }) });
         const result = await res.json();
     };
 
