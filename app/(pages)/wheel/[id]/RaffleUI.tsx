@@ -1,7 +1,7 @@
 "use client";
 import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Modal from "./modal";
 import ParticipantsList from "./ParticipantsList";
 import Loading from "@/loading";
@@ -45,6 +45,11 @@ const RaffleUI = ({ giveaway }: Props) => {
     const onClose = () => {
         setVisible(false);
     };
+
+    useEffect(() => {
+        getParticipants();
+    }, []);
+
     return (
         <div id="main-content" className="flex flex-col  justify-center items-center m-4">
             {loading || typeof users === "undefined" ? (
