@@ -116,9 +116,9 @@ export async function DELETE(req: NextRequest) {
     const thisUser = await prisma.account.findFirst({ where: { userId: currentUser }, select: { providerAccountId: true, access_token: true } });
 
     const cookie = "Bearer " + thisUser?.access_token;
-    const broadcaster = process.env.NEXT_PUBLIC_TWITCH_BROADCASTER ? process.env.NEXT_PUBLIC_TWITCH_BROADCASTER : localStorage.getItem("id");
+    const broadcaster = thisUser?.providerAccountId;
     const res = await fetch(
-        `${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards?broadcaster_id=${thisUser?.providerAccountId}&id=${raffle}`, // TODO: Change url to real one and use variables
+        `${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards?broadcaster_id=${broadcaster}&id=${raffle}`, // TODO: Change url to real one and use variables
         {
             method: "DELETE",
             headers: { "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, authorization: cookie }, // TODO: change to our clientid and var token
