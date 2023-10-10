@@ -124,9 +124,8 @@ export async function DELETE(req: NextRequest) {
             headers: { "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, authorization: cookie }, // TODO: change to our clientid and var token
         }
     );
-    const d = await res.json();
-    console.log(d);
-    return NextResponse.json(d);
+
+    return NextResponse.json({}, { status: res.status });
 }
 
 export async function POST(req: NextRequest) {
