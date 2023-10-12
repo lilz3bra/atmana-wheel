@@ -28,11 +28,12 @@ export async function PUT(req: Request) {
 
     const data = await req.json();
 
-    const thisUser = await prisma.account.findFirst({ where: { userId: currentUser }, select: { providerAccountId: true, access_token: true } });
+    const thisUser = await prisma.account.findFirst({ where: { userId: currentUser }, select: { providerAccountId: true } });
     const url = `${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards?broadcaster_id=${thisUser?.providerAccountId}`;
+    const cookie = "Bearer " + session.user.access_token;
     const option = {
         method: "POST",
-        headers: { authorization: "Bearer " + thisUser?.access_token, "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, "Content-Type": "application/json" },
+        headers: { authorization: cookie, "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, "Content-Type": "application/json" },
         body: JSON.stringify(data.twData),
     };
     const res = await fetch(url, option);
@@ -68,7 +69,7 @@ export async function GET(req: NextRequest) {
 
     const getPages = async (cursor?: string, accumulatedData: UsersList = {}): Promise<UsersList> => {
         const after = typeof cursor === "undefined" ? "" : `&after=${cursor}`;
-        const cookie = "Bearer " + thisUser?.access_token;
+        const cookie = "Bearer " + session.user.access_token;
         const broadcaster = thisUser?.providerAccountId;
         const res = await fetch(
             `${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards/redemptions?broadcaster_id=${broadcaster}&reward_id=${raffle}&first=50&status=FULFILLED${after}`,
@@ -115,15 +116,12 @@ export async function DELETE(req: NextRequest) {
     const raffle = req.nextUrl.searchParams.get("raffleId");
     const thisUser = await prisma.account.findFirst({ where: { userId: currentUser }, select: { providerAccountId: true, access_token: true } });
 
-    const cookie = "Bearer " + thisUser?.access_token;
+    const cookie = "Bearer " + session.user.access_token;
     const broadcaster = thisUser?.providerAccountId;
-    const res = await fetch(
-        `${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards?broadcaster_id=${broadcaster}&id=${raffle}`, // TODO: Change url to real one and use variables
-        {
-            method: "DELETE",
-            headers: { "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, authorization: cookie }, // TODO: change to our clientid and var token
-        }
-    );
+    const res = await fetch(`${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards?broadcaster_id=${broadcaster}&id=${raffle}`, {
+        method: "DELETE",
+        headers: { "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, authorization: cookie },
+    });
 
     return NextResponse.json({}, { status: res.status });
 }
@@ -138,8 +136,7 @@ export async function POST(req: NextRequest) {
     if (!raffle || raffle === "") return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
 
     const data = await req.json();
-    const winner = data.winner;
-    const db = await prisma.giveaways.update({ where: { creatorId: currentUser, id: raffle }, data: { winner: winner } });
+    const db = await prisma.giveaways.update({ where: { creatorId: currentUser, id: raffle }, data: data });
 
     return NextResponse.json(db);
 }

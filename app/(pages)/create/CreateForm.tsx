@@ -1,13 +1,13 @@
 "use client";
+import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
 const CreateForm = () => {
-    const [limitPerStream, setLimitPerStream] = useState(false);
-    const [limitPerUserEnabled, setLimitPerUserEnabled] = useState(false);
     const [data, setData] = useState({ id: "", creator: "", name: "", prize: "", cost: "", streamLimitEnabled: false, userLimitEnabled: false, streamLimit: 0, userLimit: 0 });
 
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [creationResponse, setCreationResponse] = useState("");
+    const router = useRouter();
 
     const createRedemption = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -28,7 +28,7 @@ const CreateForm = () => {
             },
             prize: data.prize,
         });
-
+        setLoading(true);
         const response = await fetch(`/api/raffle`, {
             method: "PUT",
             body: params,
@@ -38,8 +38,10 @@ const CreateForm = () => {
             setCreationResponse(d.message);
         } else {
             setCreationResponse("Redemption created sucesstully");
+            router.push(`/wheel/${d.data[0].id}`);
             console.log(d);
         }
+        setLoading(false);
     };
 
     return (
@@ -113,7 +115,7 @@ const CreateForm = () => {
                     min={1}
                     onChange={(e) => setData({ ...data, userLimit: Number(e.target.value) })}
                 />
-                <button type="submit" className="bg-blue-500 hover:bg-blue-700 rounded-full m-2">
+                <button type="submit" disabled={loading} className={`${loading ? "bg-gray-500" : "bg-blue-500 hover:bg-blue-700"} rounded-full m-2`}>
                     Create
                 </button>
                 {creationResponse !== "" && <div className="text-center">{creationResponse}</div>}
