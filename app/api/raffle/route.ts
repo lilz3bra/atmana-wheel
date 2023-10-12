@@ -60,8 +60,7 @@ export async function GET(req: NextRequest) {
     const raffle = req.nextUrl.searchParams.get("raffleId");
     if (!raffle || raffle === "") return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
 
-    const thisUser = await prisma.account.findFirst({ where: { userId: currentUser }, select: { providerAccountId: true, access_token: true } });
-    // const raffle = await prisma.giveaways.findFirst({ where: { twitchId: raffleId }, select: { twitchId: true } });
+    const thisUser = await prisma.account.findFirst({ where: { userId: currentUser }, select: { providerAccountId: true } });
 
     if (!raffle || !thisUser) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
