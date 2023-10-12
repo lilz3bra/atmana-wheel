@@ -46,6 +46,7 @@ export async function PUT(req: Request) {
         const db = await prisma.giveaways.create({
             data: { name: data.twData.title, cost: data.twData.cost, prize: data.prize, paid: false, hidden: false, creatorId: currentUser, winner: null, twitchId: twitchId },
         });
+        return NextResponse.json(db, { status: res.status });
     }
 
     return NextResponse.json(responseData, { status: res.status });

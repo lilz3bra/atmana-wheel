@@ -38,7 +38,7 @@ const CreateForm = () => {
             setCreationResponse(d.message);
         } else {
             setCreationResponse("Redemption created sucesstully");
-            router.push(`/wheel/${d.data[0].id}`);
+            router.push(`/wheel/${d.id}`);
             console.log(d);
         }
         setLoading(false);
