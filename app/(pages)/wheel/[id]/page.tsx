@@ -19,7 +19,7 @@ export default async function WheelPage({ params }: Props) {
 
     const giveaway = await prisma.giveaways.findFirst({
         where: {
-            twitchId: params.id,
+            id: params.id,
         },
         select: { id: true, twitchId: true },
     });
