@@ -17,13 +17,24 @@ const RaffleUI = ({ giveaway }: Props) => {
     const [loading, setLoading] = useState(true);
     const [visible, setVisible] = useState(false);
     const [raffle, setRaffle] = useState<giveaway>();
+    const [total, setTotal] = useState(0);
 
     const getParticipants = async () => {
         setLoading(true);
         const res = await fetch(`/api/raffle?raffleId=${giveaway.twitchId}`);
         const result = await res.json();
         setUsers(result);
+        sumTotals();
         setLoading(false);
+    };
+
+    const sumTotals = () => {
+        let tot = 0;
+        Object.keys(users!).forEach((name) => {
+            const weight = users![name];
+            tot += weight;
+        });
+        setTotal(tot);
     };
 
     const deleteReward = async () => {
@@ -60,7 +71,7 @@ const RaffleUI = ({ giveaway }: Props) => {
                 </div>
             ) : (
                 <>
-                    <p className="text-center">Do you want to close the redeems and get the registered participants?</p>
+                    <p className="text-center">Do you want to close the redemptions and get the registered participants?</p>
                     <div className="flex flex-row m-2 justify-between items-center">
                         <button onClick={getParticipants} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 mx-2 w-fit">
                             <FontAwesomeIcon icon={faArrowsRotate} />
@@ -69,9 +80,11 @@ const RaffleUI = ({ giveaway }: Props) => {
                             Close and draw
                         </button>
                     </div>
-                    <h1 className="font-bold text-xl text-center m-4">{Object.keys(users).length} Participants</h1>
+                    <h1 className="font-bold text-xl text-center m-4">
+                        {Object.keys(users).length} Participants ({total} entries)
+                    </h1>
                     <div className="m-auto w-2/3 h-1/2 justify-center text-center gap-2">
-                        {typeof users !== "undefined" ? <ParticipantsList users={users} /> : loading && <Loading />}
+                        {typeof users !== "undefined" ? <ParticipantsList users={users} tot={total} /> : loading && <Loading />}
                     </div>
                     {visible && typeof users !== "undefined" ? <Modal entries={users} onClose={onClose} returnCallback={updateDb} /> : null}
                 </>
