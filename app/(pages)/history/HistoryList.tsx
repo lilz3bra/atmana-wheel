@@ -43,7 +43,7 @@ const HistoryList = ({ items }: Props) => {
             </div>
             <div className="m-4 flex flex-row ">
                 {items.map((i) => {
-                    return <HistoryItem item={i} filter={filter} />;
+                    return <HistoryItem key={i.id} item={i} filter={filter} />;
                 })}
             </div>
         </>
