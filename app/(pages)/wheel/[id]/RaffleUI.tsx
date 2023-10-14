@@ -59,6 +59,7 @@ const RaffleUI = ({ giveaway }: Props) => {
 
     useEffect(() => {
         getParticipants();
+        console.log(users);
     }, []);
 
     return (
