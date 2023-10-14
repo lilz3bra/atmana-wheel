@@ -1,29 +1,28 @@
-"use client";
-import React, { useEffect, useState } from "react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
+import { getServerSession } from "next-auth";
 import { SignInButton } from "./Buttons";
-import { useSession } from "next-auth/react";
+import Link from "next/link";
+import { authOptions } from "@/api/auth/[...nextauth]/route";
 
 const Navbar = () => {
-    const [loading, setLoading] = useState(true);
-    const router = useRouter();
-    const { data: session, status } = useSession();
+    const session = getServerSession(authOptions);
 
     return (
         <div className="h-20 w-full border-b-2 flex items-center justify-between p-2">
             <ul className="flex ">
-                <li className="p-2 cursor-pointer hover:bg-blue-700 rounded-xl" onClick={() => router.push(`/`)}>
+                <Link className="p-2 cursor-pointer hover:bg-blue-700 rounded-xl" href="/">
                     Home
-                </li>
-                {status === "authenticated" && (
+                </Link>
+                {!!session && (
                     <>
-                        <li className="p-2 cursor-pointer hover:bg-blue-700 rounded-xl" onClick={() => router.push(`/history`)}>
+                        <Link className="p-2 cursor-pointer hover:bg-blue-700 rounded-xl" href="/history">
                             History
-                        </li>
-                        <li className="p-2 cursor-pointer hover:bg-blue-700 rounded-xl" onClick={() => router.push(`/create`)}>
+                        </Link>
+                        <Link className="p-2 cursor-pointer hover:bg-blue-700 rounded-xl" href="/create">
                             Create
-                        </li>
+                        </Link>
+                        <Link className="p-2 cursor-pointer hover:bg-blue-700 rounded-xl" href="/active">
+                            Active
+                        </Link>
                     </>
                 )}
             </ul>
