@@ -13,6 +13,7 @@ const CreateForm = () => {
         e.preventDefault();
         const params = JSON.stringify({
             twData: {
+                // Data to be sent to twitch
                 title: data.name,
                 cost: Number(data.cost),
                 is_user_input_required: false,
@@ -26,7 +27,7 @@ const CreateForm = () => {
                 global_cooldown_seconds: 0,
                 should_redemptions_skip_request_queue: true,
             },
-            prize: data.prize,
+            prize: data.prize, // Data to be saved on our db
         });
         setLoading(true);
         const response = await fetch(`/api/raffle`, {
@@ -34,12 +35,12 @@ const CreateForm = () => {
             body: params,
         });
         const d = await response.json();
+        // Check for errors
         if (d.error) {
             setCreationResponse(d.message);
         } else {
             setCreationResponse("Redemption created sucesstully");
             router.push(`/wheel/${d.id}`);
-            console.log(d);
         }
         setLoading(false);
     };
