@@ -23,7 +23,7 @@ const RaffleUI = ({ giveaway }: Props) => {
         setLoading(true);
         const res = await fetch(`/api/raffle?raffleId=${giveaway.twitchId}`);
         const result = await res.json();
-        console.log(result, res);
+        console.log(result);
         setUsers(result);
         sumTotals();
         setLoading(false);
