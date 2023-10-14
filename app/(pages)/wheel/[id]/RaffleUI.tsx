@@ -27,9 +27,16 @@ const RaffleUI = ({ giveaway }: Props) => {
         const res = await fetch(`/api/raffle?raffleId=${giveaway.twitchId}`);
         if (res.status !== 200) setError(true);
         const result = await res.json();
-        setUsers(result);
+        sortUsers(result);
         sumTotals(result);
         setLoading(false);
+    };
+
+    const sortUsers = (us: UsersList) => {
+        const keyValArray = Object.entries(us!);
+        keyValArray.sort((a, b) => b[1] - a[1]);
+        const sortedObj = Object.fromEntries(keyValArray);
+        setUsers(sortedObj);
     };
 
     const sumTotals = (us: UsersList) => {
