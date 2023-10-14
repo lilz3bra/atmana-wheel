@@ -31,7 +31,7 @@ const HistoryItem = ({ item, filter }: Props) => {
 
     if (filter === "" || (filter === "winnerunpaid" && !item.paid && item.winner) || (filter === "paid" && item.paid) || (filter === "notdrawn" && !item.winner)) {
         return (
-            <div key={item.id} className="m-2 cursor-pointer bg-slate-800 p-2 rounded-xl flex flex-col align-middle justify-center text-center">
+            <div className="m-2 cursor-pointer bg-slate-800 p-2 rounded-xl flex flex-col align-middle justify-center text-center">
                 <p className="font-bold">{item.name}</p>
                 <p>Prize: {item.prize}</p>
                 <p>Cost: {item.cost}</p>
@@ -49,7 +49,7 @@ const HistoryItem = ({ item, filter }: Props) => {
                     )}
                     {!item.winner && (
                         <div className="w-fit">
-                            <div className="p-2 m-2 peer bg-blue-500 hover:bg-blue-700 rounded-xl text-white w-fit" onClick={() => router.push(`wheel/${item.id}`)}>
+                            <div className="p-2 m-2 peer bg-blue-500 hover:bg-blue-700 rounded-xl text-white w-fit" onClick={() => router.push(`/wheel/${item.id}`)}>
                                 <FontAwesomeIcon icon={faCircleHalfStroke} />
                             </div>
                             <div className="bg-slate-500 bg-opacity-70 hidden peer-hover:block peer-hover:absolute rounded-lg p-2">Draw winner</div>
@@ -60,7 +60,7 @@ const HistoryItem = ({ item, filter }: Props) => {
                         <div className="p-2 m-2 peer bg-blue-500 hover:bg-blue-700 rounded-xl text-white w-fit " onClick={() => hideRaffle(item)}>
                             <FontAwesomeIcon icon={faEyeSlash} />
                         </div>
-                        <div className="bg-slate-500 bg-opacity-70 hidden peer-hover:block peer-hover:absolute rounded-lg p-2">Delete</div>
+                        <div className="bg-slate-500 bg-opacity-70 hidden peer-hover:block peer-hover:absolute rounded-lg p-2">Hide</div>
                     </div>
                 </div>
             </div>
