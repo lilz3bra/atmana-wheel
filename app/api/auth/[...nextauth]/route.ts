@@ -51,6 +51,7 @@ export const authOptions: NextAuthOptions = {
                 session.user.access_token = token.access_token;
                 session.user.validate_time = token.validate_time;
                 session.user.error = token.error;
+                session.user.providerAccountId = token.providerAccountId;
             }
             return session;
         },
@@ -60,6 +61,7 @@ export const authOptions: NextAuthOptions = {
                 token.access_token = account?.access_token;
                 token.validate_time = Date.now() + 3600000;
                 token.refresh_token = account?.refresh_token;
+                token.providerAccountId = account?.providerAccountId;
             }
             if ((token.validate_time as number) < Date.now()) {
                 token = await validateToken(token);
