@@ -24,5 +24,9 @@ export default async function WheelPage({ params }: Props) {
         select: { id: true, twitchId: true },
     });
 
-    return <RaffleUI giveaway={giveaway!} />;
+    return (
+        <div id="main-content" className="flex flex-col  justify-center items-center m-4">
+            <RaffleUI giveaway={giveaway!} />
+        </div>
+    );
 }
