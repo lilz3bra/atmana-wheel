@@ -26,6 +26,28 @@ const nextConfig = {
                 port: "",
                 pathname: "/a/**",
             },
+            {
+                protocol: "https",
+                hostname: "*.jtvnw.net",
+                pathname: "/user-default-pictures-uv/**",
+            },
+            {
+                protocol: "https",
+                hostname: "*.jtvnw.net",
+                pathname: "/jtv_user_pictures/*",
+            },
+            {
+                protocol: "https",
+                hostname: "*.googleusercontent.com",
+                port: "",
+                pathname: "/a/**",
+            },
+            {
+                protocol: "https",
+                hostname: "*.blob.vercel-storage.com",
+
+                pathname: "/**",
+            },
         ],
     },
 };
