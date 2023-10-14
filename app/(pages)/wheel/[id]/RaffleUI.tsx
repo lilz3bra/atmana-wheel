@@ -25,14 +25,14 @@ const RaffleUI = ({ giveaway }: Props) => {
         const result = await res.json();
         console.log(result);
         setUsers(result);
-        sumTotals();
+        sumTotals(result);
         setLoading(false);
     };
 
-    const sumTotals = () => {
+    const sumTotals = (us: UsersList) => {
         let tot = 0;
-        Object.keys(users!).forEach((name) => {
-            const weight = users![name];
+        Object.keys(us!).forEach((name) => {
+            const weight = us![name];
             tot += weight;
         });
         setTotal(tot);
@@ -66,7 +66,7 @@ const RaffleUI = ({ giveaway }: Props) => {
         <div id="main-content" className="flex flex-col  justify-center items-center m-4">
             {loading ? (
                 <Loading />
-            ) : !users ? (
+            ) : !users || total === 0 ? (
                 <div id="main-content" className="flex flex-col  justify-center items-center m-4 text-4xl">
                     Raffle doesn't exist
                 </div>
