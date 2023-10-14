@@ -3,8 +3,8 @@ import { SignInButton } from "./Buttons";
 import Link from "next/link";
 import { authOptions } from "@/api/auth/[...nextauth]/route";
 
-const Navbar = () => {
-    const session = getServerSession(authOptions);
+const Navbar = async () => {
+    const session = await getServerSession(authOptions);
 
     return (
         <div className="h-20 w-full border-b-2 flex items-center justify-between p-2">
