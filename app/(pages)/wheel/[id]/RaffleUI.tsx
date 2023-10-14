@@ -64,7 +64,7 @@ const RaffleUI = ({ giveaway }: Props) => {
 
     return (
         <div id="main-content" className="flex flex-col  justify-center items-center m-4">
-            {loading || typeof users === "undefined" ? (
+            {loading ? (
                 <Loading />
             ) : !users ? (
                 <div id="main-content" className="flex flex-col  justify-center items-center m-4 text-4xl">
