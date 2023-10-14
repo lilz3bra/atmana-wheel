@@ -104,6 +104,7 @@ export async function GET(req: NextRequest) {
         return accumulatedData;
     };
     const result: UsersList = await getPages();
+    console.log(result);
     return NextResponse.json(result);
 }
 
