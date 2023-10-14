@@ -79,7 +79,7 @@ export async function GET(req: NextRequest) {
         );
         const d = await res.json();
         const data: any[] = d.data;
-        if (data.length > 0) {
+        if (data && data.length > 0) {
             const newData = sumData(data, accumulatedData);
             const updatedData = { ...accumulatedData, ...newData };
 
