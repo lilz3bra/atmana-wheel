@@ -1,7 +1,7 @@
 "use client";
 import { faArrowsRotate } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Modal from "./modal";
 import ParticipantsList from "./ParticipantsList";
 import Loading from "@/loading";
@@ -18,6 +18,7 @@ const RaffleUI = ({ giveaway }: Props) => {
     const [visible, setVisible] = useState(false);
     const [raffle, setRaffle] = useState<giveaway>();
     const [total, setTotal] = useState(0);
+    const firstRun = useRef(true);
 
     const getParticipants = async () => {
         setLoading(true);
@@ -59,7 +60,10 @@ const RaffleUI = ({ giveaway }: Props) => {
     };
 
     useEffect(() => {
-        getParticipants();
+        if (firstRun.current === true) {
+            firstRun.current = false;
+            getParticipants();
+        }
     }, []);
 
     return (
