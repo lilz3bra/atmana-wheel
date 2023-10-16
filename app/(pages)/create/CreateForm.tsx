@@ -1,13 +1,12 @@
 "use client";
-import { useRouter } from "next/navigation";
 import React, { useState } from "react";
+import Toast from "@/components/Toast/Toast";
 
 const CreateForm = () => {
     const [data, setData] = useState({ id: "", creator: "", name: "", prize: "", cost: "", streamLimitEnabled: false, userLimitEnabled: false, streamLimit: 0, userLimit: 0 });
 
     const [loading, setLoading] = useState(false);
-    const [creationResponse, setCreationResponse] = useState("");
-    const router = useRouter();
+    const [notiStack, setNotiStack] = useState<ToastNotif[]>([]);
 
     const createRedemption = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -37,25 +36,26 @@ const CreateForm = () => {
         const d = await response.json();
         // Check for errors
         if (d.error) {
-            setCreationResponse(d.message);
+            setNotiStack([...notiStack, { type: "error", text: d.message }]);
         } else {
-            setCreationResponse("Redemption created sucesstully");
-            router.push(`/wheel/${d.id}`);
+            setNotiStack([...notiStack, { type: "success", text: "Redemption created sucesstully", link: `/wheel/${d.id}` }]);
         }
         setLoading(false);
     };
 
     return (
         <div className="bg-slate-800 p-4 rounded-lg m-auto max-w-2xl my-2">
+            <Toast stack={notiStack} />
             <form className="flex flex-col  border-none w-2/3  m-auto" onSubmit={(e) => createRedemption(e)}>
                 <input
                     className="m-2 rounded-full text-black text-center"
                     type="text"
                     value={data.name}
                     onChange={(e) => setData({ ...data, name: e.target.value })}
-                    placeholder="Name (How it will appear on twitch)"
+                    placeholder="Name (How it will show on twitch)"
                     name="name"
                     id="name"
+                    required
                     maxLength={45}
                 />
                 <input
@@ -66,6 +66,7 @@ const CreateForm = () => {
                     placeholder="Prize"
                     name="prize"
                     id="prize"
+                    required
                 />
                 <input
                     className="m-2 rounded-full text-black text-center"
@@ -74,11 +75,12 @@ const CreateForm = () => {
                     onChange={(e) => setData({ ...data, cost: e.target.value })}
                     placeholder="Points cost"
                     name="cost"
+                    required
                     id="cost"
                     min={1}
                 />
                 <label htmlFor="max-per-stream" className="text-center">
-                    Limit total redeems{" "}
+                    Limit total redemptions{" "}
                     <input
                         type="checkbox"
                         id="max-per-stream"
@@ -98,7 +100,7 @@ const CreateForm = () => {
                 />
 
                 <label htmlFor="max-per-user" className="text-center">
-                    Limit per user redeems{" "}
+                    Limit user redemptions per stream{" "}
                     <input
                         type="checkbox"
                         id="max-per-user"
@@ -119,7 +121,6 @@ const CreateForm = () => {
                 <button type="submit" disabled={loading} className={`${loading ? "bg-gray-500" : "bg-blue-500 hover:bg-blue-700"} rounded-full m-2`}>
                     Create
                 </button>
-                {creationResponse !== "" && <div className="text-center">{creationResponse}</div>}
             </form>
         </div>
     );
