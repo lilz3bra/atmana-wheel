@@ -19,6 +19,7 @@ const RaffleUI = ({ giveaway }: Props) => {
     const [raffle, setRaffle] = useState<giveaway>();
     const [error, setError] = useState(false);
     const [isPaused, setPaused] = useState(false);
+    const [sortedUsers, setSortedUsers] = useState<UsersList>();
     const [total, setTotal] = useState(0);
     const firstRun = useRef(true);
 
@@ -27,6 +28,7 @@ const RaffleUI = ({ giveaway }: Props) => {
         const res = await fetch(`/api/raffle?raffleId=${giveaway.twitchId}`);
         if (res.status !== 200) setError(true);
         const result = await res.json();
+        setUsers(result);
         sortUsers(result);
         sumTotals(result);
         setLoading(false);
@@ -36,7 +38,7 @@ const RaffleUI = ({ giveaway }: Props) => {
         const keyValArray = Object.entries(us!);
         keyValArray.sort((a, b) => b[1] - a[1]);
         const sortedObj = Object.fromEntries(keyValArray);
-        setUsers(sortedObj);
+        setSortedUsers(sortedObj);
     };
 
     const sumTotals = (us: UsersList) => {
@@ -83,7 +85,6 @@ const RaffleUI = ({ giveaway }: Props) => {
         if (firstRun.current === true) {
             firstRun.current = false;
             getParticipants();
-            console.log(users);
         }
     }, []);
 
@@ -125,7 +126,7 @@ const RaffleUI = ({ giveaway }: Props) => {
                 {Object.keys(users).length} Participants ({total} entries)
             </h1>
             <div className="m-auto w-2/3 h-1/2 justify-center text-center gap-2">
-                {typeof users !== "undefined" ? <ParticipantsList users={users} tot={total} /> : loading && <Loading />}
+                {typeof sortedUsers !== "undefined" ? <ParticipantsList users={sortedUsers} tot={total} /> : loading && <Loading />}
             </div>
             {visible && typeof users !== "undefined" ? <Modal entries={users} onClose={onClose} returnCallback={updateDb} /> : null}
         </>
