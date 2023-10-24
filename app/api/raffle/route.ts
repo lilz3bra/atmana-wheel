@@ -135,6 +135,9 @@ export async function DELETE(req: NextRequest) {
         method: "DELETE",
         headers: { "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, authorization: "Bearer " + thisUser.access_token },
     });
+
+    await prisma.giveaways.update({ where: { id: raffle }, data: { twitchId: "" } });
+
     // Return 200 if deleted successfully, otherwise pass the code
     return NextResponse.json({}, { status: res.status === 204 ? 200 : res.status });
 }
