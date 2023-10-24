@@ -1,6 +1,6 @@
 "use client";
 import Hint from "@/components/Hint/Hint";
-import { faCircleHalfStroke, faEyeSlash, faMoneyBill1Wave } from "@fortawesome/free-solid-svg-icons";
+import { faCircleHalfStroke, faEyeSlash, faMoneyBill1Wave, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useRouter } from "next/navigation";
 import React from "react";
@@ -24,10 +24,19 @@ const HistoryItem = ({ item, filter }: Props) => {
 
     const hideRaffle = async (raffle: item) => {
         const res = await fetch(`/api/raffle?raffleId=${raffle.id}`, { method: "POST", body: JSON.stringify({ hidden: true }) });
+        router.refresh();
     };
 
     const markPaid = async (raffle: item) => {
         const res = await fetch(`/api/raffle?raffleId=${raffle.id}`, { method: "POST", body: JSON.stringify({ paid: true }) });
+        const r = await fetch(`/api/raffle?raffleId=${raffle.id}`, { method: "DELETE" });
+
+        router.refresh();
+    };
+
+    const deleteReward = async (raffle: item) => {
+        const res = await fetch(`/api/raffle?raffleId=${raffle.id}`, { method: "DELETE" });
+        router.refresh();
     };
 
     if (filter === "" || (filter === "winnerunpaid" && !item.paid && item.winner) || (filter === "paid" && item.paid) || (filter === "notdrawn" && !item.winner)) {
@@ -47,14 +56,21 @@ const HistoryItem = ({ item, filter }: Props) => {
                             </div>
                         </Hint>
                     )}
-                    {!item.winner && (
-                        <Hint text="Draw winner" extraCss="flex flex-row justify-center">
-                            <div className="p-2 bg-blue-500 cursor-pointer hover:bg-blue-700 rounded-xl text-white w-fit" onClick={() => router.push(`/wheel/${item.id}`)}>
-                                <FontAwesomeIcon icon={faCircleHalfStroke} />
+                    {!item.paid &&
+                        (item.twitchId ? (
+                            <Hint text={`${!item.winner ? "D" : "Re-D"}raw winner`} extraCss="flex flex-row justify-center">
+                                <div className="p-2 bg-blue-500 cursor-pointer hover:bg-blue-700 rounded-xl text-white w-fit" onClick={() => router.push(`/wheel/${item.id}`)}>
+                                    <FontAwesomeIcon icon={faCircleHalfStroke} />
+                                </div>
+                            </Hint>
+                        ) : null)}
+                    {item.twitchId && (
+                        <Hint text="Delete from twitch" extraCss="flex flex-row justify-center">
+                            <div className="p-2 bg-blue-500 cursor-pointer hover:bg-blue-700 rounded-xl text-white w-fit " onClick={() => deleteReward(item)}>
+                                <FontAwesomeIcon icon={faTrashCan} />
                             </div>
                         </Hint>
                     )}
-
                     <Hint text="Hide" extraCss="flex flex-row justify-center">
                         <div className="p-2 bg-blue-500 cursor-pointer hover:bg-blue-700 rounded-xl text-white w-fit " onClick={() => hideRaffle(item)}>
                             <FontAwesomeIcon icon={faEyeSlash} />
