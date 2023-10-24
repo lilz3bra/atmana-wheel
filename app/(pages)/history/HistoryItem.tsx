@@ -1,4 +1,5 @@
 "use client";
+import Hint from "@/components/Hint/Hint";
 import { faCircleHalfStroke, faEyeSlash, faMoneyBill1Wave } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useRouter } from "next/navigation";
@@ -31,37 +32,34 @@ const HistoryItem = ({ item, filter }: Props) => {
 
     if (filter === "" || (filter === "winnerunpaid" && !item.paid && item.winner) || (filter === "paid" && item.paid) || (filter === "notdrawn" && !item.winner)) {
         return (
-            <div className="m-2 cursor-pointer bg-slate-800 p-2 rounded-xl flex flex-col align-middle justify-center text-center">
+            <div className="m-2 bg-slate-800 p-2 rounded-xl flex flex-col align-middle justify-center text-center">
                 <p className="font-bold">{item.name}</p>
                 <p>Prize: {item.prize}</p>
                 <p>Cost: {item.cost}</p>
                 <p className={`${!item.winner ? "text-red-700" : item.paid ? "text-green-700" : "text-yellow-700"} font-bold`}>
                     Winner: {!item.winner ? "not drawn" : item.winner}
                 </p>
-                <div className="flex flex-row whitespace-nowrap justify-center">
+                <div className="flex flex-row whitespace-nowrap justify-center gap-2">
                     {!item.paid && item.winner && (
-                        <div className="w-fit">
-                            <div className="p-2 m-2 peer bg-blue-500 hover:bg-blue-700 rounded-xl text-white w-fit" onClick={() => markPaid(item)}>
+                        <Hint text="Mark as paid" extraCss="flex flex-row justify-center">
+                            <div className="p-2 bg-blue-500  cursor-pointer hover:bg-blue-700 rounded-xl text-white w-fit" onClick={() => markPaid(item)}>
                                 <FontAwesomeIcon icon={faMoneyBill1Wave} />
                             </div>
-                            <div className="bg-slate-500 bg-opacity-70 hidden peer-hover:block peer-hover:absolute rounded-lg p-2">Mark as paid</div>
-                        </div>
+                        </Hint>
                     )}
                     {!item.winner && (
-                        <div className="w-fit">
-                            <div className="p-2 m-2 peer bg-blue-500 hover:bg-blue-700 rounded-xl text-white w-fit" onClick={() => router.push(`/wheel/${item.id}`)}>
+                        <Hint text="Draw winner" extraCss="flex flex-row justify-center">
+                            <div className="p-2 bg-blue-500 cursor-pointer hover:bg-blue-700 rounded-xl text-white w-fit" onClick={() => router.push(`/wheel/${item.id}`)}>
                                 <FontAwesomeIcon icon={faCircleHalfStroke} />
                             </div>
-                            <div className="bg-slate-500 bg-opacity-70 hidden peer-hover:block peer-hover:absolute rounded-lg p-2">Draw winner</div>
-                        </div>
+                        </Hint>
                     )}
 
-                    <div className="w-fit">
-                        <div className="p-2 m-2 peer bg-blue-500 hover:bg-blue-700 rounded-xl text-white w-fit " onClick={() => hideRaffle(item)}>
+                    <Hint text="Hide" extraCss="flex flex-row justify-center">
+                        <div className="p-2 bg-blue-500 cursor-pointer hover:bg-blue-700 rounded-xl text-white w-fit " onClick={() => hideRaffle(item)}>
                             <FontAwesomeIcon icon={faEyeSlash} />
                         </div>
-                        <div className="bg-slate-500 bg-opacity-70 hidden peer-hover:block peer-hover:absolute rounded-lg p-2">Hide</div>
-                    </div>
+                    </Hint>
                 </div>
             </div>
         );
