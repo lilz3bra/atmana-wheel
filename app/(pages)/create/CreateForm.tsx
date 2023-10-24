@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import Toast from "@/components/Toast/Toast";
+import Hint from "@/components/Hint/Hint";
 
 const CreateForm = () => {
     const [data, setData] = useState({ id: "", creator: "", name: "", prize: "", cost: "", streamLimitEnabled: false, userLimitEnabled: false, streamLimit: 0, userLimit: 0 });
@@ -98,17 +99,18 @@ const CreateForm = () => {
                     min={1}
                     onChange={(e) => setData({ ...data, streamLimit: Number(e.target.value) })}
                 />
-
-                <label htmlFor="max-per-user" className="text-center">
-                    Limit user redemptions per stream{" "}
-                    <input
-                        type="checkbox"
-                        id="max-per-user"
-                        onChange={() => {
-                            setData({ ...data, userLimitEnabled: !data.userLimitEnabled });
-                        }}
-                    />
-                </label>
+                <Hint text="Limit how many times can each viewer redeem during a each stream" extraCss="flex flex-row justify-center">
+                    <label htmlFor="max-per-user" className="text-center">
+                        Limit user redemptions per stream{" "}
+                        <input
+                            type="checkbox"
+                            id="max-per-user"
+                            onChange={() => {
+                                setData({ ...data, userLimitEnabled: !data.userLimitEnabled });
+                            }}
+                        />
+                    </label>
+                </Hint>
                 <input
                     className="m-2 rounded-full text-black text-center"
                     disabled={!data.userLimitEnabled}
