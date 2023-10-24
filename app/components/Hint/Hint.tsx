@@ -6,7 +6,6 @@ interface Props {
 }
 
 const Hint = ({ children, text, extraCss }: Props) => {
-    console.log(extraCss);
     return (
         <div className={`w-full group ${typeof extraCss !== "undefined" ? extraCss : ""}`}>
             {children}
