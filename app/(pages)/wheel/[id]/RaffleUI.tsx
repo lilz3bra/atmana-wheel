@@ -60,10 +60,11 @@ const RaffleUI = ({ giveaway }: Props) => {
         const result = await res.json();
     };
 
-    const pauseAndDraw = () => {
+    const deleteAndDraw = () => {
         getParticipants();
-        setPaused(true);
-        pauseReward();
+        // setPaused(true);
+        deleteReward();
+        // pauseReward();
         setVisible(true);
     };
 
@@ -79,6 +80,7 @@ const RaffleUI = ({ giveaway }: Props) => {
 
     const onClose = () => {
         setVisible(false);
+        deleteReward();
     };
 
     useEffect(() => {
@@ -110,8 +112,8 @@ const RaffleUI = ({ giveaway }: Props) => {
                 <button onClick={getParticipants} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 mx-2 w-fit">
                     <FontAwesomeIcon icon={faArrowsRotate} />
                 </button>
-                <button onClick={pauseAndDraw} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 mx-2 w-fit ">
-                    {!isPaused && <FontAwesomeIcon icon={faPause} />} <FontAwesomeIcon icon={faTicket} />
+                <button onClick={deleteAndDraw} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 mx-2 w-fit ">
+                    {/* {!isPaused && <FontAwesomeIcon icon={faPause} />*/} <FontAwesomeIcon icon={faTicket} />
                 </button>
                 {isPaused && (
                     <button onClick={reopen} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 mx-2 w-fit ">
