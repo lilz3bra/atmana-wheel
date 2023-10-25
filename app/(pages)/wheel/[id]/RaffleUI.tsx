@@ -20,6 +20,7 @@ const RaffleUI = ({ giveaway }: Props) => {
     const [error, setError] = useState(false);
     const [isPaused, setPaused] = useState(false);
     const [sortedUsers, setSortedUsers] = useState<UsersList>();
+    const [isDeleted, setDeleted] = useState(false);
     const [total, setTotal] = useState(0);
     const firstRun = useRef(true);
 
@@ -51,8 +52,9 @@ const RaffleUI = ({ giveaway }: Props) => {
     };
 
     const deleteReward = async () => {
-        const res = await fetch(`/api/raffle?raffleId=${giveaway.twitchId}`, { method: "DELETE" });
+        const res = await fetch(`/api/raffle?raffleId=${giveaway.twitchId}&id=${giveaway.id}`, { method: "DELETE" });
         const result = await res.json();
+        setDeleted(true);
     };
 
     const pauseReward = async () => {
@@ -61,10 +63,10 @@ const RaffleUI = ({ giveaway }: Props) => {
     };
 
     const deleteAndDraw = () => {
-        getParticipants();
-        // setPaused(true);
-        deleteReward();
-        // pauseReward();
+        if (!isDeleted) getParticipants();
+        setPaused(true);
+        // deleteReward();
+        pauseReward();
         setVisible(true);
     };
 
