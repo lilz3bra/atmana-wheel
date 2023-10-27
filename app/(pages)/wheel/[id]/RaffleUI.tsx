@@ -117,11 +117,11 @@ const RaffleUI = ({ giveaway }: Props) => {
                 <button onClick={deleteAndDraw} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 mx-2 w-fit ">
                     {/* {!isPaused && <FontAwesomeIcon icon={faPause} />*/} <FontAwesomeIcon icon={faTicket} />
                 </button>
-                {isPaused && (
+                {/* {isPaused && (
                     <button onClick={reopen} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 mx-2 w-fit ">
                         <FontAwesomeIcon icon={faPlay} />
                     </button>
-                )}
+                )} */}
                 <button onClick={deleteReward} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 mx-2 w-fit ">
                     <FontAwesomeIcon icon={faTrashCan} />
                 </button>
