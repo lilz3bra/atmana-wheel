@@ -14,7 +14,7 @@ interface Props {
 
 const ActiveItem = ({ item }: Props) => {
     const hideRaffle = async (raffle: item) => {
-        await fetch(`/api/raffle?raffleId=${raffle.id}`, { method: "DELETE" });
+        await fetch(`/api/raffle?id=${raffle.id}`, { method: "DELETE" });
     };
 
     const copyId = async (raffle: item) => {
