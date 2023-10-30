@@ -41,7 +41,7 @@ const HistoryList = ({ items }: Props) => {
                     </label>
                 </div>
             </div>
-            <div className="m-4 flex flex-row ">
+            <div className="m-4 flex flex-row flex-wrap">
                 {items.map((i) => {
                     return <HistoryItem key={i.id} item={i} filter={filter} />;
                 })}
