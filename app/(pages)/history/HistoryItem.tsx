@@ -34,7 +34,7 @@ const HistoryItem = ({ item, filter }: Props) => {
     };
 
     const deleteReward = async (raffle: item) => {
-        const res = await fetch(`/api/raffle?raffleId=${raffle.id}&id=${raffle.twitchId}`, { method: "DELETE" });
+        const res = await fetch(`/api/raffle?raffleId=${raffle.twitchId}&id=${raffle.id}`, { method: "DELETE" });
         router.refresh();
     };
 
