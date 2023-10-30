@@ -19,7 +19,6 @@ async function validateToken(token: JWT): Promise<JWT> {
 }
 
 async function refreshAccessToken(token: JWT): Promise<JWT> {
-    console.log("refreshing");
     const data = new FormData();
     data.append("client_id", process.env.NEXT_PUBLIC_TWITCH_API_KEY);
     data.append("client_secret", process.env.TWITCH_API_SECRET);

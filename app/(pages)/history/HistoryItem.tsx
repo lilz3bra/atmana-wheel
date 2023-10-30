@@ -30,12 +30,11 @@ const HistoryItem = ({ item, filter }: Props) => {
     const markPaid = async (raffle: item) => {
         const res = await fetch(`/api/raffle?raffleId=${raffle.id}`, { method: "POST", body: JSON.stringify({ paid: true }) });
         const r = await fetch(`/api/raffle?raffleId=${raffle.id}`, { method: "DELETE" });
-
         router.refresh();
     };
 
     const deleteReward = async (raffle: item) => {
-        const res = await fetch(`/api/raffle?raffleId=${raffle.id}&id=${raffle.twitchId}`, { method: "DELETE" });
+        const res = await fetch(`/api/raffle?raffleId=${raffle.twitchId}&id=${raffle.id}`, { method: "DELETE" });
         router.refresh();
     };
 
@@ -71,7 +70,7 @@ const HistoryItem = ({ item, filter }: Props) => {
                             </div>
                         </Hint>
                     )}
-                    <Hint text="Hide" extraCss="flex flex-row justify-center">
+                    <Hint text="Hide (hidden items count towards stats but are invisible in the UI)" extraCss="flex flex-row justify-center">
                         <div className="p-2 bg-blue-500 cursor-pointer hover:bg-blue-700 rounded-xl text-white w-fit " onClick={() => hideRaffle(item)}>
                             <FontAwesomeIcon icon={faEyeSlash} />
                         </div>

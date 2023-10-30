@@ -130,14 +130,15 @@ export async function DELETE(req: NextRequest) {
     // Get the raffle id from req and make sure one was passed
     const raffle = req.nextUrl.searchParams.get("raffleId");
     const id = req.nextUrl.searchParams.get("id");
-    if (!id || id === "") return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
     // Send the delete request
-    const res = await fetch(`${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards?broadcaster_id=${thisUser?.providerAccountId}&id=${id}`, {
+
+    const res = await fetch(`${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards?broadcaster_id=${thisUser?.providerAccountId}&id=${raffle}`, {
         method: "DELETE",
         headers: { "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, authorization: "Bearer " + thisUser.access_token },
     });
-
-    if (raffle) await prisma.giveaways.update({ where: { twitchId: id, id: raffle }, data: { twitchId: "" } });
+    if (id) {
+        if (raffle) await prisma.giveaways.update({ where: { twitchId: raffle, id: id }, data: { twitchId: "" } });
+    }
 
     // Return 200 if deleted successfully, otherwise pass the code
     return NextResponse.json({}, { status: res.status === 204 ? 200 : res.status });

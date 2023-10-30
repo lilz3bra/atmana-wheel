@@ -16,7 +16,6 @@ const Toast = ({ stack }: ToastProps) => {
         const hidden = [...hide];
         hidden[index] = true;
         setHide(hidden);
-        console.log(hidden[0]);
     };
 
     return (
