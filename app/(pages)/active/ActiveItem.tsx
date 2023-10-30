@@ -1,6 +1,7 @@
 "use client";
 import { faCopy, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useRouter } from "next/navigation";
 import React from "react";
 
 interface item {
@@ -13,8 +14,10 @@ interface Props {
 }
 
 const ActiveItem = ({ item }: Props) => {
+    const router = useRouter();
     const hideRaffle = async (raffle: item) => {
-        await fetch(`/api/raffle?id=${raffle.id}`, { method: "DELETE" });
+        const res = await fetch(`/api/raffle?raffleId=${raffle.id}`, { method: "DELETE" });
+        router.refresh();
     };
 
     const copyId = async (raffle: item) => {
