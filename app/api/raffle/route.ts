@@ -133,7 +133,6 @@ export async function DELETE(req: NextRequest) {
     if (!id || id === "") return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
     // Send the delete request
 
-    console.log(id, raffle);
     const res = await fetch(`${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards?broadcaster_id=${thisUser?.providerAccountId}&id=${raffle}`, {
         method: "DELETE",
         headers: { "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, authorization: "Bearer " + thisUser.access_token },
