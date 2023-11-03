@@ -29,6 +29,7 @@ export async function PUT(req: Request) {
         condition: { broadcaster_user_id: thisUser.providerAccountId },
         transport: { method: "webhook", callback: process.env.NEXT_PUBLIC_REDIRECT_URL, secret: process.env.TWITCH_API_SECRET },
     });
+    console.log(body);
     const result = await fetch(eventSubCreateUrl, { method: "POST", headers, body });
     const data = await result.json();
     return NextResponse.json(data);
