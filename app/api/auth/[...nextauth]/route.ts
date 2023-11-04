@@ -73,7 +73,7 @@ export const authOptions: NextAuthOptions = {
         TwitchProvider({
             clientId: process.env.NEXT_PUBLIC_TWITCH_API_KEY!,
             clientSecret: process.env.TWITCH_API_SECRET!,
-            authorization: { params: { scope: "openid user:read:email channel:manage:redemptions" } },
+            authorization: { params: { scope: "openid user:read:email channel:manage:redemptions", grantType: "client_credentials" } },
         }),
     ],
 };
