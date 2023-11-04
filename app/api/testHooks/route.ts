@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { authOptions, getTwitchClientToken } from "../auth/[...nextauth]/route";
 
 export async function POST(req: NextRequest) {
     const secret = process.env.TWITCH_API_SECRET; //process.env.NEXT_PUBLIC_API_KEY;
@@ -21,8 +21,9 @@ export async function PUT(req: Request) {
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const thisUser = session.user;
 
+    const appToken = await getTwitchClientToken();
     const eventSubCreateUrl = "https://api.twitch.tv/helix/eventsub/subscriptions";
-    const headers = { Authorization: `Bearer ${thisUser.access_token}`, "Client-Id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, "Content-Type": "application/json" };
+    const headers = { Authorization: `Bearer ${appToken.access_token}`, "Client-Id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, "Content-Type": "application/json" };
     const body = JSON.stringify({
         type: "channel.channel_points_custom_reward_redemption.add",
         version: "1",
