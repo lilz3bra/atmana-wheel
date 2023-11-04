@@ -5,6 +5,21 @@ import TwitchProvider from "next-auth/providers/twitch";
 import { prisma } from "@/lib/prisma";
 import { JWT } from "next-auth/jwt";
 
+interface TwitchToken {
+    access_token: string;
+    expires_in: number;
+    token_type: string;
+}
+
+export async function getTwitchClientToken(): Promise<TwitchToken> {
+    const getCreds = await fetch(
+        `https://id.twitch.tv/oauth2/token?client_id=${process.env.NEXT_PUBLIC_TWITCH_API_KEY}&client_secret=${process.env.TWITCH_API_SECRET}&grant_type=client_credentials`,
+        { method: "POST", headers: { "Content-Type": "application/json" } }
+    );
+    const creds: TwitchToken = await getCreds.json();
+    return creds;
+}
+
 async function validateToken(token: JWT): Promise<JWT> {
     const response = await fetch("https://id.twitch.tv/oauth2/validate ", {
         method: "GET",
@@ -73,7 +88,7 @@ export const authOptions: NextAuthOptions = {
         TwitchProvider({
             clientId: process.env.NEXT_PUBLIC_TWITCH_API_KEY!,
             clientSecret: process.env.TWITCH_API_SECRET!,
-            authorization: { params: { scope: "openid user:read:email channel:manage:redemptions", grantType: "client_credentials" } },
+            authorization: { params: { scope: "openid user:read:email channel:manage:redemptions" } },
         }),
     ],
 };
