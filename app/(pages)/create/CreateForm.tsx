@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import Toast from "@/components/Toast/Toast";
 import Hint from "@/components/Hint/Hint";
+import ModeSelector from "@/components/ModeSelector";
 
 const CreateForm = () => {
     const [data, setData] = useState({ id: "", creator: "", name: "", prize: "", cost: "", streamLimitEnabled: false, userLimitEnabled: false, streamLimit: 0, userLimit: 0 });
@@ -42,6 +43,10 @@ const CreateForm = () => {
             setNotiStack([...notiStack, { type: "success", text: "Redemption created sucesstully", link: `/wheel/${d.id}` }]);
         }
         setLoading(false);
+    };
+
+    const handleModeChange = (mode: boolean) => {
+        console.log(mode);
     };
 
     return (
@@ -120,6 +125,7 @@ const CreateForm = () => {
                     min={1}
                     onChange={(e) => setData({ ...data, userLimit: Number(e.target.value) })}
                 />
+                <ModeSelector callback={handleModeChange} />
                 <button type="submit" disabled={loading} className={`${loading ? "bg-gray-500" : "bg-blue-500 hover:bg-blue-700"} rounded-full m-2`}>
                     Create
                 </button>
