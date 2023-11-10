@@ -39,22 +39,38 @@ export async function PUT(req: Request) {
         // });
         // const result = await fetch(eventSubCreateUrl, { method: "POST", headers, body });
         // const eventData = await result.json();
-
-        // Save to the DB a reference to the newly created reward
-        const db = await prisma.giveaways.create({
-            data: {
-                name: data.twData.title,
-                cost: data.twData.cost,
-                prize: data.prize,
-                paid: false,
-                hidden: false,
-                creatorId: thisUser.id,
-                winner: null,
-                twitchId: responseData.data[0].id,
-                paused: false,
-            },
-        });
-        // Return the db document
+        let db;
+        if (data.twData.is_user_input_required) {
+            db = await prisma.prompts.create({
+                data: {
+                    name: data.twData.title,
+                    cost: data.twData.cost,
+                    prize: data.prize,
+                    paid: false,
+                    prompt: data.twData.prompt,
+                    hidden: false,
+                    creatorId: thisUser.id,
+                    winner: null,
+                    twitchId: responseData.data[0].id,
+                    paused: false,
+                },
+            });
+        } else {
+            // Save to the DB a reference to the newly created reward
+            db = await prisma.giveaways.create({
+                data: {
+                    name: data.twData.title,
+                    cost: data.twData.cost,
+                    prize: data.prize,
+                    paid: false,
+                    hidden: false,
+                    creatorId: thisUser.id,
+                    winner: null,
+                    twitchId: responseData.data[0].id,
+                    paused: false,
+                },
+            }); // Return the db document
+        }
         return NextResponse.json(db, { status: res.status });
     }
 }
