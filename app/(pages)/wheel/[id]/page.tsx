@@ -21,7 +21,7 @@ export default async function WheelPage({ params }: Props) {
         where: {
             id: params.id,
         },
-        select: { id: true, twitchId: true },
+        select: { id: true, twitchId: true, paused: true },
     });
 
     return (
