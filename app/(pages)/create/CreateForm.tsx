@@ -9,6 +9,8 @@ const CreateForm = () => {
 
     const [loading, setLoading] = useState(false);
     const [notiStack, setNotiStack] = useState<ToastNotif[]>([]);
+    const [isPrompt, setIsPrompt] = useState(false);
+    const [prompt, setPrompt] = useState("");
 
     const createRedemption = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -17,8 +19,8 @@ const CreateForm = () => {
                 // Data to be sent to twitch
                 title: data.name,
                 cost: Number(data.cost),
-                is_user_input_required: false,
-                prompt: "",
+                is_user_input_required: isPrompt,
+                prompt: isPrompt ? prompt : "",
                 background_color: "#2590EB",
                 is_max_per_stream_enabled: data.streamLimitEnabled,
                 max_per_stream: data.streamLimit,
@@ -43,10 +45,6 @@ const CreateForm = () => {
             setNotiStack([...notiStack, { type: "success", text: "Redemption created sucesstully", link: `/wheel/${d.id}` }]);
         }
         setLoading(false);
-    };
-
-    const handleModeChange = (mode: boolean) => {
-        console.log(mode);
     };
 
     return (
@@ -125,7 +123,23 @@ const CreateForm = () => {
                     min={1}
                     onChange={(e) => setData({ ...data, userLimit: Number(e.target.value) })}
                 />
-                <ModeSelector callback={handleModeChange} />
+                <ModeSelector callback={setIsPrompt} />
+                {isPrompt && (
+                    <textarea
+                        className="m-2 rounded-lg text-black text-center"
+                        cols={20}
+                        rows={4}
+                        maxLength={200}
+                        value={prompt}
+                        onChange={(e) => {
+                            setPrompt(e.target.value);
+                        }}
+                        placeholder="Prompt"
+                        name="prompt"
+                        id="prompt"
+                        required
+                    />
+                )}
                 <button type="submit" disabled={loading} className={`${loading ? "bg-gray-500" : "bg-blue-500 hover:bg-blue-700"} rounded-full m-2`}>
                     Create
                 </button>
