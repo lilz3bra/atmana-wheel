@@ -41,14 +41,15 @@ model Session {
 }
 
 model User {
-  id            String         @id @default(auto()) @map("_id") @db.ObjectId
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
   name          String?
-  email         String?        @unique
-  emailVerified DateTime?      @map("email_verified")
+  email         String?     @unique
+  emailVerified DateTime?   @map("email_verified")
   image         String?
   accounts      Account[]
   sessions      Session[]
   giveaways     Giveaways[]
+  prompts       Prompts[]
 
   @@map("users")
 }
@@ -64,17 +65,51 @@ model VerificationToken {
 }
 
 model Giveaways {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-name String
-cost Int
-prize String
-paid Boolean
-hidden Boolean
-  twitchId String  
-creatorId String    @db.ObjectId
-creator User    @relation(fields: [creatorId], references: [id])
-winner String?
-
-
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  cost      Int
+  prize     String
+  paid      Boolean
+  hidden    Boolean
+  twitchId  String
+  creatorId String  @db.ObjectId
+  creator   User    @relation(fields: [creatorId], references: [id])
+  winner    String?
+  paused    Boolean?
 }
 
+model Prompts {
+  id          String              @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  cost        Int
+  prize       String
+  paid        Boolean
+  hidden      Boolean
+  twitchId    String
+  prompt      String
+  creatorId   String              @db.ObjectId
+  creator     User                @relation(fields: [creatorId], references: [id])
+  redemptions PromptRedemptions[]
+  winner      String?
+  paused      Boolean?
+}
+
+model PromptRedemptions {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  viewerId   String   @db.ObjectId
+  viewer     Viewer   @relation(fields: [viewerId], references: [id])
+  response   String
+  redeemedAt DateTime
+  promptId   String   @db.ObjectId
+  prompt     Prompts  @relation(fields: [promptId], references: [id])
+}
+
+model Viewer {
+  id                String              @id @default(auto()) @map("_id") @db.ObjectId
+  promptRedemptions PromptRedemptions[]
+  name              String
+  twitchId          String
+  ipAddress         String?
+  isBanned          Boolean
+  isApproved        Boolean
+}

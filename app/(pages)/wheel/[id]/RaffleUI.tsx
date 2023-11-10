@@ -5,11 +5,13 @@ import React, { useEffect, useRef, useState } from "react";
 import Modal from "./modal";
 import ParticipantsList from "./ParticipantsList";
 import Loading from "@/loading";
+import Hint from "@/components/Hint/Hint";
 
 interface Props {
     giveaway: {
         id: string;
         twitchId: string;
+        paused: boolean | null;
     };
 }
 const RaffleUI = ({ giveaway }: Props) => {
@@ -18,11 +20,12 @@ const RaffleUI = ({ giveaway }: Props) => {
     const [visible, setVisible] = useState(false);
     const [raffle, setRaffle] = useState<giveaway>();
     const [error, setError] = useState(false);
-    const [isPaused, setPaused] = useState(false);
+    const [isPaused, setPaused] = useState(giveaway.paused);
     const [sortedUsers, setSortedUsers] = useState<UsersList>();
     const [isDeleted, setDeleted] = useState(false);
     const [total, setTotal] = useState(0);
     const firstRun = useRef(true);
+    const [winnerDrawn, setWinnerDrawn] = useState(false);
 
     const getParticipants = async () => {
         setLoading(true);
@@ -53,19 +56,19 @@ const RaffleUI = ({ giveaway }: Props) => {
 
     const deleteReward = async () => {
         const res = await fetch(`/api/raffle?raffleId=${giveaway.twitchId}&id=${giveaway.id}`, { method: "DELETE" });
-        const result = await res.json();
-        setDeleted(true);
+        if (res.status === 200) setDeleted(true);
     };
 
     const pauseReward = async () => {
         const res = await fetch(`/api/raffle?raffleId=${giveaway.twitchId}`, { method: "PATCH", body: JSON.stringify({ is_paused: true }) });
-        const result = await res.json();
+        if (res.status === 200) {
+            setPaused(true);
+        }
     };
 
-    const deleteAndDraw = () => {
+    const drawWinner = () => {
         if (!isDeleted) getParticipants();
         setPaused(true);
-        // deleteReward();
         pauseReward();
         setVisible(true);
     };
@@ -73,6 +76,7 @@ const RaffleUI = ({ giveaway }: Props) => {
     const updateDb = async (winner: Array<Object>) => {
         const res = await fetch(`/api/raffle?raffleId=${giveaway.id}`, { method: "POST", body: JSON.stringify({ winner: winner }) });
         const result = await res.json();
+        setWinnerDrawn(true);
     };
 
     const reopen = async () => {
@@ -82,7 +86,9 @@ const RaffleUI = ({ giveaway }: Props) => {
 
     const onClose = () => {
         setVisible(false);
-        deleteReward();
+        if (winnerDrawn && !isDeleted) {
+            deleteReward();
+        }
     };
 
     useEffect(() => {
@@ -109,23 +115,33 @@ const RaffleUI = ({ giveaway }: Props) => {
 
     return (
         <>
-            <p className="text-center">Do you want to close the redemptions and get the registered participants?</p>
-            <div className="flex flex-row m-2 justify-between items-center">
-                <button onClick={getParticipants} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 mx-2 w-fit">
-                    <FontAwesomeIcon icon={faArrowsRotate} />
-                </button>
-                <button onClick={deleteAndDraw} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 mx-2 w-fit ">
-                    {/* {!isPaused && <FontAwesomeIcon icon={faPause} />*/} <FontAwesomeIcon icon={faTicket} />
-                </button>
-                {/* {isPaused && (
-                    <button onClick={reopen} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 mx-2 w-fit ">
-                        <FontAwesomeIcon icon={faPlay} />
-                    </button>
-                )} */}
-                <button onClick={deleteReward} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 mx-2 w-fit ">
-                    <FontAwesomeIcon icon={faTrashCan} />
-                </button>
-            </div>
+            {!isDeleted && (
+                <>
+                    <p className="text-center">Do you want to close the redemptions and get the registered participants?</p>
+                    <div className="flex flex-row m-2 justify-between items-center">
+                        <Hint text="Update entries">
+                            <button onClick={getParticipants} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 mx-2 w-fit flex flex-row">
+                                <FontAwesomeIcon icon={faArrowsRotate} />
+                            </button>
+                        </Hint>
+                        <Hint text={`${isPaused ? "D" : "Pause and d"}raw`}>
+                            <button onClick={drawWinner} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 mx-2 w-fit flex flex-row gap-2">
+                                {!isPaused && <FontAwesomeIcon icon={faPause} />} <FontAwesomeIcon icon={faTicket} />
+                            </button>
+                        </Hint>
+                        <Hint text={`${isPaused ? "Unp" : "P"}ause`}>
+                            <button onClick={isPaused ? reopen : pauseReward} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 mx-2 w-fit flex flex-row">
+                                <FontAwesomeIcon icon={isPaused ? faPlay : faPause} />
+                            </button>
+                        </Hint>
+                        <Hint text="Delete">
+                            <button onClick={deleteReward} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 mx-2 w-fit flex flex-row">
+                                <FontAwesomeIcon icon={faTrashCan} />
+                            </button>
+                        </Hint>
+                    </div>
+                </>
+            )}
             <h1 className="font-bold text-xl text-center m-4">
                 {Object.keys(users).length} Participants ({total} entries)
             </h1>

@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { authOptions, getTwitchClientToken } from "../auth/[...nextauth]/route";
 
 /** Create a new reward and save it to the db */
 export async function PUT(req: Request) {
@@ -27,6 +27,19 @@ export async function PUT(req: Request) {
         console.error(responseData, res.status, res.body);
         return NextResponse.json(responseData, { status: res.status });
     } else {
+        // Reward was created, create the EventSub
+        // const appToken = await getTwitchClientToken();
+        // const eventSubCreateUrl = "https://api.twitch.tv/helix/eventsub/subscriptions";
+        // const headers = { Authorization: `Bearer ${appToken.access_token}`, "Client-Id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, "Content-Type": "application/json" };
+        // const body = JSON.stringify({
+        //     type: "channel.channel_points_custom_reward_redemption.add",
+        //     version: "1",
+        //     condition: { broadcaster_user_id: thisUser.providerAccountId },
+        //     transport: { method: "webhook", callback: process.env.NEXT_PUBLIC_REDIRECT_URL, secret: process.env.TWITCH_API_SECRET },
+        // });
+        // const result = await fetch(eventSubCreateUrl, { method: "POST", headers, body });
+        // const eventData = await result.json();
+
         // Save to the DB a reference to the newly created reward
         const db = await prisma.giveaways.create({
             data: {
@@ -38,6 +51,7 @@ export async function PUT(req: Request) {
                 creatorId: thisUser.id,
                 winner: null,
                 twitchId: responseData.data[0].id,
+                paused: false,
             },
         });
         // Return the db document
