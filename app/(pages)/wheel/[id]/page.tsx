@@ -24,9 +24,17 @@ export default async function WheelPage({ params }: Props) {
         select: { id: true, twitchId: true, paused: true },
     });
 
-    return (
-        <div id="main-content" className="flex flex-col  justify-center items-center m-4">
-            <RaffleUI giveaway={giveaway!} />
-        </div>
-    );
+    if (giveaway) {
+        return (
+            <div id="main-content" className="flex flex-col  justify-center items-center m-4">
+                <RaffleUI giveaway={giveaway!} />
+            </div>
+        );
+    } else {
+        return (
+            <div id="main-content" className="flex flex-col  justify-center items-center m-4 text-4xl">
+                Raffle doesn't exist
+            </div>
+        );
+    }
 }
