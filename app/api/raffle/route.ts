@@ -28,17 +28,19 @@ export async function PUT(req: Request) {
         return NextResponse.json(responseData, { status: res.status });
     } else {
         // Reward was created, create the EventSub
-        // const appToken = await getTwitchClientToken();
-        // const eventSubCreateUrl = "https://api.twitch.tv/helix/eventsub/subscriptions";
-        // const headers = { Authorization: `Bearer ${appToken.access_token}`, "Client-Id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, "Content-Type": "application/json" };
-        // const body = JSON.stringify({
-        //     type: "channel.channel_points_custom_reward_redemption.add",
-        //     version: "1",
-        //     condition: { broadcaster_user_id: thisUser.providerAccountId },
-        //     transport: { method: "webhook", callback: process.env.NEXT_PUBLIC_REDIRECT_URL, secret: process.env.TWITCH_API_SECRET },
-        // });
-        // const result = await fetch(eventSubCreateUrl, { method: "POST", headers, body });
-        // const eventData = await result.json();
+        const appToken = await getTwitchClientToken();
+        const eventSubCreateUrl = "https://api.twitch.tv/helix/eventsub/subscriptions";
+        const headers = { Authorization: `Bearer ${appToken.access_token}`, "Client-Id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, "Content-Type": "application/json" };
+        const body = JSON.stringify({
+            type: "channel.channel_points_custom_reward_redemption.add",
+            version: "1",
+            condition: { broadcaster_user_id: thisUser.providerAccountId },
+            transport: { method: "webhook", callback: process.env.NEXT_PUBLIC_REDIRECT_URL, secret: process.env.TWITCH_API_SECRET },
+        });
+        const result = await fetch(eventSubCreateUrl, { method: "POST", headers, body });
+        console.log(result);
+        const eventData = await result.json();
+        console.log(eventData);
         let db;
         if (data.twData.is_user_input_required) {
             db = await prisma.prompts.create({
