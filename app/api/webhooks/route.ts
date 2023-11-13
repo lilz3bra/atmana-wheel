@@ -15,8 +15,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({}, { status: 200 });
 }
 
+/** Creates an eventsub */
 export async function PUT(req: Request) {
-    const secret = process.env.TWITCH_API_SECRET;
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const thisUser = session.user;
@@ -30,17 +30,15 @@ export async function PUT(req: Request) {
         condition: { broadcaster_user_id: thisUser.providerAccountId },
         transport: { method: "webhook", callback: process.env.NEXT_PUBLIC_REDIRECT_URL, secret: process.env.TWITCH_API_SECRET },
     });
-    console.log(body);
     const result = await fetch(eventSubCreateUrl, { method: "POST", headers, body });
     const data = await result.json();
     return NextResponse.json(data);
 }
 
+/** Deletes an eventusb */
 export async function DELETE(req: NextRequest) {
-    const secret = process.env.TWITCH_API_SECRET;
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    const thisUser = session.user;
 
     const id = req.nextUrl.searchParams.get("id");
 
