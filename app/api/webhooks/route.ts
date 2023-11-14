@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authOptions, getTwitchClientToken } from "../auth/[...nextauth]/route";
 import { createRewardsSub } from "./helpers";
 
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
     const secret = process.env.TWITCH_API_SECRET; //process.env.NEXT_PUBLIC_API_KEY;
 
     // const message = getHmacMessage(req);
@@ -12,7 +12,9 @@ export async function POST(req: NextRequest) {
 
     // console.log(req);
     const msg = await req.text();
-    const data = await JSON.parse(msg);
+    console.log(msg);
+    const data = await req.json();
+    console.log(data);
     if (data.subscription.status === "webhook_callback_verification_pending") {
         return NextResponse.json(data.subscription.challenge);
     } else {
