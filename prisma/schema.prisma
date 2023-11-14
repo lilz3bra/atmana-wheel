@@ -65,17 +65,18 @@ model VerificationToken {
 }
 
 model Giveaways {
-  id        String  @id @default(auto()) @map("_id") @db.ObjectId
-  name      String
-  cost      Int
-  prize     String
-  paid      Boolean
-  hidden    Boolean
-  twitchId  String
-  creatorId String  @db.ObjectId
-  creator   User    @relation(fields: [creatorId], references: [id])
-  winner    String?
-  paused    Boolean?
+  id          String                @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  cost        Int
+  prize       String
+  paid        Boolean
+  hidden      Boolean
+  twitchId    String
+  creatorId   String                @db.ObjectId
+  creator     User                  @relation(fields: [creatorId], references: [id])
+  winner      String?
+  paused      Boolean?
+  redemptions GiveawayRedemptions[]
 }
 
 model Prompts {
@@ -105,11 +106,22 @@ model PromptRedemptions {
 }
 
 model Viewer {
-  id                String              @id @default(auto()) @map("_id") @db.ObjectId
-  promptRedemptions PromptRedemptions[]
-  name              String
-  twitchId          String
-  ipAddress         String?
-  isBanned          Boolean
-  isApproved        Boolean
+  id                  String                @id @default(auto()) @map("_id") @db.ObjectId
+  promptRedemptions   PromptRedemptions[]
+  giveawayRedemptions GiveawayRedemptions[]
+  name                String
+  twitchId            String
+  ipAddress           String?
+  isBanned            Boolean
+  isApproved          Boolean
+}
+
+model GiveawayRedemptions {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  viewerId   String    @db.ObjectId
+  viewer     Viewer    @relation(fields: [viewerId], references: [id])
+  response   String
+  redeemedAt DateTime
+  giveawayId String    @db.ObjectId
+  giveaway   Giveaways @relation(fields: [giveawayId], references: [id])
 }
