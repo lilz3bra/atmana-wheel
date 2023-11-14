@@ -11,12 +11,11 @@ export async function POST(req: Request) {
     // const hmac = HMAC_PREFIX + getHmac(secret, message);
 
     // console.log(req);
-    const msg = await req.text();
-    console.log(msg);
+    // const msg = await req.text();
+    // console.log(msg);
     const data = await req.json();
-    console.log(data);
     if (data.subscription.status === "webhook_callback_verification_pending") {
-        return NextResponse.json(data.subscription.challenge);
+        return NextResponse.json(data.challenge);
     } else {
         console.log(data);
         return NextResponse.json({ data }, { status: 200 });
