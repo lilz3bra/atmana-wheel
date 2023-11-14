@@ -38,3 +38,16 @@ export async function DELETE(req: NextRequest) {
     const result = await fetch(eventSubCreateUrl, { method: "DELETE", headers });
     return NextResponse.json({}, { status: result.status === 204 ? 200 : result.status });
 }
+
+export async function GET(req: NextRequest) {
+    const session = await getServerSession(authOptions);
+    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const id = req.nextUrl.searchParams.get("id");
+
+    const appToken = await getTwitchClientToken();
+    const eventSubCreateUrl = `https://api.twitch.tv/helix/eventsub/subscriptions?id=${id}`;
+    const headers = { Authorization: `Bearer ${appToken.access_token}`, "Client-Id": process.env.NEXT_PUBLIC_TWITCH_API_KEY };
+    const result = await fetch(eventSubCreateUrl, { method: "GET", headers });
+    return NextResponse.json({}, { status: result.status === 204 ? 200 : result.status });
+}
