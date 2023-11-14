@@ -13,11 +13,11 @@ export async function POST(req: NextRequest) {
     // console.log(req);
     const msg = await req.text();
     const data = await JSON.parse(msg);
-    if (data.status === "webhook_callback_verification_pending") {
-        return NextResponse.json(data.challenge);
+    if (data.subscription.status === "webhook_callback_verification_pending") {
+        return NextResponse.json(data.subscription.challenge);
     } else {
-        console.log(msg);
-        return NextResponse.json({}, { status: 200 });
+        console.log(data);
+        return NextResponse.json({ data }, { status: 200 });
     }
 }
 
