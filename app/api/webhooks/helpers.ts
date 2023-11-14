@@ -1,7 +1,7 @@
 import { Session } from "next-auth";
 import { getTwitchClientToken } from "../auth/[...nextauth]/route";
 
-export async function createRewardsSub(session: Session) {
+export async function createRewardsSub(session: Session, id: string) {
     const thisUser = session.user;
 
     const appToken = await getTwitchClientToken();
@@ -10,11 +10,10 @@ export async function createRewardsSub(session: Session) {
     const body = JSON.stringify({
         type: "channel.channel_points_custom_reward_redemption.add",
         version: "1",
-        condition: { broadcaster_user_id: thisUser.providerAccountId },
+        condition: { broadcaster_user_id: thisUser.providerAccountId, reward_id: id },
         transport: { method: "webhook", callback: process.env.NEXT_PUBLIC_REDIRECT_URL, secret: process.env.TWITCH_API_SECRET },
     });
     const result = await fetch(eventSubCreateUrl, { method: "POST", headers, body });
     const eventData = await result.json();
-    console.log(eventData);
     return eventData;
 }
