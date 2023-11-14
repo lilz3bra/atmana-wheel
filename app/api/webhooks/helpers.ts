@@ -13,9 +13,8 @@ export async function createRewardsSub(session: Session) {
         condition: { broadcaster_user_id: thisUser.providerAccountId },
         transport: { method: "webhook", callback: process.env.NEXT_PUBLIC_REDIRECT_URL, secret: process.env.TWITCH_API_SECRET },
     });
-    console.log(body);
-
     const result = await fetch(eventSubCreateUrl, { method: "POST", headers, body });
     const eventData = await result.json();
     console.log(eventData);
+    return eventData;
 }
