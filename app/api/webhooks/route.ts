@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     // console.log(msg);
     const data = await req.json();
     if (data.subscription.status === "webhook_callback_verification_pending") {
-        return NextResponse.json(data.challenge);
+        return new Response(data.challenge, { status: 200, headers: { "Content-Type": "text/plain" } });
     } else {
         console.log(data);
         return NextResponse.json({ data }, { status: 200 });
