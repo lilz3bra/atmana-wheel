@@ -21,8 +21,8 @@ export async function PUT(req: Request) {
     const session = await getServerSession(authOptions);
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const eventData = await createRewardsSub(session);
-    return NextResponse.json(eventData);
+    // const eventData = await createRewardsSub(session);
+    // return NextResponse.json(eventData);
 }
 
 /** Deletes an eventusb */
