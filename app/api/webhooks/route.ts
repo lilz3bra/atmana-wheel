@@ -18,6 +18,10 @@ export async function POST(req: Request) {
         return new Response(data.challenge, { status: 200, headers: { "Content-Type": "text/plain" } });
     } else {
         console.log(data);
+        console.log(req.headers);
+        // TODO: Verify message
+        // TODO: parse message
+        // TODO: save data to db
         return NextResponse.json({ data }, { status: 200 });
     }
 }
