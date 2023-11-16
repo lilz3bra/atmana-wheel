@@ -36,8 +36,8 @@ function getHmac(message: string) {
 
 // Verify whether your signature matches Twitch's signature.
 export async function verifyMessage(req: Request, rawMessage: string) {
-    const message = "sha256=" + (await getHmacMessage(req, rawMessage));
-    const hmac = getHmac(message);
+    const message = await getHmacMessage(req, rawMessage);
+    const hmac = "sha256=" + getHmac(message);
     const verifySignature = req.headers.get("Twitch-Eventsub-Message-Signature");
     if (verifySignature === null) return false;
     console.log(hmac, verifySignature);
