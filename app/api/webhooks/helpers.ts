@@ -1,6 +1,7 @@
 import { Session } from "next-auth";
 import { getTwitchClientToken } from "../auth/[...nextauth]/route";
 import crypto from "crypto";
+import { Glegoo } from "next/font/google";
 
 export async function createRewardsSub(session: Session, id: string) {
     const thisUser = session.user;
@@ -35,9 +36,10 @@ function getHmac(message: string) {
 
 // Verify whether your signature matches Twitch's signature.
 export async function verifyMessage(req: Request, rawMessage: string) {
-    const message = await getHmacMessage(req, rawMessage);
+    const message = "sha256=" + (await getHmacMessage(req, rawMessage));
     const hmac = getHmac(message);
     const verifySignature = req.headers.get("Twitch-Eventsub-Message-Signature");
     if (verifySignature === null) return false;
+    console.log(hmac, verifySignature);
     return crypto.timingSafeEqual(Buffer.from(hmac), Buffer.from(verifySignature));
 }
