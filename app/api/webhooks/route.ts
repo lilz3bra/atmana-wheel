@@ -2,6 +2,7 @@ import { Session, getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { authOptions, getTwitchClientToken } from "../auth/[...nextauth]/route";
 import { verifyMessage } from "./helpers";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request) {
     const secret = process.env.TWITCH_API_SECRET; //process.env.NEXT_PUBLIC_API_KEY;
@@ -15,16 +16,22 @@ export async function POST(req: Request) {
     // console.log(msg);
     const data = await JSON.parse(msg);
     if (data.subscription.status === "webhook_callback_verification_pending") {
-        console.log("Verification happening");
+        console.log("Veryfing ownership of the endpoint");
         return new Response(data.challenge, { status: 200, headers: { "Content-Type": "text/plain" } });
     } else {
         if (await verifyMessage(req, msg)) {
-            // TODO: parse message
-            // TODO: save data to db
             console.log("Valid message received");
+            const viewer = await prisma.viewer.upsert({
+                where: { twitchId: data.event.user_id },
+                update: {},
+                create: { name: data.event.user_name, twitchId: data.event.user_id, isBanned: false, isApproved: false },
+            });
+            const giveaway = await prisma.giveaways.findFirst({ where: { twitchId: data.event.reward.id }, select: { id: true } });
+            const result = await prisma.giveawayRedemptions.create({ data: { viewerId: viewer.id!, redeemedAt: data.event.redeemed_at, giveawayId: giveaway?.id! } });
             console.log(msg);
             return NextResponse.json({}, { status: 200 });
         }
+        console.log("Invalid message received");
         return NextResponse.json({}, { status: 403 });
     }
 }
