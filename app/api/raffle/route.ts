@@ -1,8 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
-import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
-import { authOptions, getTwitchClientToken } from "../auth/[...nextauth]/route";
+import { authOptions } from "../auth/[...nextauth]/route";
 import { createRewardsSub } from "../webhooks/helpers";
 
 /** Create a new reward and save it to the db */
@@ -30,9 +29,9 @@ export async function PUT(req: Request) {
     } else {
         // Reward was created, create the EventSub
         const eventData = await createRewardsSub(session, responseData.data[0].id);
-        console.log(eventData);
         let db;
         if (data.twData.is_user_input_required) {
+            // This was a prompt, store it in the correct document
             db = await prisma.prompts.create({
                 data: {
                     name: data.twData.title,
@@ -48,7 +47,7 @@ export async function PUT(req: Request) {
                 },
             });
         } else {
-            // Save to the DB a reference to the newly created reward
+            // This was a giveaway, store it in the correct document
             db = await prisma.giveaways.create({
                 data: {
                     name: data.twData.title,
@@ -85,56 +84,81 @@ export async function GET(req: NextRequest) {
      * @param accumulatedData   Object containing what we got and proccessed so far
      * @returns
      */
-    const getPages = async (cursor?: string, accumulatedData: UsersList = {}): Promise<UsersList> => {
-        // Get the cursor, only works if there are more pages
-        const after = typeof cursor === "undefined" ? "" : `&after=${cursor}`;
-        // Make the request
-        const res = await fetch(
-            `${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards/redemptions?broadcaster_id=${thisUser?.providerAccountId}&reward_id=${raffle}&first=50&status=FULFILLED${after}`,
-            {
-                headers: { "Client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, Authorization: "Bearer " + thisUser.access_token },
-            }
-        );
-        const d = await res.json();
-        const data: any[] = d.data;
-        if (d.error) {
-            throw Error;
-        }
-        // Check if we got a valid response
-        if (data && data.length > 0) {
-            // Proccess and aggregate the new data
-            const newData = sumData(data, accumulatedData);
-            const updatedData = { ...accumulatedData, ...newData };
-            // Check if there are more pages
-            if (d.pagination && d.pagination.cursor) {
-                // We need to go deeper
-                return getPages(d.pagination.cursor, updatedData);
-            } else {
-                // We delved too deeply, we need to go back
-                return updatedData;
-            }
+    // const getPages = async (cursor?: string, accumulatedData: UsersList = {}): Promise<UsersList> => {
+    //     // Get the cursor, only works if there are more pages
+    //     const after = typeof cursor === "undefined" ? "" : `&after=${cursor}`;
+    //     // Make the request
+    //     const res = await fetch(
+    //         `${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards/redemptions?broadcaster_id=${thisUser?.providerAccountId}&reward_id=${raffle}&first=50&status=FULFILLED${after}`,
+    //         {
+    //             headers: { "Client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, Authorization: "Bearer " + thisUser.access_token },
+    //         }
+    //     );
+    //     const d = await res.json();
+    //     const data: any[] = d.data;
+    //     if (d.error) {
+    //         throw Error;
+    //     }
+    //     // Check if we got a valid response
+    //     if (data && data.length > 0) {
+    //         // Proccess and aggregate the new data
+    //         const newData = sumData(data, accumulatedData);
+    //         const updatedData = { ...accumulatedData, ...newData };
+    //         // Check if there are more pages
+    //         if (d.pagination && d.pagination.cursor) {
+    //             // We need to go deeper
+    //             return getPages(d.pagination.cursor, updatedData);
+    //         } else {
+    //             // We delved too deeply, we need to go back
+    //             return updatedData;
+    //         }
+    //     } else {
+    //         // We got nothing back, return whatever we had so far
+    //         return accumulatedData;
+    //     }
+    // };
+    // /**
+    //  * Proccess the json sent by twitch
+    //  * @param data The data[] sent in twitch's json
+    //  * @param accumulatedData What we had accumulated so far
+    //  * @returns
+    //  */
+    // const sumData = (data: any[], accumulatedData: UsersList): UsersList => {
+    //     data.forEach((entry) => {
+    //         // Accumulate every entry in the object
+    //         if (entry.user_name) {
+    //             accumulatedData[entry.user_name] = (accumulatedData[entry.user_name] || 0) + 1;
+    //         }
+    //     });
+    //     return accumulatedData;
+    // };
+    const redemptions = await prisma.giveawayRedemptions.findMany({
+        where: { giveawayId: raffle },
+        include: {
+            viewer: {
+                select: {
+                    name: true,
+                },
+            },
+        },
+    });
+
+    const result: Record<string, number> = redemptions.reduce((acc, redemption) => {
+        const viewerName = redemption.viewer?.name || "Unknown Viewer";
+
+        if (acc[viewerName]) {
+            acc[viewerName]++;
         } else {
-            // We got nothing back, return whatever we had so far
-            return accumulatedData;
+            acc[viewerName] = 1;
         }
-    };
-    /**
-     * Proccess the json sent by twitch
-     * @param data The data[] sent in twitch's json
-     * @param accumulatedData What we had accumulated so far
-     * @returns
-     */
-    const sumData = (data: any[], accumulatedData: UsersList): UsersList => {
-        data.forEach((entry) => {
-            // Accumulate every entry in the object
-            if (entry.user_name) {
-                accumulatedData[entry.user_name] = (accumulatedData[entry.user_name] || 0) + 1;
-            }
-        });
-        return accumulatedData;
-    };
+
+        return acc;
+    }, {} as Record<string, number>);
+
+    const arrayResult = Object.keys(result).map((viewerName) => ({ [viewerName]: result[viewerName] }));
+
     try {
-        const result: UsersList = await getPages();
+        // const result: UsersList = await getPages();
         return NextResponse.json(result);
     } catch (error) {
         return NextResponse.json({}, { status: 404 });
