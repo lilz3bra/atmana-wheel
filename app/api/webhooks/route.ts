@@ -11,17 +11,18 @@ export async function POST(req: Request) {
     // const hmac = HMAC_PREFIX + getHmac(secret, message);
 
     // console.log(req);
-    // const msg = await req.text();
+    const msg = await req.text();
     // console.log(msg);
-    const data = await req.json();
+    const data = await JSON.parse(msg);
     if (data.subscription.status === "webhook_callback_verification_pending") {
         console.log("Verification happening");
         return new Response(data.challenge, { status: 200, headers: { "Content-Type": "text/plain" } });
     } else {
-        if (await verifyMessage(req)) {
+        if (await verifyMessage(req, msg)) {
             // TODO: parse message
             // TODO: save data to db
             console.log("Valid message received");
+            console.log(msg);
             return NextResponse.json({}, { status: 200 });
         }
         return NextResponse.json({}, { status: 403 });

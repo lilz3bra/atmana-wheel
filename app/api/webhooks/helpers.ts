@@ -20,12 +20,11 @@ export async function createRewardsSub(session: Session, id: string) {
 }
 
 // Build the message used to get the HMAC.
-async function getHmacMessage(request: Request) {
+async function getHmacMessage(request: Request, rawMessage: string) {
     const messageId = request.headers.get("Twitch-Eventsub-Message-Id");
     const messageTimestamp = request.headers.get("Twitch-Eventsub-Message-Timestamp");
-    const rawBody = await request.text();
     if (messageId === null || messageTimestamp === null) return "";
-    return messageId + messageTimestamp + rawBody;
+    return messageId + messageTimestamp + rawMessage;
 }
 
 // Get the HMAC.
@@ -35,8 +34,8 @@ function getHmac(message: string) {
 }
 
 // Verify whether your signature matches Twitch's signature.
-export async function verifyMessage(req: Request) {
-    const message = await getHmacMessage(req);
+export async function verifyMessage(req: Request, rawMessage: string) {
+    const message = await getHmacMessage(req, rawMessage);
     const hmac = getHmac(message);
     const verifySignature = req.headers.get("Twitch-Eventsub-Message-Signature");
     if (verifySignature === null) return false;
