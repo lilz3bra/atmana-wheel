@@ -40,6 +40,10 @@ export async function verifyMessage(req: Request, rawMessage: string) {
     const hmac = "sha256=" + getHmac(message);
     const verifySignature = req.headers.get("Twitch-Eventsub-Message-Signature");
     if (verifySignature === null) return false;
-    console.log(hmac, verifySignature);
-    return crypto.timingSafeEqual(Buffer.from(hmac), Buffer.from(verifySignature));
+    try {
+        return crypto.timingSafeEqual(Buffer.from(hmac), Buffer.from(verifySignature));
+    } catch (error) {
+        // In case somehow HMACs dont match in lenght, we fail the verification of the message
+        return false;
+    }
 }
