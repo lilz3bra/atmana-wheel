@@ -1,5 +1,6 @@
 import { Session } from "next-auth";
 import { getTwitchClientToken } from "../auth/[...nextauth]/route";
+import crypto from "crypto";
 
 export async function createRewardsSub(session: Session, id: string) {
     const thisUser = session.user;
@@ -16,4 +17,28 @@ export async function createRewardsSub(session: Session, id: string) {
     const result = await fetch(eventSubCreateUrl, { method: "POST", headers, body });
     const eventData = await result.json();
     return eventData;
+}
+
+// Build the message used to get the HMAC.
+async function getHmacMessage(request: Request) {
+    const messageId = request.headers.get("Twitch-Eventsub-Message-Id");
+    const messageTimestamp = request.headers.get("Twitch-Eventsub-Message-Timestamp");
+    const rawBody = await request.text();
+    if (messageId === null || messageTimestamp === null) return "";
+    return messageId + messageTimestamp + rawBody;
+}
+
+// Get the HMAC.
+function getHmac(message: string) {
+    const secret = process.env.TWITCH_API_SECRET;
+    return crypto.createHmac("sha256", secret).update(message).digest("hex");
+}
+
+// Verify whether your signature matches Twitch's signature.
+export async function verifyMessage(req: Request) {
+    const message = await getHmacMessage(req);
+    const hmac = getHmac(message);
+    const verifySignature = req.headers.get("Twitch-Eventsub-Message-Signature");
+    if (verifySignature === null) return false;
+    return crypto.timingSafeEqual(Buffer.from(hmac), Buffer.from(verifySignature));
 }
