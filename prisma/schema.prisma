@@ -114,13 +114,14 @@ model Viewer {
   ipAddress           String?
   isBanned            Boolean
   isApproved          Boolean
+
+  @@unique([twitchId])
 }
 
 model GiveawayRedemptions {
   id         String    @id @default(auto()) @map("_id") @db.ObjectId
   viewerId   String    @db.ObjectId
   viewer     Viewer    @relation(fields: [viewerId], references: [id])
-  response   String
   redeemedAt DateTime
   giveawayId String    @db.ObjectId
   giveaway   Giveaways @relation(fields: [giveawayId], references: [id])
