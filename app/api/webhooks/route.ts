@@ -1,7 +1,7 @@
 import { Session, getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { authOptions, getTwitchClientToken } from "../auth/[...nextauth]/route";
-import { createRewardsSub } from "./helpers";
+import { verifyMessage } from "./helpers";
 
 export async function POST(req: Request) {
     const secret = process.env.TWITCH_API_SECRET; //process.env.NEXT_PUBLIC_API_KEY;
@@ -14,16 +14,17 @@ export async function POST(req: Request) {
     // const msg = await req.text();
     // console.log(msg);
     const data = await req.json();
-    console.log(data);
-    console.log(req.headers);
     if (data.subscription.status === "webhook_callback_verification_pending") {
         console.log("Verification happening");
         return new Response(data.challenge, { status: 200, headers: { "Content-Type": "text/plain" } });
     } else {
-        // TODO: Verify message
-        // TODO: parse message
-        // TODO: save data to db
-        return NextResponse.json({ data }, { status: 200 });
+        if (await verifyMessage(req)) {
+            // TODO: parse message
+            // TODO: save data to db
+            console.log("Valid message received");
+            return NextResponse.json({}, { status: 200 });
+        }
+        return NextResponse.json({}, { status: 403 });
     }
 }
 
