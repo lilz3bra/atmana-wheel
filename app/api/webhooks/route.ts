@@ -14,11 +14,12 @@ export async function POST(req: Request) {
     // const msg = await req.text();
     // console.log(msg);
     const data = await req.json();
+    console.log(data);
+    console.log(req.headers);
     if (data.subscription.status === "webhook_callback_verification_pending") {
+        console.log("Verification happening");
         return new Response(data.challenge, { status: 200, headers: { "Content-Type": "text/plain" } });
     } else {
-        console.log(data);
-        console.log(req.headers);
         // TODO: Verify message
         // TODO: parse message
         // TODO: save data to db
