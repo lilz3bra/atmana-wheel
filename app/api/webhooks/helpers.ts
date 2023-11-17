@@ -52,6 +52,5 @@ export async function deleteListener(id: string) {
     const eventSubCreateUrl = `https://api.twitch.tv/helix/eventsub/subscriptions?id=${id}`;
     const headers = { Authorization: `Bearer ${appToken.access_token}`, "Client-Id": process.env.NEXT_PUBLIC_TWITCH_API_KEY };
     const result = await fetch(eventSubCreateUrl, { method: "DELETE", headers });
-    console.log(result.status, result.statusText);
-    return { status: result.status === 204 ? 200 : result.status };
+    return result.status;
 }
