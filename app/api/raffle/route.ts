@@ -188,9 +188,8 @@ export async function DELETE(req: NextRequest) {
         if (res.status === 204) {
             // Remove the twitch id from the database, so we know it doesnt exist anymore
             const modifiedEntry = await prisma.giveaways.update({ where: { twitchId: raffle, id: id }, data: { twitchId: "" } });
-            // Remove the eventsub listener
-            console.log(modifiedEntry.listenerId);
-            if (!!modifiedEntry.listenerId) await deleteListener(modifiedEntry.listenerId);
+            // Remove the eventsub listener. Check added to provide backwards compatibility
+            if (modifiedEntry.listenerId !== null && typeof modifiedEntry.listenerId !== "undefined") await deleteListener(modifiedEntry.listenerId);
         } else {
             console.log(res.status, res.statusText);
         }
