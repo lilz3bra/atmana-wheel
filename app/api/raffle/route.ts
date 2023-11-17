@@ -179,24 +179,24 @@ export async function DELETE(req: NextRequest) {
     const raffle = req.nextUrl.searchParams.get("raffleId");
     const id = req.nextUrl.searchParams.get("id");
 
-    if (id) {
-        if (raffle) {
-            // Send the delete request
-            const res = await fetch(`${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards?broadcaster_id=${thisUser?.providerAccountId}&id=${raffle}`, {
-                method: "DELETE",
-                headers: { "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, authorization: "Bearer " + thisUser.access_token },
-            });
-            if (res.status === 204) {
-                // Remove the twitch id from the database, so we know it doesnt exist anymore
-                const modifiedEntry = await prisma.giveaways.update({ where: { twitchId: raffle, id: id }, data: { twitchId: "" } });
-                // Remove the eventsub listener
-                if (modifiedEntry.listenerId) deleteListener(modifiedEntry.listenerId);
-            } else {
-                console.log(res.status, res.statusText);
-            }
-            // Return 200 if deleted successfully, otherwise pass the code
-            return NextResponse.json({}, { status: res.status === 204 ? 200 : res.status });
+    if (!!id && !!raffle) {
+        // Send the delete request
+        const res = await fetch(`${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards?broadcaster_id=${thisUser?.providerAccountId}&id=${raffle}`, {
+            method: "DELETE",
+            headers: { "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, authorization: "Bearer " + thisUser.access_token },
+        });
+        console.log(res.status);
+        if (res.status === 204) {
+            // Remove the twitch id from the database, so we know it doesnt exist anymore
+            const modifiedEntry = await prisma.giveaways.update({ where: { twitchId: raffle, id: id }, data: { twitchId: "" } });
+            // Remove the eventsub listener
+            console.log(modifiedEntry);
+            if (modifiedEntry.listenerId) deleteListener(modifiedEntry.listenerId);
+        } else {
+            console.log(res.status, res.statusText);
         }
+        // Return 200 if deleted successfully, otherwise pass the code
+        return NextResponse.json({}, { status: res.status === 204 ? 200 : res.status });
     }
 }
 
