@@ -185,12 +185,11 @@ export async function DELETE(req: NextRequest) {
             method: "DELETE",
             headers: { "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, authorization: "Bearer " + thisUser.access_token },
         });
-        console.log(res.status);
         if (res.status === 204) {
             // Remove the twitch id from the database, so we know it doesnt exist anymore
             const modifiedEntry = await prisma.giveaways.update({ where: { twitchId: raffle, id: id }, data: { twitchId: "" } });
             // Remove the eventsub listener
-            console.log(modifiedEntry);
+            console.log(modifiedEntry.listenerId);
             if (modifiedEntry.listenerId) deleteListener(modifiedEntry.listenerId);
         } else {
             console.log(res.status, res.statusText);
