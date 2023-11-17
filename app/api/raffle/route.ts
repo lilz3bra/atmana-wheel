@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "../auth/[...nextauth]/route";
-import { createRewardsSub } from "../webhooks/helpers";
+import { createRewardsSub, deleteListener } from "../webhooks/helpers";
 
 /** Create a new reward and save it to the db */
 export async function PUT(req: Request) {
@@ -29,6 +29,7 @@ export async function PUT(req: Request) {
     } else {
         // Reward was created, create the EventSub
         const eventData = await createRewardsSub(session, responseData.data[0].id);
+        console.log(eventData);
         let db;
         if (data.twData.is_user_input_required) {
             // This was a prompt, store it in the correct document
@@ -176,18 +177,27 @@ export async function DELETE(req: NextRequest) {
     // Get the raffle id from req and make sure one was passed
     const raffle = req.nextUrl.searchParams.get("raffleId");
     const id = req.nextUrl.searchParams.get("id");
-    // Send the delete request
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards?broadcaster_id=${thisUser?.providerAccountId}&id=${raffle}`, {
-        method: "DELETE",
-        headers: { "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, authorization: "Bearer " + thisUser.access_token },
-    });
     if (id) {
-        if (raffle) await prisma.giveaways.update({ where: { twitchId: raffle, id: id }, data: { twitchId: "" } });
+        if (raffle) {
+            // Send the delete request
+            const res = await fetch(`${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards?broadcaster_id=${thisUser?.providerAccountId}&id=${raffle}`, {
+                method: "DELETE",
+                headers: { "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, authorization: "Bearer " + thisUser.access_token },
+            });
+            if (res.status === 204) {
+                // Remove the twitch id from the database, so we know it doesnt exist anymore
+                const modifiedEntry = await prisma.giveaways.update({ where: { twitchId: raffle, id: id }, data: { twitchId: "" } });
+                // Remove the eventsub listener
+                if (modifiedEntry.listenerId) deleteListener(modifiedEntry.listenerId);
+            } else {
+                console.log(res.status);
+                console.log(res.statusText);
+            }
+            // Return 200 if deleted successfully, otherwise pass the code
+            return NextResponse.json({}, { status: res.status === 204 ? 200 : res.status });
+        }
     }
-
-    // Return 200 if deleted successfully, otherwise pass the code
-    return NextResponse.json({}, { status: res.status === 204 ? 200 : res.status });
 }
 
 export async function POST(req: NextRequest) {
