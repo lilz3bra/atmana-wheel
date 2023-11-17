@@ -190,7 +190,7 @@ export async function DELETE(req: NextRequest) {
             const modifiedEntry = await prisma.giveaways.update({ where: { twitchId: raffle, id: id }, data: { twitchId: "" } });
             // Remove the eventsub listener
             console.log(modifiedEntry.listenerId);
-            if (modifiedEntry.listenerId) deleteListener(modifiedEntry.listenerId);
+            if (!!modifiedEntry.listenerId) await deleteListener(modifiedEntry.listenerId);
         } else {
             console.log(res.status, res.statusText);
         }
