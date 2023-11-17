@@ -76,6 +76,7 @@ model Giveaways {
   creator     User                  @relation(fields: [creatorId], references: [id])
   winner      String?
   paused      Boolean?
+  listenerId  String?
   redemptions GiveawayRedemptions[]
 }
 
@@ -93,6 +94,7 @@ model Prompts {
   redemptions PromptRedemptions[]
   winner      String?
   paused      Boolean?
+  listenerId  String?
 }
 
 model PromptRedemptions {
