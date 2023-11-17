@@ -1,7 +1,6 @@
 import { Session } from "next-auth";
 import { getTwitchClientToken } from "../auth/[...nextauth]/route";
 import crypto from "crypto";
-import { Glegoo } from "next/font/google";
 
 export async function createRewardsSub(session: Session, id: string) {
     const thisUser = session.user;
@@ -46,4 +45,12 @@ export async function verifyMessage(req: Request, rawMessage: string) {
         // In case somehow HMACs dont match in lenght, we fail the verification of the message
         return false;
     }
+}
+
+export async function deleteListener(id: string) {
+    const appToken = await getTwitchClientToken();
+    const eventSubCreateUrl = `https://api.twitch.tv/helix/eventsub/subscriptions?id=${id}`;
+    const headers = { Authorization: `Bearer ${appToken.access_token}`, "Client-Id": process.env.NEXT_PUBLIC_TWITCH_API_KEY };
+    const result = await fetch(eventSubCreateUrl, { method: "DELETE", headers });
+    return { status: result.status === 204 ? 200 : result.status };
 }
