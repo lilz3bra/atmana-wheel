@@ -29,7 +29,6 @@ export async function PUT(req: Request) {
     } else {
         // Reward was created, create the EventSub
         const eventData = await createRewardsSub(session, responseData.data[0].id);
-        console.log(eventData);
         let db;
         if (data.twData.is_user_input_required) {
             // This was a prompt, store it in the correct document
@@ -45,6 +44,7 @@ export async function PUT(req: Request) {
                     winner: null,
                     twitchId: responseData.data[0].id,
                     paused: false,
+                    listenerId: eventData.data[0].id,
                 },
             });
         } else {
@@ -60,6 +60,7 @@ export async function PUT(req: Request) {
                     winner: null,
                     twitchId: responseData.data[0].id,
                     paused: false,
+                    listenerId: eventData.data[0].id,
                 },
             }); // Return the db document
         }
@@ -191,8 +192,7 @@ export async function DELETE(req: NextRequest) {
                 // Remove the eventsub listener
                 if (modifiedEntry.listenerId) deleteListener(modifiedEntry.listenerId);
             } else {
-                console.log(res.status);
-                console.log(res.statusText);
+                console.log(res.status, res.statusText);
             }
             // Return 200 if deleted successfully, otherwise pass the code
             return NextResponse.json({}, { status: res.status === 204 ? 200 : res.status });
