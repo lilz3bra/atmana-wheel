@@ -1,5 +1,5 @@
 "use client";
-import { faArrowsRotate, faPause, faPlay, faTicket, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faArrowsRotate, faL, faPause, faPlay, faTicket, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useRef, useState } from "react";
 import Modal from "./modal";
@@ -26,6 +26,8 @@ const RaffleUI = ({ giveaway }: Props) => {
     const [total, setTotal] = useState(0);
     const firstRun = useRef(true);
     const [winnerDrawn, setWinnerDrawn] = useState(false);
+    const inter = useRef<number | null>(null);
+    const [updateList, setUpdateList] = useState(false);
 
     const getParticipants = async () => {
         // setLoading(true);
@@ -69,6 +71,7 @@ const RaffleUI = ({ giveaway }: Props) => {
     const drawWinner = () => {
         setPaused(true);
         pauseReward();
+        clearInter();
         if (!isDeleted) getParticipants();
         setVisible(true);
     };
@@ -95,11 +98,25 @@ const RaffleUI = ({ giveaway }: Props) => {
         if (firstRun.current === true) {
             firstRun.current = false;
             getParticipants();
-            const inter = setInterval(getParticipants, 20000);
-            return () => clearInterval(inter);
         }
     }, []);
 
+    useEffect(() => {
+        if (updateList) {
+            inter.current = window.setInterval(getParticipants, 20000);
+            return () => {
+                if (inter.current !== null) {
+                    clearInterval(inter.current);
+                }
+            };
+        }
+    }, [updateList]);
+
+    const clearInter = () => {
+        if (inter.current !== null) {
+            clearInterval(inter.current);
+        }
+    };
     if (error) {
         return (
             <div id="main-content" className="flex flex-col  justify-center items-center m-4 text-4xl">
