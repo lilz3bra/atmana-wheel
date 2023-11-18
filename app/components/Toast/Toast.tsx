@@ -50,12 +50,7 @@ const Toast = ({ stack }: ToastProps) => {
                             items-center bg-slate-800 animate-bounce duration-700 `}>
                             <FontAwesomeIcon icon={faCircleCheck} size="xl" className="text-green-800 pr-2" />
                             {item.text}
-                            {!!item.link && (
-                                <>
-                                    <Link href={item.link} className="p-2 hover:bg-slate-500 rounded-lg"></Link>
-                                    <FontAwesomeIcon icon={faArrowRightFromBracket} size="sm" />
-                                </>
-                            )}
+                            <FontAwesomeIcon icon={faArrowRightFromBracket} size="sm" />
                         </Link>
                     ))
                 );

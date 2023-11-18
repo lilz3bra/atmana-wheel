@@ -1,5 +1,5 @@
 "use client";
-import { faArrowsRotate, faPause, faPlay, faTicket, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faArrowsRotate, faL, faPause, faPlay, faTicket, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useRef, useState } from "react";
 import Modal from "./modal";
@@ -26,10 +26,12 @@ const RaffleUI = ({ giveaway }: Props) => {
     const [total, setTotal] = useState(0);
     const firstRun = useRef(true);
     const [winnerDrawn, setWinnerDrawn] = useState(false);
+    const inter = useRef<number | null>(null);
+    const [updateList, setUpdateList] = useState(false);
 
     const getParticipants = async () => {
-        setLoading(true);
-        const res = await fetch(`/api/raffle?raffleId=${giveaway.twitchId}`);
+        // setLoading(true);
+        const res = await fetch(`/api/raffle?raffleId=${giveaway.id}`);
         if (res.status !== 200) setError(true);
         const result = await res.json();
         setUsers(result);
@@ -67,9 +69,10 @@ const RaffleUI = ({ giveaway }: Props) => {
     };
 
     const drawWinner = () => {
-        if (!isDeleted) getParticipants();
         setPaused(true);
         pauseReward();
+        clearInter();
+        if (!isDeleted) getParticipants();
         setVisible(true);
     };
 
@@ -95,10 +98,26 @@ const RaffleUI = ({ giveaway }: Props) => {
         if (firstRun.current === true) {
             firstRun.current = false;
             getParticipants();
+            inter.current = window.setInterval(getParticipants, 20000);
+            return () => {
+                if (inter.current !== null) {
+                    clearInterval(inter.current);
+                }
+            };
         }
     }, []);
 
-    if (loading) return <Loading />;
+    useEffect(() => {
+        if (isPaused || isDeleted) {
+            clearInter();
+        }
+    }, [isPaused, isDeleted]);
+
+    const clearInter = () => {
+        if (inter.current !== null) {
+            clearInterval(inter.current);
+        }
+    };
     if (error) {
         return (
             <div id="main-content" className="flex flex-col  justify-center items-center m-4 text-4xl">
@@ -142,13 +161,20 @@ const RaffleUI = ({ giveaway }: Props) => {
                     </div>
                 </>
             )}
-            <h1 className="font-bold text-xl text-center m-4">
-                {Object.keys(users).length} Participants ({total} entries)
-            </h1>
-            <div className="m-auto w-2/3 h-1/2 justify-center text-center gap-2">
-                {typeof sortedUsers !== "undefined" ? <ParticipantsList users={sortedUsers} tot={total} /> : loading && <Loading />}
-            </div>
-            {visible && typeof users !== "undefined" ? <Modal entries={users} onClose={onClose} returnCallback={updateDb} /> : null}
+            {loading ? (
+                <Loading />
+            ) : (
+                <>
+                    <h1 className="font-bold text-xl text-center m-4">
+                        {Object.keys(users).length} Participants ({total} entries)
+                    </h1>
+                    {giveaway.twitchId === "" && <h1 className="font-bold text-lg text-red-400 text-center">Reward was deleted from twitch</h1>}
+                    <div className="m-auto w-2/3 h-1/2 justify-center text-center gap-2">
+                        {typeof sortedUsers !== "undefined" ? <ParticipantsList users={sortedUsers} tot={total} /> : loading && <Loading />}
+                    </div>
+                    {visible && typeof users !== "undefined" ? <Modal entries={users} onClose={onClose} returnCallback={updateDb} /> : null}
+                </>
+            )}
         </>
     );
 };
