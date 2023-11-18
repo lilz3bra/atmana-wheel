@@ -98,11 +98,6 @@ const RaffleUI = ({ giveaway }: Props) => {
         if (firstRun.current === true) {
             firstRun.current = false;
             getParticipants();
-        }
-    }, []);
-
-    useEffect(() => {
-        if (updateList) {
             inter.current = window.setInterval(getParticipants, 20000);
             return () => {
                 if (inter.current !== null) {
@@ -110,7 +105,7 @@ const RaffleUI = ({ giveaway }: Props) => {
                 }
             };
         }
-    }, [updateList]);
+    }, []);
 
     useEffect(() => {
         if (isPaused || isDeleted) {
