@@ -192,7 +192,7 @@ export async function DELETE(req: NextRequest) {
             if (modifiedEntry.listenerId !== null && typeof modifiedEntry.listenerId !== "undefined") {
                 const status = await deleteListener(modifiedEntry.listenerId);
                 if (status === 204) {
-                    await prisma.giveaways.update({ where: { twitchId: raffle, id: id }, data: { listenerId: "" } });
+                    await prisma.giveaways.update({ where: { id: id }, data: { listenerId: "" } });
                 }
             }
         } else {
