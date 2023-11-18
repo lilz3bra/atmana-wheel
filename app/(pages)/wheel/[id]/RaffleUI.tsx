@@ -112,6 +112,12 @@ const RaffleUI = ({ giveaway }: Props) => {
         }
     }, [updateList]);
 
+    useEffect(() => {
+        if (isPaused || isDeleted) {
+            clearInter();
+        }
+    }, [isPaused, isDeleted]);
+
     const clearInter = () => {
         if (inter.current !== null) {
             clearInterval(inter.current);
