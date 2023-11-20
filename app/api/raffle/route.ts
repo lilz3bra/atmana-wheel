@@ -6,65 +6,70 @@ import { createRewardsSub, deleteListener } from "../webhooks/helpers";
 
 /** Create a new reward and save it to the db */
 export async function PUT(req: Request) {
-    // Validate authorization
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    try {
+        // Validate authorization
+        const session = await getServerSession(authOptions);
+        if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    // Get the json sent
-    const data = await req.json();
-    // Get data stored in the jwt sent
-    const thisUser = session.user;
-    // Make the request
-    const res = await fetch(`${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards?broadcaster_id=${thisUser.providerAccountId}`, {
-        method: "POST",
-        headers: { authorization: "Bearer " + thisUser.access_token, "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, "Content-Type": "application/json" },
-        body: JSON.stringify(data.twData),
-    });
-    const responseData = await res.json();
-    // Check if the request was succesful
-    if (res.status !== 200) {
-        // Log the error and send the response back
-        console.error(responseData, res.status, res.body);
-        return NextResponse.json(responseData, { status: res.status });
-    } else {
-        // Reward was created, create the EventSub
-        const eventData = await createRewardsSub(session, responseData.data[0].id);
-        let db;
-        if (data.twData.is_user_input_required) {
-            // This was a prompt, store it in the correct document
-            db = await prisma.prompts.create({
-                data: {
-                    name: data.twData.title,
-                    cost: data.twData.cost,
-                    prize: data.prize,
-                    paid: false,
-                    prompt: data.twData.prompt,
-                    hidden: false,
-                    creatorId: thisUser.id,
-                    winner: null,
-                    twitchId: responseData.data[0].id,
-                    paused: false,
-                    listenerId: eventData.data[0].id,
-                },
-            });
+        // Get the json sent
+        const data = await req.json();
+        // Get data stored in the jwt sent
+        const thisUser = session.user;
+        // Make the request
+        const res = await fetch(`${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards?broadcaster_id=${thisUser.providerAccountId}`, {
+            method: "POST",
+            headers: { authorization: "Bearer " + thisUser.access_token, "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, "Content-Type": "application/json" },
+            body: JSON.stringify(data.twData),
+        });
+        const responseData = await res.json();
+        // Check if the request was succesful
+        if (res.status !== 200) {
+            // Log the error and send the response back
+            console.error(responseData, res.status, res.body);
+            return NextResponse.json(responseData, { status: res.status });
         } else {
-            // This was a giveaway, store it in the correct document
-            db = await prisma.giveaways.create({
-                data: {
-                    name: data.twData.title,
-                    cost: data.twData.cost,
-                    prize: data.prize,
-                    paid: false,
-                    hidden: false,
-                    creatorId: thisUser.id,
-                    winner: null,
-                    twitchId: responseData.data[0].id,
-                    paused: false,
-                    listenerId: eventData.data[0].id,
-                },
-            }); // Return the db document
+            // Reward was created, create the EventSub
+            const eventData = await createRewardsSub(session, responseData.data[0].id);
+            let db;
+            if (data.twData.is_user_input_required) {
+                // This was a prompt, store it in the correct document
+                db = await prisma.prompts.create({
+                    data: {
+                        name: data.twData.title,
+                        cost: data.twData.cost,
+                        prize: data.prize,
+                        paid: false,
+                        prompt: data.twData.prompt,
+                        hidden: false,
+                        creatorId: thisUser.id,
+                        winner: null,
+                        twitchId: responseData.data[0].id,
+                        paused: false,
+                        listenerId: eventData.data[0].id,
+                    },
+                });
+            } else {
+                // This was a giveaway, store it in the correct document
+                db = await prisma.giveaways.create({
+                    data: {
+                        name: data.twData.title,
+                        cost: data.twData.cost,
+                        prize: data.prize,
+                        paid: false,
+                        hidden: false,
+                        creatorId: thisUser.id,
+                        winner: null,
+                        twitchId: responseData.data[0].id,
+                        paused: false,
+                        listenerId: eventData.data[0].id,
+                    },
+                }); // Return the db document
+            }
+            return NextResponse.json(db, { status: res.status });
         }
-        return NextResponse.json(db, { status: res.status });
+    } catch (error) {
+        console.log(error);
+        return NextResponse.json({ error: error }, { status: 500 });
     }
 }
 
