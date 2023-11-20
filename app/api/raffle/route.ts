@@ -168,89 +168,104 @@ export async function GET(req: NextRequest) {
         // const result: UsersList = await getPages();
         return NextResponse.json(result);
     } catch (error) {
-        return NextResponse.json({}, { status: 404 });
+        console.log(error);
+        return NextResponse.json({ error }, { status: 500 });
     }
 }
 
 export async function DELETE(req: NextRequest) {
-    // Validate authorization
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    try {
+        // Validate authorization
+        const session = await getServerSession(authOptions);
+        if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    // Get data stored in the jwt sent
-    const thisUser = session.user;
+        // Get data stored in the jwt sent
+        const thisUser = session.user;
 
-    // Get the raffle id from req and make sure one was passed
-    const raffle = req.nextUrl.searchParams.get("raffleId");
-    const id = req.nextUrl.searchParams.get("id");
+        // Get the raffle id from req and make sure one was passed
+        const raffle = req.nextUrl.searchParams.get("raffleId");
+        const id = req.nextUrl.searchParams.get("id");
 
-    if (!!id && !!raffle) {
-        // Send the delete request
-        const res = await fetch(`${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards?broadcaster_id=${thisUser?.providerAccountId}&id=${raffle}`, {
-            method: "DELETE",
-            headers: { "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, authorization: "Bearer " + thisUser.access_token },
-        });
-        if (res.status === 204) {
-            // Remove the twitch id from the database, so we know it doesnt exist anymore
-            const modifiedEntry = await prisma.giveaways.update({ where: { twitchId: raffle, id: id }, data: { twitchId: "" } });
-            // Remove the eventsub listener. Check added to provide backwards compatibility
-            if (modifiedEntry.listenerId !== null && typeof modifiedEntry.listenerId !== "undefined") {
-                const status = await deleteListener(modifiedEntry.listenerId);
-                if (status === 204) {
-                    await prisma.giveaways.update({ where: { id: id }, data: { listenerId: "" } });
+        if (!!id && !!raffle) {
+            // Send the delete request
+            const res = await fetch(`${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards?broadcaster_id=${thisUser?.providerAccountId}&id=${raffle}`, {
+                method: "DELETE",
+                headers: { "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, authorization: "Bearer " + thisUser.access_token },
+            });
+            if (res.status === 204) {
+                // Remove the twitch id from the database, so we know it doesnt exist anymore
+                const modifiedEntry = await prisma.giveaways.update({ where: { twitchId: raffle, id: id }, data: { twitchId: "" } });
+                // Remove the eventsub listener. Check added to provide backwards compatibility
+                if (modifiedEntry.listenerId !== null && typeof modifiedEntry.listenerId !== "undefined") {
+                    const status = await deleteListener(modifiedEntry.listenerId);
+                    if (status === 204) {
+                        await prisma.giveaways.update({ where: { id: id }, data: { listenerId: "" } });
+                    }
                 }
+            } else {
+                console.log(res.status, res.statusText);
+                return NextResponse.json({}, { status: res.status === 204 ? 200 : res.status });
             }
-        } else {
-            console.log(res.status, res.statusText);
+            // Return 200 if deleted successfully, otherwise pass the code
             return NextResponse.json({}, { status: res.status === 204 ? 200 : res.status });
         }
-        // Return 200 if deleted successfully, otherwise pass the code
-        return NextResponse.json({}, { status: res.status === 204 ? 200 : res.status });
+    } catch (error) {
+        console.log(error);
+        return NextResponse.json({ error }, { status: 500 });
     }
-    return NextResponse.json({}, { status: 403 });
 }
 
 export async function POST(req: NextRequest) {
-    // Validate authorization
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    try {
+        // Validate authorization
+        const session = await getServerSession(authOptions);
+        if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    // Get data stored in the jwt sent
-    const thisUser = session.user;
+        // Get data stored in the jwt sent
+        const thisUser = session.user;
 
-    // Get the raffle id from req and make sure one was passed
-    const raffle = req.nextUrl.searchParams.get("raffleId");
-    if (!raffle || raffle === "") return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
+        // Get the raffle id from req and make sure one was passed
+        const raffle = req.nextUrl.searchParams.get("raffleId");
+        if (!raffle || raffle === "") return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
 
-    const data = await req.json();
-    // Make the db query
-    const db = await prisma.giveaways.update({ where: { creatorId: thisUser.id, id: raffle }, data: data });
-    // Send the results
-    return NextResponse.json(db);
+        const data = await req.json();
+        // Make the db query
+        const db = await prisma.giveaways.update({ where: { creatorId: thisUser.id, id: raffle }, data: data });
+        // Send the results
+        return NextResponse.json(db);
+    } catch (error) {
+        console.log(error);
+        return NextResponse.json({ error }, { status: 500 });
+    }
 }
 
 export async function PATCH(req: NextRequest) {
-    // Validate authorization
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    try {
+        // Validate authorization
+        const session = await getServerSession(authOptions);
+        if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    // Get data stored in the jwt sent
-    const thisUser = session.user;
+        // Get data stored in the jwt sent
+        const thisUser = session.user;
 
-    // Get the raffle id from req and make sure one was passed
-    const raffle = req.nextUrl.searchParams.get("raffleId");
-    if (!raffle || raffle === "") return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
+        // Get the raffle id from req and make sure one was passed
+        const raffle = req.nextUrl.searchParams.get("raffleId");
+        if (!raffle || raffle === "") return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
 
-    // Get whatever was json sent in the body
-    const op = await req.json();
-    const options = JSON.stringify(op);
-    // Send the request
-    const res = await fetch(`${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards?broadcaster_id=${thisUser?.providerAccountId}&id=${raffle}`, {
-        method: "PATCH",
-        headers: { "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, authorization: "Bearer " + thisUser.access_token, "Content-type": "Application/Json" },
-        body: options,
-    });
-    const resData = await res.json();
-    // Return whatever twitch sent back
-    return NextResponse.json(resData, { status: res.status });
+        // Get whatever was json sent in the body
+        const op = await req.json();
+        const options = JSON.stringify(op);
+        // Send the request
+        const res = await fetch(`${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards?broadcaster_id=${thisUser?.providerAccountId}&id=${raffle}`, {
+            method: "PATCH",
+            headers: { "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, authorization: "Bearer " + thisUser.access_token, "Content-type": "Application/Json" },
+            body: options,
+        });
+        const resData = await res.json();
+        // Return whatever twitch sent back
+        return NextResponse.json(resData, { status: res.status });
+    } catch (error) {
+        console.log(error);
+        return NextResponse.json({ error }, { status: 500 });
+    }
 }
