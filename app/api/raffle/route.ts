@@ -134,32 +134,32 @@ export async function GET(req: NextRequest) {
     //     });
     //     return accumulatedData;
     // };
-    const redemptions = await prisma.giveawayRedemptions.findMany({
-        where: { giveawayId: raffle },
-        include: {
-            viewer: {
-                select: {
-                    name: true,
+    try {
+        const redemptions = await prisma.giveawayRedemptions.findMany({
+            where: { giveawayId: raffle },
+            include: {
+                viewer: {
+                    select: {
+                        name: true,
+                    },
                 },
             },
-        },
-    });
+        });
 
-    const result: Record<string, number> = redemptions.reduce((acc, redemption) => {
-        const viewerName = redemption.viewer?.name || "Unknown Viewer";
+        const result: Record<string, number> = redemptions.reduce((acc, redemption) => {
+            const viewerName = redemption.viewer?.name || "Unknown Viewer";
 
-        if (acc[viewerName]) {
-            acc[viewerName]++;
-        } else {
-            acc[viewerName] = 1;
-        }
+            if (acc[viewerName]) {
+                acc[viewerName]++;
+            } else {
+                acc[viewerName] = 1;
+            }
 
-        return acc;
-    }, {} as Record<string, number>);
+            return acc;
+        }, {} as Record<string, number>);
 
-    const arrayResult = Object.keys(result).map((viewerName) => ({ [viewerName]: result[viewerName] }));
+        const arrayResult = Object.keys(result).map((viewerName) => ({ [viewerName]: result[viewerName] }));
 
-    try {
         // const result: UsersList = await getPages();
         return NextResponse.json(result);
     } catch (error) {
@@ -197,10 +197,12 @@ export async function DELETE(req: NextRequest) {
             }
         } else {
             console.log(res.status, res.statusText);
+            return NextResponse.json({}, { status: res.status === 204 ? 200 : res.status });
         }
         // Return 200 if deleted successfully, otherwise pass the code
         return NextResponse.json({}, { status: res.status === 204 ? 200 : res.status });
     }
+    return NextResponse.json({}, { status: 403 });
 }
 
 export async function POST(req: NextRequest) {
