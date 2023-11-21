@@ -88,6 +88,7 @@ const RaffleUI = ({ giveaway }: Props) => {
     };
 
     const onClose = () => {
+        console.log("closing");
         setVisible(false);
         if (winnerDrawn && !isDeleted) {
             deleteReward();
