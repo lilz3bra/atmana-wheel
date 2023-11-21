@@ -18,16 +18,13 @@ const RaffleUI = ({ giveaway }: Props) => {
     const [users, setUsers] = useState<UsersList>();
     const [loading, setLoading] = useState(true);
     const [visible, setVisible] = useState(false);
-    const [raffle, setRaffle] = useState<giveaway>();
     const [error, setError] = useState(false);
     const [isPaused, setPaused] = useState(giveaway.paused);
     const [sortedUsers, setSortedUsers] = useState<UsersList>();
     const [isDeleted, setDeleted] = useState(false);
     const [total, setTotal] = useState(0);
     const firstRun = useRef(true);
-    const [winnerDrawn, setWinnerDrawn] = useState(false);
     const inter = useRef<number | null>(null);
-    const [updateList, setUpdateList] = useState(false);
 
     const getParticipants = async () => {
         // setLoading(true);
@@ -78,20 +75,14 @@ const RaffleUI = ({ giveaway }: Props) => {
 
     const updateDb = async (winner: Array<Object>) => {
         const res = await fetch(`/api/raffle?raffleId=${giveaway.id}`, { method: "POST", body: JSON.stringify({ winner: winner }) });
-        const result = await res.json();
-        setWinnerDrawn(true);
+        if (!isDeleted) {
+            deleteReward();
+        }
     };
 
     const reopen = async () => {
         setPaused(false);
         const res = await fetch(`/api/raffle?raffleId=${giveaway.twitchId}`, { method: "PATCH", body: JSON.stringify({ is_paused: false }) });
-    };
-
-    const onClose = () => {
-        setVisible(false);
-        if (winnerDrawn && !isDeleted) {
-            deleteReward();
-        }
     };
 
     useEffect(() => {
@@ -118,6 +109,7 @@ const RaffleUI = ({ giveaway }: Props) => {
             clearInterval(inter.current);
         }
     };
+
     if (error) {
         return (
             <div id="main-content" className="flex flex-col  justify-center items-center m-4 text-4xl">
@@ -143,9 +135,9 @@ const RaffleUI = ({ giveaway }: Props) => {
                                 <FontAwesomeIcon icon={faArrowsRotate} />
                             </button>
                         </Hint>
-                        <Hint text={`${isPaused ? "D" : "Pause and d"}raw`}>
+                        <Hint text={`Draw a winner`}>
                             <button onClick={drawWinner} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 mx-2 w-fit flex flex-row gap-2">
-                                {!isPaused && <FontAwesomeIcon icon={faPause} />} <FontAwesomeIcon icon={faTicket} />
+                                <FontAwesomeIcon icon={faTicket} />
                             </button>
                         </Hint>
                         <Hint text={`${isPaused ? "Unp" : "P"}ause`}>
@@ -172,7 +164,7 @@ const RaffleUI = ({ giveaway }: Props) => {
                     <div className="m-auto w-2/3 h-1/2 justify-center text-center gap-2">
                         {typeof sortedUsers !== "undefined" ? <ParticipantsList users={sortedUsers} tot={total} /> : loading && <Loading />}
                     </div>
-                    {visible && typeof users !== "undefined" ? <Modal entries={users} onClose={onClose} returnCallback={updateDb} /> : null}
+                    {visible && typeof users !== "undefined" ? <Modal entries={users} onClose={() => setVisible(false)} returnCallback={updateDb} /> : null}
                 </>
             )}
         </>
