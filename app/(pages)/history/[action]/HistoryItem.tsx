@@ -48,6 +48,11 @@ const HistoryItem = ({ item, filter }: Props) => {
                     Winner: {!item.winner ? "not drawn" : item.winner}
                 </p>
                 <div className="flex flex-row whitespace-nowrap justify-center gap-2">
+                    <Hint text={`${!item.winner ? "D" : "Re-D"}raw winner`} extraCss="flex flex-row justify-center">
+                        <div className="p-2 bg-blue-500 cursor-pointer hover:bg-blue-700 rounded-xl text-white w-fit" onClick={() => router.push(`/wheel/${item.id}`)}>
+                            <FontAwesomeIcon icon={faCircleHalfStroke} />
+                        </div>
+                    </Hint>
                     {!item.paid && item.winner && (
                         <Hint text="Mark as paid" extraCss="flex flex-row justify-center">
                             <div className="p-2 bg-blue-500  cursor-pointer hover:bg-blue-700 rounded-xl text-white w-fit" onClick={() => markPaid(item)}>
@@ -55,14 +60,7 @@ const HistoryItem = ({ item, filter }: Props) => {
                             </div>
                         </Hint>
                     )}
-                    {!item.paid &&
-                        (item.twitchId ? (
-                            <Hint text={`${!item.winner ? "D" : "Re-D"}raw winner`} extraCss="flex flex-row justify-center">
-                                <div className="p-2 bg-blue-500 cursor-pointer hover:bg-blue-700 rounded-xl text-white w-fit" onClick={() => router.push(`/wheel/${item.id}`)}>
-                                    <FontAwesomeIcon icon={faCircleHalfStroke} />
-                                </div>
-                            </Hint>
-                        ) : null)}
+
                     {item.twitchId && (
                         <Hint text="Delete from twitch" extraCss="flex flex-row justify-center">
                             <div className="p-2 bg-blue-500 cursor-pointer hover:bg-blue-700 rounded-xl text-white w-fit " onClick={() => deleteReward(item)}>
@@ -70,7 +68,7 @@ const HistoryItem = ({ item, filter }: Props) => {
                             </div>
                         </Hint>
                     )}
-                    <Hint text="Hide (hidden items count towards stats but are invisible in the UI)" extraCss="flex flex-row justify-center">
+                    <Hint text="Hide (hidden items count towards stats)" extraCss="flex flex-row justify-center">
                         <div className="p-2 bg-blue-500 cursor-pointer hover:bg-blue-700 rounded-xl text-white w-fit " onClick={() => hideRaffle(item)}>
                             <FontAwesomeIcon icon={faEyeSlash} />
                         </div>
