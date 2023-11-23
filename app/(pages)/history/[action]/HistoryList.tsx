@@ -28,12 +28,12 @@ const HistoryList = ({ items }: Props) => {
                         All
                     </label>
                     <label className="m-2">
-                        <input type="radio" value="winnerunpaid" checked={filter === "winnerunpaid"} onChange={(e) => setFilter(e.target.value)} />
-                        Unpaid
-                    </label>
-                    <label className="m-2">
                         <input type="radio" value="paid" checked={filter === "paid"} onChange={(e) => setFilter(e.target.value)} />
                         Paid
+                    </label>
+                    <label className="m-2">
+                        <input type="radio" value="winnerunpaid" checked={filter === "winnerunpaid"} onChange={(e) => setFilter(e.target.value)} />
+                        Unpaid
                     </label>
                     <label className="m-2">
                         <input type="radio" value="notdrawn" checked={filter === "notdrawn"} onChange={(e) => setFilter(e.target.value)} />
