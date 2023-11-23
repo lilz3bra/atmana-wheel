@@ -127,26 +127,26 @@ const RaffleUI = ({ giveaway }: Props) => {
 
     return (
         <>
-            <div className="flex flex-row m-2 justify-between items-center">
+            <div className="flex flex-row m-2 justify-between items-center gap-2">
                 <Hint text={`Draw a winner`} extraCss="flex flex-row justify-center">
-                    <button onClick={drawWinner} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 mx-2 w-fit flex flex-row gap-2">
+                    <button onClick={drawWinner} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 w-8 justify-center flex flex-row">
                         <FontAwesomeIcon icon={faTicket} />
                     </button>
                 </Hint>
                 {!isDeleted && (
                     <>
                         <Hint text="Update entries">
-                            <button onClick={getParticipants} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 mx-2 w-fit flex flex-row">
+                            <button onClick={getParticipants} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 w-8 justify-center flex flex-row">
                                 <FontAwesomeIcon icon={faArrowsRotate} />
                             </button>
                         </Hint>
                         <Hint text={`${isPaused ? "Unp" : "P"}ause`}>
-                            <button onClick={isPaused ? reopen : pauseReward} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 mx-2 w-fit flex flex-row">
+                            <button onClick={isPaused ? reopen : pauseReward} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 w-8 justify-center flex flex-row">
                                 <FontAwesomeIcon icon={isPaused ? faPlay : faPause} />
                             </button>
                         </Hint>
                         <Hint text="Delete">
-                            <button onClick={deleteReward} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 mx-2 w-fit flex flex-row">
+                            <button onClick={deleteReward} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 w-8 justify-center flex flex-row">
                                 <FontAwesomeIcon icon={faTrashCan} />
                             </button>
                         </Hint>
