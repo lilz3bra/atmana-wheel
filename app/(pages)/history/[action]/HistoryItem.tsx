@@ -40,14 +40,15 @@ const HistoryItem = ({ item, filter }: Props) => {
 
     if (filter === "" || (filter === "winnerunpaid" && !item.paid && item.winner) || (filter === "paid" && item.paid) || (filter === "notdrawn" && !item.winner)) {
         return (
-            <div className="m-2 bg-slate-800 p-2 rounded-xl flex flex-col align-middle justify-center text-center">
-                <p className="font-bold">{item.name}</p>
-                <p>Prize: {item.prize}</p>
+            <div className="m-2 bg-slate-800 p-2 rounded-xl flex flex-col align-middle justify-center items-center">
+                <p className="font-bold truncate max-w-full">{item.name}</p>
+                <p className="truncate max-w-full">Prize: {item.prize}</p>
                 <p>Cost: {item.cost}</p>
-                <p className={`${!item.winner ? "text-red-700" : item.paid ? "text-green-700" : "text-yellow-700"} font-bold`}>
-                    Winner: {!item.winner ? "not drawn" : item.winner}
-                </p>
-                <div className="flex flex-row whitespace-nowrap justify-center gap-2">
+                <div className={`${!item.winner ? "text-red-700" : item.paid ? "text-green-700" : "text-yellow-500"} flex flex-col items-center max-w-full`}>
+                    <p>Winner:</p>
+                    <span className="text-center truncate max-w-full font-bold">{!item.winner ? " Not drawn" : " " + item.winner}</span>
+                </div>
+                <div className="flex flex-row whitespace-nowrap justify-center gap-4 mt-2">
                     <Hint text={`${!item.winner ? "D" : "Re-D"}raw winner`} extraCss="flex flex-row justify-center">
                         <div className="p-2 bg-blue-500 cursor-pointer hover:bg-blue-700 rounded-xl text-white w-fit" onClick={() => router.push(`/wheel/${item.id}`)}>
                             <FontAwesomeIcon icon={faCircleHalfStroke} />
