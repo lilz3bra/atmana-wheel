@@ -89,6 +89,7 @@ const RaffleUI = ({ giveaway }: Props) => {
         if (firstRun.current === true) {
             firstRun.current = false;
             getParticipants();
+            if (giveaway.twitchId === "") setDeleted(true);
             inter.current = window.setInterval(getParticipants, 20000);
             return () => {
                 if (inter.current !== null) {
@@ -126,18 +127,17 @@ const RaffleUI = ({ giveaway }: Props) => {
 
     return (
         <>
-            {!isDeleted && (
-                <>
-                    <p className="text-center">Do you want to close the redemptions and get the registered participants?</p>
-                    <div className="flex flex-row m-2 justify-between items-center">
+            <div className="flex flex-row m-2 justify-between items-center">
+                <Hint text={`Draw a winner`} extraCss="flex flex-row justify-center">
+                    <button onClick={drawWinner} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 mx-2 w-fit flex flex-row gap-2">
+                        <FontAwesomeIcon icon={faTicket} />
+                    </button>
+                </Hint>
+                {!isDeleted && (
+                    <>
                         <Hint text="Update entries">
                             <button onClick={getParticipants} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 mx-2 w-fit flex flex-row">
                                 <FontAwesomeIcon icon={faArrowsRotate} />
-                            </button>
-                        </Hint>
-                        <Hint text={`Draw a winner`}>
-                            <button onClick={drawWinner} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 mx-2 w-fit flex flex-row gap-2">
-                                <FontAwesomeIcon icon={faTicket} />
                             </button>
                         </Hint>
                         <Hint text={`${isPaused ? "Unp" : "P"}ause`}>
@@ -150,9 +150,9 @@ const RaffleUI = ({ giveaway }: Props) => {
                                 <FontAwesomeIcon icon={faTrashCan} />
                             </button>
                         </Hint>
-                    </div>
-                </>
-            )}
+                    </>
+                )}
+            </div>
             {loading ? (
                 <Loading />
             ) : (
