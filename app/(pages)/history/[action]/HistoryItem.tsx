@@ -62,18 +62,21 @@ const HistoryItem = ({ item, filter }: Props) => {
                         </Hint>
                     )}
 
-                    {item.twitchId && (
+                    {item.twitchId ? (
                         <Hint text="Delete from twitch" extraCss="flex flex-row justify-center">
                             <div className="p-2 bg-blue-500 cursor-pointer hover:bg-blue-700 rounded-xl text-white w-fit " onClick={() => deleteReward(item)}>
                                 <FontAwesomeIcon icon={faTrashCan} />
                             </div>
                         </Hint>
+                    ) : (
+                        item.paid && (
+                            <Hint text="Hide (hidden items count towards stats)" extraCss="flex flex-row justify-center">
+                                <div className="p-2 bg-blue-500 cursor-pointer hover:bg-blue-700 rounded-xl text-white w-fit " onClick={() => hideRaffle(item)}>
+                                    <FontAwesomeIcon icon={faEyeSlash} />
+                                </div>
+                            </Hint>
+                        )
                     )}
-                    <Hint text="Hide (hidden items count towards stats)" extraCss="flex flex-row justify-center">
-                        <div className="p-2 bg-blue-500 cursor-pointer hover:bg-blue-700 rounded-xl text-white w-fit " onClick={() => hideRaffle(item)}>
-                            <FontAwesomeIcon icon={faEyeSlash} />
-                        </div>
-                    </Hint>
                 </div>
             </div>
         );
