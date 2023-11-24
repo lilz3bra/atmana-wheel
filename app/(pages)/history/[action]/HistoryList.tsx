@@ -16,7 +16,7 @@ interface Props {
 }
 
 const HistoryList = ({ items }: Props) => {
-    const [filter, setFilter] = useState("");
+    const [filter, setFilter] = useState("notdrawn");
 
     return (
         <>
@@ -28,12 +28,12 @@ const HistoryList = ({ items }: Props) => {
                         All
                     </label>
                     <label className="m-2">
-                        <input type="radio" value="winnerunpaid" checked={filter === "winnerunpaid"} onChange={(e) => setFilter(e.target.value)} />
-                        Unpaid
-                    </label>
-                    <label className="m-2">
                         <input type="radio" value="paid" checked={filter === "paid"} onChange={(e) => setFilter(e.target.value)} />
                         Paid
+                    </label>
+                    <label className="m-2">
+                        <input type="radio" value="winnerunpaid" checked={filter === "winnerunpaid"} onChange={(e) => setFilter(e.target.value)} />
+                        Unpaid
                     </label>
                     <label className="m-2">
                         <input type="radio" value="notdrawn" checked={filter === "notdrawn"} onChange={(e) => setFilter(e.target.value)} />
@@ -41,7 +41,7 @@ const HistoryList = ({ items }: Props) => {
                     </label>
                 </div>
             </div>
-            <div className="m-4 flex flex-row flex-wrap">
+            <div className="m-4 grid grid-cols-8 gap-4 mb-8">
                 {items.map((i) => {
                     return <HistoryItem key={i.id} item={i} filter={filter} />;
                 })}
