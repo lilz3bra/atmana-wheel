@@ -31,10 +31,13 @@ const RaffleUI = ({ giveaway }: Props) => {
 
     const getParticipants = async () => {
         const res = await fetch(`/api/raffle?raffleId=${giveaway.id}`);
-        if (res.status !== 200) setError(true);
-        const result = await res.json();
-        setUsers(result);
-        if (loading) loading.current = false;
+        if (res.status !== 200) {
+            setError(true);
+        } else {
+            const result = await res.json();
+            setUsers(result);
+            if (loading) loading.current = false;
+        }
     };
 
     const sortUsers = (us: UsersList) => {
