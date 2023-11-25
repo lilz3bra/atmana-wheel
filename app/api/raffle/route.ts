@@ -85,60 +85,6 @@ export async function GET(req: NextRequest) {
     const raffle = req.nextUrl.searchParams.get("raffleId");
     if (!raffle || raffle === "") return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
 
-    /**
-     * Recursive function to fetch all the redemptions
-     * @param cursor    String returned by twitch if there are more pages to the response
-     * @param accumulatedData   Object containing what we got and proccessed so far
-     * @returns
-     */
-    // const getPages = async (cursor?: string, accumulatedData: UsersList = {}): Promise<UsersList> => {
-    //     // Get the cursor, only works if there are more pages
-    //     const after = typeof cursor === "undefined" ? "" : `&after=${cursor}`;
-    //     // Make the request
-    //     const res = await fetch(
-    //         `${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards/redemptions?broadcaster_id=${thisUser?.providerAccountId}&reward_id=${raffle}&first=50&status=FULFILLED${after}`,
-    //         {
-    //             headers: { "Client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, Authorization: "Bearer " + thisUser.access_token },
-    //         }
-    //     );
-    //     const d = await res.json();
-    //     const data: any[] = d.data;
-    //     if (d.error) {
-    //         throw Error;
-    //     }
-    //     // Check if we got a valid response
-    //     if (data && data.length > 0) {
-    //         // Proccess and aggregate the new data
-    //         const newData = sumData(data, accumulatedData);
-    //         const updatedData = { ...accumulatedData, ...newData };
-    //         // Check if there are more pages
-    //         if (d.pagination && d.pagination.cursor) {
-    //             // We need to go deeper
-    //             return getPages(d.pagination.cursor, updatedData);
-    //         } else {
-    //             // We delved too deeply, we need to go back
-    //             return updatedData;
-    //         }
-    //     } else {
-    //         // We got nothing back, return whatever we had so far
-    //         return accumulatedData;
-    //     }
-    // };
-    // /**
-    //  * Proccess the json sent by twitch
-    //  * @param data The data[] sent in twitch's json
-    //  * @param accumulatedData What we had accumulated so far
-    //  * @returns
-    //  */
-    // const sumData = (data: any[], accumulatedData: UsersList): UsersList => {
-    //     data.forEach((entry) => {
-    //         // Accumulate every entry in the object
-    //         if (entry.user_name) {
-    //             accumulatedData[entry.user_name] = (accumulatedData[entry.user_name] || 0) + 1;
-    //         }
-    //     });
-    //     return accumulatedData;
-    // };
     try {
         const redemptions = await prisma.giveawayRedemptions.findMany({
             where: { giveawayId: raffle },
@@ -165,7 +111,6 @@ export async function GET(req: NextRequest) {
 
         const arrayResult = Object.keys(result).map((viewerName) => ({ [viewerName]: result[viewerName] }));
 
-        // const result: UsersList = await getPages();
         return NextResponse.json(result);
     } catch (error) {
         console.log(error);
