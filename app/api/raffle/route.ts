@@ -109,9 +109,13 @@ export async function GET(req: NextRequest) {
             return acc;
         }, {} as Record<string, number>);
 
-        const arrayResult = Object.keys(result).map((viewerName) => ({ [viewerName]: result[viewerName] }));
+        let tot = 0;
+        Object.keys(result!).forEach((name) => {
+            const weight = result![name];
+            tot += weight;
+        });
 
-        return NextResponse.json(result);
+        return NextResponse.json({ total: tot, list: result });
     } catch (error) {
         console.log(error);
         return NextResponse.json({ error }, { status: 500 });
