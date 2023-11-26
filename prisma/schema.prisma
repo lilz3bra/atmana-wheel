@@ -41,15 +41,18 @@ model Session {
 }
 
 model User {
-  id            String      @id @default(auto()) @map("_id") @db.ObjectId
-  name          String?
-  email         String?     @unique
-  emailVerified DateTime?   @map("email_verified")
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
-  giveaways     Giveaways[]
-  prompts       Prompts[]
+  id              String           @id @default(auto()) @map("_id") @db.ObjectId
+  name            String?
+  email           String?          @unique
+  emailVerified   DateTime?        @map("email_verified")
+  image           String?
+  accounts        Account[]
+  sessions        Session[]
+  giveaways       Giveaways[]
+  prompts         Prompts[]
+  viewersOnStream ViewerOnStream[]
+  creators        Moderator[]      @relation(name: "creators")
+  moderators      Moderator[]      @relation(name: "moderators")
 
   @@map("users")
 }
@@ -65,19 +68,20 @@ model VerificationToken {
 }
 
 model Giveaways {
-  id          String                @id @default(auto()) @map("_id") @db.ObjectId
-  name        String
-  cost        Int
-  prize       String
-  paid        Boolean
-  hidden      Boolean
-  twitchId    String
-  creatorId   String                @db.ObjectId
-  creator     User                  @relation(fields: [creatorId], references: [id])
-  winner      String?
-  paused      Boolean?
-  listenerId  String?
-  redemptions GiveawayRedemptions[]
+  id                String                @id @default(auto()) @map("_id") @db.ObjectId
+  name              String
+  cost              Int
+  prize             String
+  paid              Boolean
+  hidden            Boolean
+  twitchId          String
+  creatorId         String                @db.ObjectId
+  creator           User                  @relation(fields: [creatorId], references: [id])
+  winner            String?
+  paused            Boolean?
+  listenerId        String?
+  redemptions       GiveawayRedemptions[]
+  aggregatedEntries AggregatedEntries[]
 }
 
 model Prompts {
@@ -111,13 +115,24 @@ model Viewer {
   id                  String                @id @default(auto()) @map("_id") @db.ObjectId
   promptRedemptions   PromptRedemptions[]
   giveawayRedemptions GiveawayRedemptions[]
+  viewerOnStream      ViewerOnStream[]
+  aggregatedEntries   AggregatedEntries[]
   name                String
   twitchId            String
-  ipAddress           String?
   isBanned            Boolean
   isApproved          Boolean
 
   @@unique([twitchId])
+}
+
+model ViewerOnStream {
+  id         String @id @default(auto()) @map("_id") @db.ObjectId
+  viewerId   String @db.ObjectId
+  streamerId String @db.ObjectId
+  viewer     Viewer @relation(fields: [viewerId], references: [id])
+  stream     User   @relation(fields: [streamerId], references: [id])
+
+  @@unique([streamerId, viewerId], name: "UniqueViewerOnStream")
 }
 
 model GiveawayRedemptions {
@@ -127,4 +142,23 @@ model GiveawayRedemptions {
   redeemedAt DateTime
   giveawayId String    @db.ObjectId
   giveaway   Giveaways @relation(fields: [giveawayId], references: [id])
+}
+
+model AggregatedEntries {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  viewerId   String    @db.ObjectId
+  viewer     Viewer    @relation(fields: [viewerId], references: [id])
+  giveawayId String    @db.ObjectId
+  giveaway   Giveaways @relation(fields: [giveawayId], references: [id])
+  count      Int
+}
+
+model Moderator {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  creatorId   String @db.ObjectId
+  moderatorId String @db.ObjectId
+  creator     User   @relation(fields: [creatorId], references: [id], name: "creators")
+  moderator   User   @relation(fields: [moderatorId], references: [id], name: "moderators")
+
+  @@unique([creatorId, moderatorId], name: "UniqueModForCreator")
 }
