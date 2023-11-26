@@ -16,7 +16,17 @@ export async function POST(req: Request) {
                 update: {},
                 create: { name: data.event.user_name, twitchId: data.event.user_id, isBanned: false, isApproved: false },
             });
-            const giveaway = await prisma.giveaways.findFirst({ where: { twitchId: data.event.reward.id }, select: { id: true } });
+            const giveaway = await prisma.giveaways.findFirst({ where: { twitchId: data.event.reward.id }, select: { id: true, creatorId: true } });
+            const viewerOnStream = await prisma.viewerOnStream.upsert({
+                where: {
+                    UniqueViewerOnStream: {
+                        streamerId: giveaway?.creatorId!,
+                        viewerId: viewer.id!,
+                    },
+                },
+                update: {},
+                create: { streamerId: giveaway?.creatorId!, viewerId: viewer.id },
+            });
             const result = await prisma.giveawayRedemptions.create({ data: { viewerId: viewer.id!, redeemedAt: data.event.redeemed_at, giveawayId: giveaway?.id! } });
             return NextResponse.json({}, { status: 200 });
         }
