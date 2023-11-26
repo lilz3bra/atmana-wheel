@@ -87,7 +87,7 @@ export async function GET(req: NextRequest) {
 
     try {
         const redemptions = await prisma.giveawayRedemptions.findMany({
-            where: { giveawayId: raffle },
+            where: { giveawayId: raffle, viewer: { isBanned: false } },
             include: {
                 viewer: {
                     select: {
