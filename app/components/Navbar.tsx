@@ -31,6 +31,9 @@ const Navbar = async () => {
                         <Link className="block p-2 cursor-pointer hover:bg-blue-700 rounded-xl" href="/active">
                             Active
                         </Link>
+                        <Link className="block p-2 cursor-pointer hover:bg-blue-700 rounded-xl" href="/admin/ViewersList">
+                            Viewers
+                        </Link>
                     </div>
                 )}
             </ul>
