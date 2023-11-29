@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 interface Props {
     viewers: {
@@ -13,8 +13,10 @@ interface Props {
 const ViewersList = ({ viewers: initialViewers }: Props) => {
     const [viewers, setViewers] = useState(initialViewers);
     const [page, setPage] = useState(1);
+    const fistLoad = useRef(true);
 
     const changePage = (change: number) => {
+        // If we are on the first or last page, do nothing
         if ((viewers.length < 20 && change === 1) || (page === 1 && change === -1)) return;
         setPage(page + change);
     };
@@ -25,9 +27,34 @@ const ViewersList = ({ viewers: initialViewers }: Props) => {
             const data = await res.json();
             setViewers(data);
         };
-        fetchViewers();
+
+        // Avoid making an unnecessary request on first render
+        if (fistLoad.current) {
+            fistLoad.current = false;
+        } else {
+            fetchViewers();
+        }
     }, [page]);
 
+    const sendBanRequest = async (index: number) => {
+        const viewer = viewers[index].viewer;
+
+        // Do an optimistic update of the button
+        const updatedViewers = [...viewers];
+        updatedViewers[index].viewer.isBanned = !updatedViewers[index].viewer.isBanned;
+        setViewers(updatedViewers);
+        // Make the request
+        const res = await fetch("/api/viewers", {
+            method: "POST",
+            body: JSON.stringify({ action: "ban", viewerId: viewer.id, state: viewer.isBanned }),
+        });
+
+        // If the request failed for some reason, go back to the previous state
+        if (res.status !== 200) {
+            updatedViewers[index].viewer.isBanned = !updatedViewers[index].viewer.isBanned;
+            setViewers(updatedViewers);
+        }
+    };
     return (
         <>
             <div className="flex flex-row align-middle justify-center items-center gap-2">
@@ -49,7 +76,7 @@ const ViewersList = ({ viewers: initialViewers }: Props) => {
                         }}
                         key={index}>
                         <div>{viewer.viewer.name}</div>
-                        <button onClick={() => console.log(viewer.viewer.name)} className="bg-slate-700 rounded-xl p-1 hover:bg-slate-800 w-fit">
+                        <button onClick={() => sendBanRequest(index)} className="bg-slate-700 rounded-xl p-1 hover:bg-slate-800 w-fit">
                             {viewer.viewer.isBanned ? "Unban" : "Ban"}
                         </button>
                     </div>
