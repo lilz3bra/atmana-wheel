@@ -11,7 +11,7 @@ const page = async () => {
     }
 
     const viewers = await prisma.viewerOnStream.findMany({
-        where: { streamerId: "652729a33f16ac24a00abcfd" },
+        where: { streamerId: session.user.id },
         select: { viewer: { select: { name: true, id: true, isBanned: true } } },
         take: 20,
     });
