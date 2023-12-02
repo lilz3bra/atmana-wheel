@@ -53,6 +53,7 @@ model User {
   viewersOnStream ViewerOnStream[]
   creators        Moderator[]      @relation(name: "creators")
   moderators      Moderator[]      @relation(name: "moderators")
+  stats           CreatorStats?    @relation(name: "streamer")
 
   @@map("users")
 }
@@ -80,6 +81,8 @@ model Giveaways {
   winner            String?
   paused            Boolean?
   listenerId        String?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
   redemptions       GiveawayRedemptions[]
   aggregatedEntries AggregatedEntries[]
 }
@@ -151,6 +154,8 @@ model AggregatedEntries {
   giveawayId String    @db.ObjectId
   giveaway   Giveaways @relation(fields: [giveawayId], references: [id])
   count      Int
+
+  @@unique([viewerId, giveawayId], name: "ViewerGiveawayEntries")
 }
 
 model Moderator {
@@ -161,4 +166,15 @@ model Moderator {
   moderator   User   @relation(fields: [moderatorId], references: [id], name: "moderators")
 
   @@unique([creatorId, moderatorId], name: "UniqueModForCreator")
+}
+
+model CreatorStats {
+  id                 String @id @default(auto()) @map("_id") @db.ObjectId
+  creatorId          String @unique @db.ObjectId
+  creator            User   @relation(fields: [creatorId], references: [id], name: "streamer")
+  created            Int
+  paid               Int
+  uniqueParticipants Int
+  pointsBurned       Int
+  totalTickets       Int
 }
