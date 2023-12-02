@@ -34,3 +34,17 @@ export async function POST(req: Request) {
         return NextResponse.json({}, { status: 403 });
     }
 }
+
+export async function GET(req: NextRequest) {
+    const session = await getServerSession(authOptions);
+    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const id = req.nextUrl.searchParams.get("id");
+
+    const appToken = await getTwitchClientToken();
+    const eventSubUrl = `https://api.twitch.tv/helix/eventsub/subscriptions?id=${id}`;
+    const headers = { Authorization: `Bearer ${appToken.access_token}`, "Client-Id": process.env.NEXT_PUBLIC_TWITCH_API_KEY };
+    const result = await fetch(eventSubUrl, { method: "GET", headers });
+    const data = await result.json();
+    return NextResponse.json(data, { status: result.status === 204 ? 200 : result.status });
+}
