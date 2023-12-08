@@ -69,22 +69,22 @@ model VerificationToken {
 }
 
 model Giveaways {
-  id                String                @id @default(auto()) @map("_id") @db.ObjectId
-  name              String
-  cost              Int
-  prize             String
-  paid              Boolean
-  hidden            Boolean
-  twitchId          String
-  creatorId         String                @db.ObjectId
-  creator           User                  @relation(fields: [creatorId], references: [id])
-  winner            String?
-  paused            Boolean?
-  listenerId        String?
-  createdAt         DateTime              @default(now())
-  updatedAt         DateTime              @updatedAt
-  redemptions       GiveawayRedemptions[]
-  aggregatedEntries AggregatedEntries[]
+  id          String                @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  cost        Int
+  prize       String
+  paid        Boolean
+  hidden      Boolean
+  twitchId    String
+  creatorId   String                @db.ObjectId
+  creator     User                  @relation(fields: [creatorId], references: [id])
+  winner      String?
+  paused      Boolean?
+  listenerId  String?
+  createdAt   DateTime?             @default(now())
+  updatedAt   DateTime?             @updatedAt
+  redemptions GiveawayRedemptions[]
+  aggregated  Agregated?
 }
 
 model Prompts {
@@ -119,7 +119,6 @@ model Viewer {
   promptRedemptions   PromptRedemptions[]
   giveawayRedemptions GiveawayRedemptions[]
   viewerOnStream      ViewerOnStream[]
-  aggregatedEntries   AggregatedEntries[]
   name                String
   twitchId            String
   isBanned            Boolean
@@ -147,17 +146,6 @@ model GiveawayRedemptions {
   giveaway   Giveaways @relation(fields: [giveawayId], references: [id])
 }
 
-model AggregatedEntries {
-  id         String    @id @default(auto()) @map("_id") @db.ObjectId
-  viewerId   String    @db.ObjectId
-  viewer     Viewer    @relation(fields: [viewerId], references: [id])
-  giveawayId String    @db.ObjectId
-  giveaway   Giveaways @relation(fields: [giveawayId], references: [id])
-  count      Int
-
-  @@unique([viewerId, giveawayId], name: "ViewerGiveawayEntries")
-}
-
 model Moderator {
   id          String @id @default(auto()) @map("_id") @db.ObjectId
   creatorId   String @db.ObjectId
@@ -177,4 +165,11 @@ model CreatorStats {
   uniqueParticipants Int
   pointsBurned       Int
   totalTickets       Int
+}
+
+model Agregated {
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  giveawayId   String    @unique @db.ObjectId
+  giveaway     Giveaways @relation(fields: [giveawayId], references: [id])
+  participants Json[]
 }
