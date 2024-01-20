@@ -2,36 +2,34 @@ import { prisma } from "@/lib/prisma";
 
 export async function AggregateGiveaway(gaId: string): Promise<boolean> {
     // Get the redemptions for this giveaway
-    const redemptions = await prisma.giveawayRedemptions.findMany({
+    const everything = await prisma.giveawayRedemptions.findMany({
         where: { giveawayId: gaId },
-        select: { viewerId: true },
+        select: { viewer: { select: { name: true, id: true } } },
     });
+    if (everything.length > 0) {
+        const reducedData = everything.reduce((accumulator, entry) => {
+            const viewerId = entry.viewer.id;
 
-    // Aggregate the redemptions
-    type CountMap = { viewerId: string; count: number };
-    const viewerIdCountMap: CountMap[] = Array.from(
-        redemptions.reduce((counted, entry) => {
-            const { viewerId } = entry;
-            if (counted.has(viewerId)) {
-                // If the viewerId exists, increment its count
-                counted.set(viewerId, counted.get(viewerId)! + 1);
+            // If viewerId is already in accumulator, increment count; otherwise, add a new entry
+            if (accumulator.some((item) => item.viewerId === viewerId)) {
+                accumulator.find((item) => item.viewerId === viewerId)!.count++;
             } else {
-                // If the viewerId doesn't exist, add a new entry to the map
-                counted.set(viewerId, 1);
+                accumulator.push({ viewerId, count: 1, giveawayId: gaId });
             }
-            return counted;
-        }, new Map<string, number>())
-    ).map(([viewerId, count]) => ({ viewerId, count }));
 
-    try {
-        // Create the aggregated entry
-        const res = await prisma.agregated.createMany({ data: { giveawayId: gaId, participants: viewerIdCountMap } });
-        // Sanity check, did the query succeed?
-        if (res.count === 1) return true;
-        console.log(res);
-        return false;
-    } catch (error) {
-        console.log(error);
+            return accumulator;
+        }, [] as { viewerId: string; count: number; giveawayId: string }[]);
+        try {
+            // Create the aggregated entry
+            const res = await prisma.agregated.createMany({ data: reducedData });
+            // Sanity check, did the query succeed?
+            if (res.count === reducedData.length) return true;
+            return false;
+        } catch (error) {
+            console.log(error);
+            return false;
+        }
+    } else {
         return false;
     }
 }
