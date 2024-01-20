@@ -85,38 +85,51 @@ export async function GET(req: NextRequest) {
     // Get the raffle id from req and make sure one was passed
     const raffle = req.nextUrl.searchParams.get("raffleId");
     if (!raffle || raffle === "") return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
-
+    const isAgg = req.nextUrl.searchParams.get("agg");
     try {
-        const redemptions = await prisma.giveawayRedemptions.findMany({
-            where: { giveawayId: raffle, viewer: { isBanned: false } },
-            include: {
-                viewer: {
-                    select: {
-                        name: true,
+        let redemptions;
+        if (isAgg && isAgg === "true") {
+            const temp = await prisma.agregated.findMany({ where: { giveawayId: raffle }, select: { viewer: { select: { name: true, id: true } }, count: true } });
+            const result = temp.reduce((acc, redemption) => {
+                const viewerName = redemption.viewer.name;
+                acc[viewerName] = redemption.count;
+                return acc;
+            }, {} as Record<string, number>);
+            let tot = 0;
+            Object.keys(result!).forEach((name) => {
+                const weight = result![name];
+                tot += weight;
+            });
+            return NextResponse.json({ total: tot, list: result });
+        } else {
+            redemptions = await prisma.giveawayRedemptions.findMany({
+                where: { giveawayId: raffle, viewer: { isBanned: false } },
+                include: {
+                    viewer: {
+                        select: {
+                            name: true,
+                        },
                     },
                 },
-            },
-        });
+            });
+            const result: Record<string, number> = redemptions.reduce((acc, redemption) => {
+                const viewerName = redemption.viewer?.name || "Unknown Viewer";
 
-        const result: Record<string, number> = redemptions.reduce((acc, redemption) => {
-            const viewerName = redemption.viewer?.name || "Unknown Viewer";
+                if (acc[viewerName]) {
+                    acc[viewerName]++;
+                } else {
+                    acc[viewerName] = 1;
+                }
 
-            if (acc[viewerName]) {
-                acc[viewerName]++;
-            } else {
-                acc[viewerName] = 1;
-            }
-
-            return acc;
-        }, {} as Record<string, number>);
-
-        let tot = 0;
-        Object.keys(result!).forEach((name) => {
-            const weight = result![name];
-            tot += weight;
-        });
-
-        return NextResponse.json({ total: tot, list: result });
+                return acc;
+            }, {} as Record<string, number>);
+            let tot = 0;
+            Object.keys(result!).forEach((name) => {
+                const weight = result![name];
+                tot += weight;
+            });
+            return NextResponse.json({ total: tot, list: result });
+        }
     } catch (error) {
         console.log(error);
         return NextResponse.json({ error }, { status: 500 });
