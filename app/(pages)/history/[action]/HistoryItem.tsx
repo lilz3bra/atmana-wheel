@@ -13,6 +13,7 @@ interface item {
     prize: string;
     winner: string | null;
     paid: boolean;
+    createdAt?: Date;
 }
 interface Props {
     item: item;
@@ -44,6 +45,7 @@ const HistoryItem = ({ item, filter }: Props) => {
                 <p className="font-bold truncate max-w-full">{item.name}</p>
                 <p className="truncate max-w-full">Prize: {item.prize}</p>
                 <p>Cost: {item.cost}</p>
+                {item.createdAt && <p>Created: {item.createdAt.toLocaleDateString()}</p>}
                 <div className={`${!item.winner ? "text-red-700" : item.paid ? "text-green-700" : "text-yellow-500"} flex flex-col items-center max-w-full`}>
                     <p>Winner:</p>
                     <span className="text-center truncate max-w-full font-bold">{!item.winner ? " Not drawn" : " " + item.winner}</span>
