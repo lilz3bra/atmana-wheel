@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { authOptions, getTwitchClientToken } from "../auth/[...nextauth]/route";
-import { verifyMessage } from "./helpers";
+import { verifyMessage } from "./_helpers";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request) {

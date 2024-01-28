@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "../auth/[...nextauth]/route";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
-import { AggregateGiveaway } from "../statistics/helpers";
+import { AggregateGiveaway } from "../statistics/_helpers";
 
 export async function GET(req: NextRequest) {
     // // Validate authorization
