@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Toast from "@/components/Toast/Toast";
 import Hint from "@/components/Hint/Hint";
 import ModeSelector from "@/components/ModeSelector";
@@ -25,18 +25,8 @@ interface Props {
     };
 }
 const EditForm = ({ giveaway }: Props) => {
-    const [data, setData] = useState({
-        id: giveaway.id,
-        creator: giveaway.creatorId,
-        name: giveaway.name,
-        prize: giveaway.prize,
-        cost: giveaway.cost,
-        streamLimitEnabled: giveaway.streamLimitEnabled,
-        userLimitEnabled: giveaway.userLimitEnabled,
-        streamLimit: giveaway.streamLimit,
-        userLimit: giveaway.userLimit,
-    });
-
+    const [data, setData] = useState(giveaway);
+    const [hasChanged, setHasChanged] = useState(false);
     const [loading, setLoading] = useState(false);
     const [notiStack, setNotiStack] = useState<ToastNotif[]>([]);
     const [isPrompt, setIsPrompt] = useState(false);
@@ -44,6 +34,8 @@ const EditForm = ({ giveaway }: Props) => {
 
     const createRedemption = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        // Sanity check to avoid sending pointless requests
+        if (!hasChanged) return;
         const params = JSON.stringify({
             twData: {
                 // Data to be sent to twitch
@@ -77,6 +69,10 @@ const EditForm = ({ giveaway }: Props) => {
         setLoading(false);
     };
 
+    useEffect(() => {
+        const changed = JSON.stringify(data) !== JSON.stringify(giveaway);
+        setHasChanged(changed);
+    }, [data, giveaway]);
     return (
         <div className="bg-slate-800 p-4 rounded-lg m-auto max-w-2xl my-2">
             <Toast stack={notiStack} />
@@ -170,8 +166,8 @@ const EditForm = ({ giveaway }: Props) => {
                         required
                     />
                 )}
-                <button type="submit" disabled={loading} className={`${loading ? "bg-gray-500" : "bg-blue-500 hover:bg-blue-700"} rounded-full m-2`}>
-                    Save changes
+                <button type="submit" disabled={loading || !hasChanged} className={`${loading || !hasChanged ? "bg-gray-500" : "bg-blue-500 hover:bg-blue-700"} rounded-full m-2`}>
+                    {!hasChanged ? "No changes to save" : "Save changes"}
                 </button>
             </form>
         </div>
