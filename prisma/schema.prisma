@@ -83,7 +83,6 @@ model Giveaways {
   createdAt   DateTime?             @default(now())
   updatedAt   DateTime?             @updatedAt
   redemptions GiveawayRedemptions[]
-  aggregated  Agregated[]
 }
 
 model Prompts {
@@ -117,7 +116,6 @@ model Viewer {
   id                  String                @id @default(auto()) @map("_id") @db.ObjectId
   promptRedemptions   PromptRedemptions[]
   giveawayRedemptions GiveawayRedemptions[]
-  aggregatedEntries   Agregated[]
   name                String
   twitchId            String
   isBanned            Boolean
@@ -135,11 +133,6 @@ model GiveawayRedemptions {
   ammount    Int       @default(1)
 
   @@unique([viewerId, giveawayId], name: "ViewerRedemptions")
-}
-
-model MessageHistory {
-  id        String   @id @map("_id")
-  timestamp DateTime @default(now())
 }
 
 model Moderator {
@@ -161,15 +154,4 @@ model CreatorStats {
   uniqueParticipants Int
   pointsBurned       Int
   totalTickets       Int
-}
-
-model Agregated {
-  id         String    @id @default(auto()) @map("_id") @db.ObjectId
-  viewerId   String    @db.ObjectId
-  viewer     Viewer    @relation(fields: [viewerId], references: [id])
-  giveawayId String    @db.ObjectId
-  giveaway   Giveaways @relation(fields: [giveawayId], references: [id])
-  count      Int
-
-  @@unique([viewerId, giveawayId], name: "ViewerGiveawayEntries")
 }
