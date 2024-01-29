@@ -8,7 +8,7 @@ export async function POST(req: Request) {
     const startTime = performance.now();
     const msg = await req.text();
     const data = await JSON.parse(msg);
-    console.log("Message:", msg);
+    console.log("Message id:", req.headers.get("Twitch-Eventsub-Message-Id"));
     console.log("Parsing runtime:", performance.now() - startTime);
     let partialTime = performance.now();
     if (data.subscription.status === "webhook_callback_verification_pending") {
@@ -28,20 +28,12 @@ export async function POST(req: Request) {
                 });
                 console.log("Viewer upsert runtime:", performance.now() - partialTime);
                 partialTime = performance.now();
-                prisma.viewerOnStream.upsert({
-                    where: {
-                        UniqueViewerOnStream: {
-                            streamerId: giveaway.creatorId,
-                            viewerId: viewer.id,
-                        },
-                    },
-                    update: {},
-                    create: { streamerId: giveaway.creatorId, viewerId: viewer.id },
+                prisma.giveawayRedemptions.upsert({
+                    where: { ViewerRedemptions: { viewerId: viewer.id, giveawayId: giveaway.id } },
+                    update: { ammount: { increment: 1 } },
+                    create: { viewerId: viewer.id, giveawayId: giveaway.id },
                 });
-                console.log("ViewerOnStream upsert runtime:", performance.now() - partialTime);
-                partialTime = performance.now();
-                prisma.giveawayRedemptions.create({ data: { viewerId: viewer.id, redeemedAt: data.event.redeemed_at, giveawayId: giveaway.id } });
-                console.log("Redemption create runtime:", performance.now() - partialTime);
+                console.log("Redemption create/update runtime:", performance.now() - partialTime);
                 console.log("Total runtime:", performance.now() - startTime);
                 return NextResponse.json({}, { status: 200 });
             } else {
