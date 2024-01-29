@@ -132,15 +132,12 @@ export async function DELETE(req: NextRequest) {
             });
             if (res.status === 204 && !!id) {
                 // Remove the twitch id from the database, so we know it doesnt exist anymore
-                const modifiedEntry = await prisma.giveaways.update({ where: { twitchId: raffle, id: id }, data: { twitchId: "" } });
+                const giveaway = await prisma.giveaways.findFirst({ where: { twitchId: raffle, id: id }, select: { listenerId: true } });
                 // Remove the eventsub listener. Check added to provide backwards compatibility
-                if (modifiedEntry.listenerId !== null && typeof modifiedEntry.listenerId !== "undefined") {
-                    const status = await deleteListener(modifiedEntry.listenerId);
+                if (giveaway?.listenerId !== null && typeof giveaway?.listenerId !== "undefined") {
+                    const status = await deleteListener(giveaway.listenerId);
                     if (status === 204) {
-                        await prisma.giveaways.update({ where: { id: id }, data: { listenerId: "" } });
-
-                        // Once aggregation is done, delete the redemptions
-                        await prisma.giveawayRedemptions.deleteMany({ where: { giveawayId: id } });
+                        await prisma.giveaways.update({ where: { id: id }, data: { listenerId: "", twitchId: "" } });
                     }
                 }
             } else {
