@@ -1,6 +1,6 @@
 "use client";
 import Hint from "@/components/Hint/Hint";
-import { faCircleHalfStroke, faEyeSlash, faMoneyBill1Wave, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faCircleHalfStroke, faEyeSlash, faMoneyBill1Wave, faPenToSquare, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useRouter } from "next/navigation";
 import React from "react";
@@ -13,6 +13,7 @@ interface item {
     prize: string;
     winner: string | null;
     paid: boolean;
+    createdAt?: Date;
 }
 interface Props {
     item: item;
@@ -44,6 +45,7 @@ const HistoryItem = ({ item, filter }: Props) => {
                 <p className="font-bold truncate max-w-full">{item.name}</p>
                 <p className="truncate max-w-full">Prize: {item.prize}</p>
                 <p>Cost: {item.cost}</p>
+                {item.createdAt && <p>Created: {item.createdAt.toLocaleDateString()}</p>}
                 <div className={`${!item.winner ? "text-red-700" : item.paid ? "text-green-700" : "text-yellow-500"} flex flex-col items-center max-w-full`}>
                     <p>Winner:</p>
                     <span className="text-center truncate max-w-full font-bold">{!item.winner ? " Not drawn" : " " + item.winner}</span>
@@ -54,6 +56,13 @@ const HistoryItem = ({ item, filter }: Props) => {
                             <FontAwesomeIcon icon={faCircleHalfStroke} />
                         </div>
                     </Hint>
+                    {item.twitchId !== "" && (
+                        <Hint text="Edit" extraCss="flex flex-row justify-center">
+                            <div className="p-2 bg-blue-500  cursor-pointer hover:bg-blue-700 rounded-xl text-white w-fit" onClick={() => router.push(`/edit/${item.id}`)}>
+                                <FontAwesomeIcon icon={faPenToSquare} />
+                            </div>
+                        </Hint>
+                    )}
                     {!item.paid && item.winner && (
                         <Hint text="Mark as paid" extraCss="flex flex-row justify-center">
                             <div className="p-2 bg-blue-500  cursor-pointer hover:bg-blue-700 rounded-xl text-white w-fit" onClick={() => markPaid(item)}>

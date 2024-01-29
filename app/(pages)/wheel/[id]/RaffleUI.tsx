@@ -14,60 +14,55 @@ interface Props {
         paused: boolean | null;
     };
 }
+
+interface Resp {
+    total: number;
+    list: UsersList;
+}
 const RaffleUI = ({ giveaway }: Props) => {
-    const [users, setUsers] = useState<UsersList>();
-    const [loading, setLoading] = useState(true);
+    const [users, setUsers] = useState<Resp | null>(null);
+    const loading = useRef(true);
     const [visible, setVisible] = useState(false);
     const [error, setError] = useState(false);
     const [isPaused, setPaused] = useState(giveaway.paused);
-    const [sortedUsers, setSortedUsers] = useState<UsersList>();
-    const [isDeleted, setDeleted] = useState(false);
-    const [total, setTotal] = useState(0);
+    const [isDeleted, setDeleted] = useState(giveaway.twitchId === "" ? true : false);
     const firstRun = useRef(true);
     const inter = useRef<number | null>(null);
 
     const getParticipants = async () => {
-        // setLoading(true);
-        const res = await fetch(`/api/raffle?raffleId=${giveaway.id}`);
-        if (res.status !== 200) setError(true);
-        const result = await res.json();
-        setUsers(result);
-        sortUsers(result);
-        sumTotals(result);
-        setLoading(false);
+        const res = await fetch(`/api/raffle?raffleId=${giveaway.id}&agg=${giveaway.twitchId === "" ? "true" : "false"}`);
+        if (res.status !== 200) {
+            setError(true);
+        } else {
+            const result = await res.json();
+            setUsers(result);
+            if (loading) loading.current = false;
+        }
     };
 
     const sortUsers = (us: UsersList) => {
         const keyValArray = Object.entries(us!);
         keyValArray.sort((a, b) => b[1] - a[1]);
         const sortedObj = Object.fromEntries(keyValArray);
-        setSortedUsers(sortedObj);
+        return sortedObj;
     };
-
-    const sumTotals = (us: UsersList) => {
-        let tot = 0;
-        Object.keys(us!).forEach((name) => {
-            const weight = us![name];
-            tot += weight;
-        });
-        setTotal(tot);
-    };
+    const sortedUsers = users ? sortUsers(users.list) : null;
 
     const deleteReward = async () => {
         const res = await fetch(`/api/raffle?raffleId=${giveaway.twitchId}&id=${giveaway.id}`, { method: "DELETE" });
         if (res.status === 200) setDeleted(true);
     };
 
-    const pauseReward = async () => {
-        const res = await fetch(`/api/raffle?raffleId=${giveaway.twitchId}`, { method: "PATCH", body: JSON.stringify({ is_paused: true }) });
+    const pauseResume = async () => {
+        const res = await fetch(`/api/raffle?raffleId=${giveaway.twitchId}`, { method: "PATCH", body: JSON.stringify({ is_paused: !isPaused }) });
         if (res.status === 200) {
-            setPaused(true);
+            setPaused(!isPaused);
         }
     };
 
     const drawWinner = () => {
         setPaused(true);
-        pauseReward();
+        pauseResume();
         clearInter();
         if (!isDeleted) getParticipants();
         setVisible(true);
@@ -80,16 +75,10 @@ const RaffleUI = ({ giveaway }: Props) => {
         }
     };
 
-    const reopen = async () => {
-        setPaused(false);
-        const res = await fetch(`/api/raffle?raffleId=${giveaway.twitchId}`, { method: "PATCH", body: JSON.stringify({ is_paused: false }) });
-    };
-
     useEffect(() => {
         if (firstRun.current === true) {
             firstRun.current = false;
             getParticipants();
-            if (giveaway.twitchId === "") setDeleted(true);
             inter.current = window.setInterval(getParticipants, 20000);
             return () => {
                 if (inter.current !== null) {
@@ -105,6 +94,8 @@ const RaffleUI = ({ giveaway }: Props) => {
         }
     }, [isPaused, isDeleted]);
 
+    useEffect(() => {}, [users]);
+
     const clearInter = () => {
         if (inter.current !== null) {
             clearInterval(inter.current);
@@ -114,11 +105,11 @@ const RaffleUI = ({ giveaway }: Props) => {
     if (error) {
         return (
             <div id="main-content" className="flex flex-col  justify-center items-center m-4 text-4xl">
-                Raffle doesn't exist
+                There was an error updating the list, please refresh the page.
             </div>
         );
     }
-    if (!users || total === 0)
+    if (users?.total === 0)
         return (
             <div id="main-content" className="flex flex-col  justify-center items-center m-4 text-4xl">
                 No entries yet
@@ -127,44 +118,50 @@ const RaffleUI = ({ giveaway }: Props) => {
 
     return (
         <>
-            <div className="flex flex-row m-2 justify-between items-center gap-2">
-                <Hint text={`Draw a winner`} extraCss="flex flex-row justify-center">
-                    <button onClick={drawWinner} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 w-8 justify-center flex flex-row">
-                        <FontAwesomeIcon icon={faTicket} />
-                    </button>
-                </Hint>
-                {!isDeleted && (
-                    <>
-                        <Hint text="Update entries">
-                            <button onClick={getParticipants} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 w-8 justify-center flex flex-row">
-                                <FontAwesomeIcon icon={faArrowsRotate} />
-                            </button>
-                        </Hint>
-                        <Hint text={`${isPaused ? "Unp" : "P"}ause`}>
-                            <button onClick={isPaused ? reopen : pauseReward} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 w-8 justify-center flex flex-row">
-                                <FontAwesomeIcon icon={isPaused ? faPlay : faPause} />
-                            </button>
-                        </Hint>
-                        <Hint text="Delete">
-                            <button onClick={deleteReward} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 w-8 justify-center flex flex-row">
-                                <FontAwesomeIcon icon={faTrashCan} />
-                            </button>
-                        </Hint>
-                    </>
-                )}
-            </div>
-            {loading ? (
+            {loading.current ? (
                 <Loading />
             ) : (
                 <>
-                    <h1 className="font-bold text-xl text-center m-4">
-                        {Object.keys(users).length} Participants ({total} entries)
-                    </h1>
-                    {giveaway.twitchId === "" && <h1 className="font-bold text-lg text-red-400 text-center">Reward was deleted from twitch</h1>}
-                    <div className="m-auto w-2/3 h-1/2 justify-center text-center gap-2">
-                        {typeof sortedUsers !== "undefined" ? <ParticipantsList users={sortedUsers} tot={total} /> : loading && <Loading />}
+                    <div className="flex flex-row m-2 justify-between items-center gap-2">
+                        <Hint text={`Draw a winner`} extraCss="flex flex-row justify-center">
+                            <button onClick={drawWinner} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 w-8 justify-center flex flex-row">
+                                <FontAwesomeIcon icon={faTicket} />
+                            </button>
+                        </Hint>
+                        {!isDeleted && (
+                            <>
+                                <Hint text="Update entries">
+                                    <button onClick={getParticipants} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 w-8 justify-center flex flex-row">
+                                        <FontAwesomeIcon icon={faArrowsRotate} />
+                                    </button>
+                                </Hint>
+                                <Hint text={`${isPaused ? "Pause" : "Resume"}`}>
+                                    <button onClick={pauseResume} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 w-8 justify-center flex flex-row">
+                                        <FontAwesomeIcon icon={isPaused ? faPlay : faPause} />
+                                    </button>
+                                </Hint>
+                                <Hint text="Delete">
+                                    <button onClick={deleteReward} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 w-8 justify-center flex flex-row">
+                                        <FontAwesomeIcon icon={faTrashCan} />
+                                    </button>
+                                </Hint>
+                            </>
+                        )}
                     </div>
-                    {visible && typeof users !== "undefined" ? <Modal entries={users} onClose={() => setVisible(false)} returnCallback={updateDb} /> : null}
+                    {users && (
+                        <>
+                            <h1 className="font-bold text-xl text-center m-4">
+                                {Object.keys(users.list).length} Participants ({users.total} entries)
+                            </h1>
+                            {giveaway.twitchId === "" && (
+                                <h1 className="font-bold text-lg text-red-400 text-center">This reward was deleted from twitch, the participants list cannot be updated.</h1>
+                            )}
+                            <div className="m-auto w-2/3 h-1/2 justify-center text-center gap-2">
+                                {typeof sortedUsers !== "undefined" ? <ParticipantsList users={sortedUsers!} tot={users.total} /> : loading && <Loading />}
+                            </div>
+                            {visible && typeof users !== "undefined" ? <Modal entries={users.list} onClose={() => setVisible(false)} returnCallback={updateDb} /> : null}
+                        </>
+                    )}
                 </>
             )}
         </>

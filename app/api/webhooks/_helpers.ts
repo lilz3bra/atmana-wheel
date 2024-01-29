@@ -39,6 +39,18 @@ export async function verifyMessage(req: Request, rawMessage: string) {
     const hmac = "sha256=" + getHmac(message);
     const verifySignature = req.headers.get("Twitch-Eventsub-Message-Signature");
     if (verifySignature === null) return false;
+
+    // Check the timestamp validity
+    const tStamp = req.headers.get("Twitch-Eventsub-Message-Timestamp");
+    const webhookDate = new Date(tStamp!);
+    const currentDate = new Date();
+
+    // Calculate the difference in milliseconds
+    const timeDifference = currentDate.getTime() - webhookDate.getTime();
+
+    // Check if the time difference is less than 10 minutes (600,000 milliseconds)
+    if (timeDifference > 600000) return false;
+
     try {
         return crypto.timingSafeEqual(Buffer.from(hmac), Buffer.from(verifySignature));
     } catch (error) {
