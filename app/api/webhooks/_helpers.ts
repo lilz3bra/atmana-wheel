@@ -49,7 +49,7 @@ export async function verifyMessage(req: Request, rawMessage: string) {
     const timeDifference = currentDate.getTime() - webhookDate.getTime();
 
     // Check if the time difference is less than 10 minutes (600,000 milliseconds)
-    if (timeDifference < 600000) return false;
+    if (timeDifference > 600000) return false;
 
     try {
         return crypto.timingSafeEqual(Buffer.from(hmac), Buffer.from(verifySignature));
