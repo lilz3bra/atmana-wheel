@@ -189,14 +189,20 @@ export async function PATCH(req: NextRequest) {
         // Get data stored in the jwt sent
         const thisUser = session.user;
 
+        console.log("here");
         // Get the raffle id from req and make sure one was passed
         const raffle = req.nextUrl.searchParams.get("raffleId");
         if (!raffle || raffle === "") return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
 
         // Get whatever was json sent in the body
         const op = await req.json();
-        const options = JSON.stringify(op);
+        let options;
         // Send the request
+        if (op.twData) {
+            options = JSON.stringify(op.twData);
+        } else {
+            options = JSON.stringify(op);
+        }
         const res = await fetch(`${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards?broadcaster_id=${thisUser?.providerAccountId}&id=${raffle}`, {
             method: "PATCH",
             headers: { "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, authorization: "Bearer " + thisUser.access_token, "Content-type": "Application/Json" },

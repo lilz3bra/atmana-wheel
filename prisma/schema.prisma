@@ -68,21 +68,25 @@ model VerificationToken {
 }
 
 model Giveaways {
-  id          String                @id @default(auto()) @map("_id") @db.ObjectId
-  name        String
-  cost        Int
-  prize       String
-  paid        Boolean
-  hidden      Boolean
-  twitchId    String
-  creatorId   String                @db.ObjectId
-  creator     User                  @relation(fields: [creatorId], references: [id])
-  winner      String?
-  paused      Boolean?
-  listenerId  String?
-  createdAt   DateTime?             @default(now())
-  updatedAt   DateTime?             @updatedAt
-  redemptions GiveawayRedemptions[]
+  id                 String                @id @default(auto()) @map("_id") @db.ObjectId
+  name               String
+  cost               Int
+  prize              String
+  paid               Boolean
+  hidden             Boolean
+  twitchId           String
+  creatorId          String                @db.ObjectId
+  creator            User                  @relation(fields: [creatorId], references: [id])
+  winner             String?
+  paused             Boolean?
+  streamLimitEnabled Boolean               @default(false)
+  streamLimit        Int                   @default(0)
+  userLimitEnabled   Boolean               @default(false)
+  userLimit          Int                   @default(0)
+  listenerId         String?
+  createdAt          DateTime?             @default(now())
+  updatedAt          DateTime?             @updatedAt
+  redemptions        GiveawayRedemptions[]
 }
 
 model Prompts {

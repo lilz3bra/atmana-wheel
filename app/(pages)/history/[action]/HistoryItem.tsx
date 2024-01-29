@@ -1,6 +1,6 @@
 "use client";
 import Hint from "@/components/Hint/Hint";
-import { faCircleHalfStroke, faEyeSlash, faMoneyBill1Wave, faTrashCan } from "@fortawesome/free-solid-svg-icons";
+import { faCircleHalfStroke, faEyeSlash, faMoneyBill1Wave, faPenToSquare, faTrashCan } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useRouter } from "next/navigation";
 import React from "react";
@@ -56,6 +56,13 @@ const HistoryItem = ({ item, filter }: Props) => {
                             <FontAwesomeIcon icon={faCircleHalfStroke} />
                         </div>
                     </Hint>
+                    {item.twitchId !== "" && (
+                        <Hint text="Edit" extraCss="flex flex-row justify-center">
+                            <div className="p-2 bg-blue-500  cursor-pointer hover:bg-blue-700 rounded-xl text-white w-fit" onClick={() => router.push(`/edit/${item.id}`)}>
+                                <FontAwesomeIcon icon={faPenToSquare} />
+                            </div>
+                        </Hint>
+                    )}
                     {!item.paid && item.winner && (
                         <Hint text="Mark as paid" extraCss="flex flex-row justify-center">
                             <div className="p-2 bg-blue-500  cursor-pointer hover:bg-blue-700 rounded-xl text-white w-fit" onClick={() => markPaid(item)}>
