@@ -41,19 +41,18 @@ model Session {
 }
 
 model User {
-  id              String           @id @default(auto()) @map("_id") @db.ObjectId
-  name            String?
-  email           String?          @unique
-  emailVerified   DateTime?        @map("email_verified")
-  image           String?
-  accounts        Account[]
-  sessions        Session[]
-  giveaways       Giveaways[]
-  prompts         Prompts[]
-  viewersOnStream ViewerOnStream[]
-  creators        Moderator[]      @relation(name: "creators")
-  moderators      Moderator[]      @relation(name: "moderators")
-  stats           CreatorStats?    @relation(name: "streamer")
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  name          String?
+  email         String?       @unique
+  emailVerified DateTime?     @map("email_verified")
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  giveaways     Giveaways[]
+  prompts       Prompts[]
+  creators      Moderator[]   @relation(name: "creators")
+  moderators    Moderator[]   @relation(name: "moderators")
+  stats         CreatorStats? @relation(name: "streamer")
 
   @@map("users")
 }
@@ -118,7 +117,6 @@ model Viewer {
   id                  String                @id @default(auto()) @map("_id") @db.ObjectId
   promptRedemptions   PromptRedemptions[]
   giveawayRedemptions GiveawayRedemptions[]
-  viewerOnStream      ViewerOnStream[]
   aggregatedEntries   Agregated[]
   name                String
   twitchId            String
@@ -128,23 +126,20 @@ model Viewer {
   @@unique([twitchId])
 }
 
-model ViewerOnStream {
-  id         String @id @default(auto()) @map("_id") @db.ObjectId
-  viewerId   String @db.ObjectId
-  streamerId String @db.ObjectId
-  viewer     Viewer @relation(fields: [viewerId], references: [id])
-  stream     User   @relation(fields: [streamerId], references: [id])
-
-  @@unique([streamerId, viewerId], name: "UniqueViewerOnStream")
-}
-
 model GiveawayRedemptions {
   id         String    @id @default(auto()) @map("_id") @db.ObjectId
   viewerId   String    @db.ObjectId
   viewer     Viewer    @relation(fields: [viewerId], references: [id])
-  redeemedAt DateTime
   giveawayId String    @db.ObjectId
   giveaway   Giveaways @relation(fields: [giveawayId], references: [id])
+  ammount    Int       @default(1)
+
+  @@unique([viewerId, giveawayId], name: "ViewerRedemptions")
+}
+
+model MessageHistory {
+  id        String   @id @map("_id")
+  timestamp DateTime @default(now())
 }
 
 model Moderator {

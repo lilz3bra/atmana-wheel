@@ -8,13 +8,21 @@ export async function POST(req: Request) {
     const startTime = performance.now();
     const msg = await req.text();
     const data = await JSON.parse(msg);
-    console.log("Message id:", req.headers.get("Twitch-Eventsub-Message-Id"));
     console.log("Parsing runtime:", performance.now() - startTime);
     let partialTime = performance.now();
     if (data.subscription.status === "webhook_callback_verification_pending") {
         return new Response(data.challenge, { status: 200, headers: { "Content-Type": "text/plain" } });
     } else {
         if (await verifyMessage(req, msg)) {
+            const messageId = req.headers.get("Twitch-Eventsub-Message-Id");
+            if (messageId) {
+                const validMessageId = await prisma.messageHistory.create({ data: { id: messageId } });
+                console.log(validMessageId);
+            }
+            const tStamp = req.headers.get("Twitch-Eventsub-Message-Timestamp");
+            if (tStamp) {
+                console.log(tStamp);
+            }
             console.log("Verification runtime:", performance.now() - partialTime);
             partialTime = performance.now();
             const giveaway = await prisma.giveaways.findFirst({ where: { twitchId: data.event.reward.id }, select: { id: true, creatorId: true } });
