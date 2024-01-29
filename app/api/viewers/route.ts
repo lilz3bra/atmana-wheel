@@ -14,8 +14,8 @@ export async function GET(req: NextRequest) {
 
     if (!page) page = 1;
 
-    const res = await prisma.viewerOnStream.findMany({
-        where: { streamerId: thisUser.id },
+    const res = await prisma.giveawayRedemptions.findMany({
+        where: { giveaway: { creatorId: thisUser.id } },
         select: { viewer: { select: { name: true, id: true, isBanned: true } } },
         skip: (page - 1) * 20,
         take: 20,
