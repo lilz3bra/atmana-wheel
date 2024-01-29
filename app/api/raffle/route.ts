@@ -186,7 +186,6 @@ export async function PATCH(req: NextRequest) {
         // Get data stored in the jwt sent
         const thisUser = session.user;
 
-        console.log("here");
         // Get the raffle id from req and make sure one was passed
         const raffle = req.nextUrl.searchParams.get("raffleId");
         if (!raffle || raffle === "") return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
@@ -206,6 +205,20 @@ export async function PATCH(req: NextRequest) {
             body: options,
         });
         const resData = await res.json();
+        if (op.twData) {
+            await prisma.giveaways.update({
+                where: { id: op.id },
+                data: {
+                    name: op.twData.title,
+                    cost: op.twData.cost,
+                    prize: op.prize,
+                    streamLimitEnabled: op.twData.is_max_per_stream_enabled,
+                    userLimitEnabled: op.twData.is_max_per_user_per_stream_enabled,
+                    streamLimit: op.twData.max_per_stream,
+                    userLimit: op.twData.max_per_user_per_stream,
+                },
+            }); // Return the db document
+        }
         // Return whatever twitch sent back
         return NextResponse.json(resData, { status: res.status });
     } catch (error) {
