@@ -9,6 +9,7 @@ export async function POST(req: Request) {
     const msg = await req.text();
     const data = await JSON.parse(msg);
     console.log("Parsing runtime:", performance.now() - startTime);
+    console.log(msg);
     let partialTime = performance.now();
     if (data.subscription.status === "webhook_callback_verification_pending") {
         return new Response(data.challenge, { status: 200, headers: { "Content-Type": "text/plain" } });
@@ -27,11 +28,12 @@ export async function POST(req: Request) {
                 });
                 console.log("Viewer upsert runtime:", performance.now() - partialTime);
                 partialTime = performance.now();
-                prisma.giveawayRedemptions.upsert({
+                const res = await prisma.giveawayRedemptions.upsert({
                     where: { ViewerRedemptions: { viewerId: viewer.id, giveawayId: giveaway.id } },
                     update: { ammount: { increment: 1 } },
                     create: { viewerId: viewer.id, giveawayId: giveaway.id },
                 });
+                console.log(res);
                 console.log("Redemption create/update runtime:", performance.now() - partialTime);
                 console.log("Total runtime:", performance.now() - startTime);
                 return NextResponse.json({}, { status: 200 });
