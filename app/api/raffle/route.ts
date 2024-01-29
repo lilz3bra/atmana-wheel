@@ -3,7 +3,6 @@ import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { authOptions } from "../auth/[...nextauth]/route";
 import { createRewardsSub, deleteListener } from "../webhooks/_helpers";
-import { AggregateGiveaway } from "../statistics/_helpers";
 
 /** Create a new reward and save it to the db */
 export async function PUT(req: Request) {
@@ -139,12 +138,9 @@ export async function DELETE(req: NextRequest) {
                     const status = await deleteListener(modifiedEntry.listenerId);
                     if (status === 204) {
                         await prisma.giveaways.update({ where: { id: id }, data: { listenerId: "" } });
-                        // Aggregate the redemptions
-                        const aggregated = await AggregateGiveaway(id);
-                        if (aggregated) {
-                            // Once aggregation is done, delete the redemptions
-                            await prisma.giveawayRedemptions.deleteMany({ where: { giveawayId: id } });
-                        }
+
+                        // Once aggregation is done, delete the redemptions
+                        await prisma.giveawayRedemptions.deleteMany({ where: { giveawayId: id } });
                     }
                 }
             } else {
