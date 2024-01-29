@@ -14,15 +14,6 @@ export async function POST(req: Request) {
         return new Response(data.challenge, { status: 200, headers: { "Content-Type": "text/plain" } });
     } else {
         if (await verifyMessage(req, msg)) {
-            const messageId = req.headers.get("Twitch-Eventsub-Message-Id");
-            if (messageId) {
-                const validMessageId = await prisma.messageHistory.create({ data: { id: messageId } });
-                console.log(validMessageId);
-            }
-            const tStamp = req.headers.get("Twitch-Eventsub-Message-Timestamp");
-            if (tStamp) {
-                console.log(tStamp);
-            }
             console.log("Verification runtime:", performance.now() - partialTime);
             partialTime = performance.now();
             const giveaway = await prisma.giveaways.findFirst({ where: { twitchId: data.event.reward.id }, select: { id: true, creatorId: true } });
