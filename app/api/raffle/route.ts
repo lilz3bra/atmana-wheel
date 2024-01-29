@@ -195,6 +195,8 @@ export async function PATCH(req: NextRequest) {
         let options;
         // Send the request
         if (op.twData) {
+            const creator = await prisma.giveaways.findFirst({ where: { id: op.id }, select: { creatorId: true } });
+            if (creator?.creatorId !== thisUser.userId) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
             options = JSON.stringify(op.twData);
         } else {
             options = JSON.stringify(op);
