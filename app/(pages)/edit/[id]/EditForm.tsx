@@ -53,6 +53,7 @@ const EditForm = ({ giveaway }: Props) => {
                 should_redemptions_skip_request_queue: true,
             },
             prize: data.prize, // Data to be saved on our db
+            id: giveaway.id,
         });
         setLoading(true);
         const response = await fetch(`/api/raffle/?raffleId=${giveaway.twitchId}`, {
