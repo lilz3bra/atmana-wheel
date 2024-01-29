@@ -10,8 +10,8 @@ const page = async () => {
         redirect("api/auth/signin");
     }
 
-    const viewers = await prisma.viewerOnStream.findMany({
-        where: { streamerId: session.user.id },
+    const viewers = await prisma.giveawayRedemptions.findMany({
+        where: { giveaway: { creatorId: session.user.id } },
         select: { viewer: { select: { name: true, id: true, isBanned: true } } },
         take: 20,
     });
