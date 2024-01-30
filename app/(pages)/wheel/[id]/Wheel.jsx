@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, useLayoutEffect } from "react";
-// import soundfile from "/tada.mp3";
 
 export const Wheel = ({ entries, callback, closing }) => {
     const canvasRef = useRef(null);
@@ -105,10 +104,10 @@ export const Wheel = ({ entries, callback, closing }) => {
     const spin = () => {
         // Start the wheel only if it's not already spinning
         if (timerHandle.current === 0) {
-            downTime.current = Math.floor(10000 + Math.random() * 15000); // Randomize the spinning duration
+            downTime.current = Math.floor(25000 + Math.random() * 50000); // Randomize the spinning duration
             spinStart.current = Date.now();
-            setMaxSpeed(Math.PI / (16 + Math.random())); // Randomly vary how hard the spin is
-            // wheelProps.sound.play();
+            let newSpeed = Math.PI / (16 + Math.random());
+            setMaxSpeed(newSpeed); // Randomly vary how fast the spin is
             timerHandle.current = setInterval(onTimerTick, timerDelay);
         }
     };
@@ -126,23 +125,10 @@ export const Wheel = ({ entries, callback, closing }) => {
         } else {
             progress = duration / downTime.current; // progress on deceleration
             // Now we calculate the angle change depending on the current progress
-            // This way feels and looks smoother than a single curve function,
-            // It also gives a more suspenseful ending
-            if (progress > 0.25 && progress < 0.5) {
-                angleDelta.current = maxSpeed * ((1 / 64) ** progress + 1 / 64);
-            } else if (progress >= 0.5 && progress < 0.75) {
-                angleDelta.current = maxSpeed * ((1 / 128) ** progress + 1 / 64);
-            } else if (progress >= 0.75) {
-                angleDelta.current = maxSpeed * ((1 / 256) ** progress + 1 / 64);
-            } else if (progress >= 0.95) {
-                angleDelta.current = maxSpeed * ((1 / 512) ** progress + 1 / 64);
-            } else {
-                angleDelta.current = maxSpeed * ((1 / 32) ** progress + 1 / 64);
-            }
-            if (progress >= 1) {
+            angleDelta.current = maxSpeed * 1.7 * (1 / duration) ** progress;
+            if (angleDelta.current <= 0.0007) {
                 finished = true;
                 callback(winner.current);
-
                 winSFX.volume = 0.25;
                 winSFX.play();
                 drawConfetti(winner.current);
