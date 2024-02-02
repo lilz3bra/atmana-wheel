@@ -86,7 +86,7 @@ export async function GET(req: NextRequest) {
     if (!raffle || raffle === "") return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
     try {
         const temp = await prisma.giveawayRedemptions.findMany({
-            where: { giveawayId: raffle },
+            where: { giveawayId: raffle, viewer: { isBanned: false } },
             select: {
                 viewer: {
                     select: { name: true, id: true },
