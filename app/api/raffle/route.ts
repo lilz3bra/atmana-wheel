@@ -84,15 +84,22 @@ export async function GET(req: NextRequest) {
     // Get the raffle id from req and make sure one was passed
     const raffle = req.nextUrl.searchParams.get("raffleId");
     if (!raffle || raffle === "") return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
+    const creator = req.nextUrl.searchParams.get("creatorId");
+    let creatorId;
+    if (creator) {
+        const isMod = await prisma.moderator.findFirst({ where: { creatorId: creator, moderatorId: thisUser.id } });
+        if (isMod) {
+            creatorId = creator;
+        } else {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+    } else {
+        creatorId = thisUser.id;
+    }
     try {
         const temp = await prisma.giveawayRedemptions.findMany({
-            where: { giveawayId: raffle },
-            select: {
-                viewer: {
-                    select: { name: true, id: true },
-                },
-                ammount: true,
-            },
+            where: { giveawayId: raffle, viewer: { streams: { some: { creatorId: { equals: creatorId }, isBanned: false } } } },
+            select: { viewer: { select: { name: true } }, ammount: true },
         });
         const result = temp.reduce((acc, redemption) => {
             const viewerName = redemption.viewer.name;
