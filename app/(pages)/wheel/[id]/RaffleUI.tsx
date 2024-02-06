@@ -30,7 +30,7 @@ const RaffleUI = ({ giveaway }: Props) => {
     const inter = useRef<number | null>(null);
 
     const getParticipants = async () => {
-        const res = await fetch(`/api/raffle?raffleId=${giveaway.id}&agg=${giveaway.twitchId === "" ? "true" : "false"}`);
+        const res = await fetch(`/api/raffle?raffleId=${giveaway.id}`);
         if (res.status !== 200) {
             setError(true);
         } else {
