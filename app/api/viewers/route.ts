@@ -14,13 +14,34 @@ export async function GET(req: NextRequest) {
 
     if (!page) page = 1;
 
-    const res = await prisma.giveawayRedemptions.findMany({
-        where: { giveaway: { creatorId: thisUser.id } },
-        select: { viewer: { select: { name: true, id: true, isBanned: true } } },
-        skip: (page - 1) * 20,
-        take: 20,
-    });
-    return NextResponse.json(res);
+    let creatorId = req.nextUrl.searchParams.get("creator");
+    if (creatorId) {
+        if (session.user.id === creatorId) {
+            const res = await prisma.giveawayRedemptions.findMany({
+                where: { giveaway: { creatorId: thisUser.id } },
+                select: { viewer: { select: { name: true, id: true, isBanned: true } } },
+                skip: (page - 1) * 20,
+                take: 20,
+            });
+            return NextResponse.json(res);
+        } else {
+            const validModerator = await prisma.moderator.findFirst({ where: { creatorId: creatorId, moderatorId: session.user.id } });
+            if (validModerator !== null) {
+                const viewers = await prisma.giveawayRedemptions.findMany({
+                    where: { giveaway: { creatorId: creatorId } },
+                    select: { viewer: { select: { name: true, id: true, isBanned: true } } },
+                    skip: (page - 1) * 20,
+                    take: 20,
+                });
+                const viewerMap = viewers.map((item) => item.viewer);
+                return NextResponse.json(viewerMap);
+            } else {
+                return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+            }
+        }
+    } else {
+        return NextResponse.json({}, { status: 400 });
+    }
 }
 
 export async function POST(req: NextRequest) {
