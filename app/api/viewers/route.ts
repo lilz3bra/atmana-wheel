@@ -17,23 +17,31 @@ export async function GET(req: NextRequest) {
     let creatorId = req.nextUrl.searchParams.get("creator");
     if (creatorId) {
         if (session.user.id === creatorId) {
-            const res = await prisma.giveawayRedemptions.findMany({
-                where: { giveaway: { creatorId: thisUser.id } },
-                select: { viewer: { select: { name: true, id: true, isBanned: true } } },
+            const viewers = await prisma.streamViewers.findMany({
+                where: { creatorId: thisUser.id },
+                select: { viewer: { select: { name: true, id: true } }, isBanned: true },
+                orderBy: { viewer: { name: "asc" } },
                 skip: (page - 1) * 20,
                 take: 20,
             });
-            return NextResponse.json(res);
+            const viewerMap = viewers.map((item) => {
+                return { isBanned: item.isBanned, name: item.viewer.name, id: item.viewer.id };
+            });
+            return NextResponse.json(viewerMap);
         } else {
             const validModerator = await prisma.moderator.findFirst({ where: { creatorId: creatorId, moderatorId: session.user.id } });
             if (validModerator !== null) {
-                const viewers = await prisma.giveawayRedemptions.findMany({
-                    where: { giveaway: { creatorId: creatorId } },
-                    select: { viewer: { select: { name: true, id: true, isBanned: true } } },
+                const viewers = await prisma.streamViewers.findMany({
+                    where: { creatorId: creatorId },
+                    select: { viewer: { select: { name: true, id: true } }, isBanned: true },
+                    orderBy: { viewer: { name: "asc" } },
+
                     skip: (page - 1) * 20,
                     take: 20,
                 });
-                const viewerMap = viewers.map((item) => item.viewer);
+                const viewerMap = viewers.map((item) => {
+                    return { isBanned: item.isBanned, name: item.viewer.name, id: item.viewer.id };
+                });
                 return NextResponse.json(viewerMap);
             } else {
                 return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
