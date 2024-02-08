@@ -3,7 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { authOptions, getTwitchClientToken } from "../auth/[...nextauth]/route";
 import { verifyMessage } from "./_helpers";
 import { prisma } from "@/lib/prisma";
-import { inngest } from "@/inngest/inngest.client";
+// import { inngest } from "@/inngest/inngest.client";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
 export async function POST(req: Request) {
     const msg = await req.text();
@@ -14,14 +15,11 @@ export async function POST(req: Request) {
         if (await verifyMessage(req, msg)) {
             const giveaway = await prisma.giveaways.findFirst({ where: { twitchId: data.event.reward.id }, select: { id: true, creatorId: true } });
             if (giveaway) {
-                inngest.send({
-                    name: "viewer/addViewerOnStream",
-                    data: {
-                        giveawayId: giveaway.id,
-                        creatorId: giveaway.creatorId,
-                        viewerId: data.event.user_id,
-                        viewerName: data.event.user_name,
-                    },
+                addToQueue({
+                    giveawayId: giveaway.id,
+                    creatorId: giveaway.creatorId,
+                    viewerId: data.event.user_id,
+                    viewerName: data.event.user_name,
                 });
                 return NextResponse.json({}, { status: 200 });
             } else {
@@ -31,6 +29,39 @@ export async function POST(req: Request) {
         }
         console.log("Invalid message received");
         return NextResponse.json({}, { status: 403 });
+    }
+}
+
+async function addToQueue({ giveawayId, creatorId, viewerId, viewerName }: { creatorId: string; giveawayId: string; viewerId: string; viewerName: string }) {
+    // console.log(event.data.v);
+    // const creatorId: string = event.data.creatorId;
+    // const giveawayId: string = event.data.giveawayId;
+    // const viewerId: string = event.data.viewerId;
+    //  const viewerName: string = event.data.viewerName;
+
+    try {
+        const viewer = await prisma.viewer.upsert({
+            where: { twitchId: viewerId },
+            update: { name: viewerName },
+            create: { name: viewerName, twitchId: viewerId, isBanned: false, isApproved: false },
+        });
+        await prisma.giveawayRedemptions.upsert({
+            where: { ViewerRedemptions: { viewerId: viewer.id, giveawayId: giveawayId } },
+            update: { ammount: { increment: 1 } },
+            create: { viewerId: viewer.id, giveawayId: giveawayId },
+        });
+        await prisma.streamViewers.upsert({
+            where: { UniqueViewerForCreator: { creatorId: creatorId, viewerId: viewerId } },
+            update: {},
+            create: { creatorId: creatorId, viewerId: viewer.id },
+        });
+        return { event, body: `Successfully inserted ${viewerName}'s redemption` };
+    } catch (error) {
+        if (error instanceof PrismaClientKnownRequestError) return;
+        else {
+            console.log(error);
+            return { event, body: error };
+        }
     }
 }
 
