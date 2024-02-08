@@ -15,12 +15,15 @@ export async function POST(req: Request) {
         if (await verifyMessage(req, msg)) {
             const giveaway = await prisma.giveaways.findFirst({ where: { twitchId: data.event.reward.id }, select: { id: true, creatorId: true } });
             if (giveaway) {
+                console.log("Started asyc job", performance.now());
+
                 addToQueue({
                     giveawayId: giveaway.id,
                     creatorId: giveaway.creatorId,
                     viewerId: data.event.user_id,
                     viewerName: data.event.user_name,
                 });
+                console.log("Sending response", performance.now());
                 return NextResponse.json({}, { status: 200 });
             } else {
                 console.log("Invalid giveaway requested");
@@ -55,7 +58,9 @@ async function addToQueue({ giveawayId, creatorId, viewerId, viewerName }: { cre
             update: {},
             create: { creatorId: creatorId, viewerId: viewer.id },
         });
-        return { event, body: `Successfully inserted ${viewerName}'s redemption` };
+        console.log("Finished async job", performance.now());
+
+        return;
     } catch (error) {
         if (error instanceof PrismaClientKnownRequestError) return;
         else {
