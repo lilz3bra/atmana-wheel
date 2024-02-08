@@ -51,20 +51,3 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({}, { status: 400 });
     }
 }
-
-export async function POST(req: NextRequest) {
-    // Validate authorization
-    const session = await getServerSession(authOptions);
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    const data = await req.json();
-
-    let status = 404;
-
-    if (data.action === "ban" && data.viewerId && typeof data.state === "boolean") {
-        const res = await prisma.viewer.update({ where: { id: data.viewerId }, data: { isBanned: data.state } });
-        if (res) status = 200;
-    }
-
-    return NextResponse.json({}, { status });
-}
