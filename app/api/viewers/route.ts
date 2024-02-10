@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]/route";
 import { NextRequest, NextResponse } from "next/server";
+import { checkModerator } from "../moderation/_moderationHelpers";
 
 export async function GET(req: NextRequest) {
     // Validate authorization
@@ -10,44 +11,34 @@ export async function GET(req: NextRequest) {
 
     // Get data stored in the jwt sent
     const thisUser = session.user;
-    let page = Number(req.nextUrl.searchParams.get("page"));
+    const userId = thisUser.id;
+    const page = Number(req.nextUrl.searchParams.get("page")) || 1;
 
-    if (!page) page = 1;
-
-    let creatorId = req.nextUrl.searchParams.get("creator");
-    if (creatorId) {
-        if (session.user.id === creatorId) {
-            const viewers = await prisma.streamViewers.findMany({
-                where: { creatorId: thisUser.id },
-                select: { viewer: { select: { name: true, id: true } }, isBanned: true },
-                orderBy: { viewer: { name: "asc" } },
-                skip: (page - 1) * 20,
-                take: 20,
-            });
-            const viewerMap = viewers.map((item) => {
-                return { isBanned: item.isBanned, name: item.viewer.name, id: item.viewer.id };
-            });
-            return NextResponse.json(viewerMap);
-        } else {
-            const validModerator = await prisma.moderator.findFirst({ where: { creatorId: creatorId, moderatorId: session.user.id } });
-            if (validModerator !== null) {
-                const viewers = await prisma.streamViewers.findMany({
-                    where: { creatorId: creatorId },
-                    select: { viewer: { select: { name: true, id: true } }, isBanned: true },
-                    orderBy: { viewer: { name: "asc" } },
-
-                    skip: (page - 1) * 20,
-                    take: 20,
-                });
-                const viewerMap = viewers.map((item) => {
-                    return { isBanned: item.isBanned, name: item.viewer.name, id: item.viewer.id };
-                });
-                return NextResponse.json(viewerMap);
-            } else {
-                return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-            }
-        }
+    const creatorId = req.nextUrl.searchParams.get("creator");
+    const filter = req.nextUrl.searchParams.get("filter");
+    const modCheck = await checkModerator(creatorId, userId);
+    if (modCheck.invalid) {
+        // User is not authorized to moderate the requested channel
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     } else {
-        return NextResponse.json({}, { status: 400 });
+        let where = {};
+        // Set the creatorId based on the mod status
+        where = modCheck.creator ? { creatorId: userId } : { creatorId: creatorId! };
+        // If we got requested a list of banned users, append that to the query
+        if (filter === "banned") where = { ...where, isBanned: true };
+
+        // Get the viewers
+        const viewers = await prisma.streamViewers.findMany({
+            where: where,
+            select: { viewer: { select: { name: true, id: true } }, isBanned: true },
+            orderBy: { viewer: { name: "asc" } },
+            skip: (page - 1) * 20,
+            take: 20,
+        });
+        // Map it to a neat array
+        const viewerMap = viewers.map((item) => {
+            return { isBanned: item.isBanned, name: item.viewer.name, id: item.viewer.id };
+        });
+        return NextResponse.json(viewerMap);
     }
 }
