@@ -11,7 +11,6 @@ const page = async () => {
     }
 
     const moderatorIn = await prisma.moderator.findMany({ where: { moderatorId: session.user.id }, select: { creator: { select: { name: true, id: true } } } });
-    console.log(moderatorIn);
     return (
         <div className="flex flex-col justify-center align-middle m-auto w-fit">
             <Link className="block p-2 cursor-pointer bg-slate-600 hover:bg-blue-700 rounded-xl text-center m-2" href="/active">
