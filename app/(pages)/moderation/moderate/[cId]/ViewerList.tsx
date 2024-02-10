@@ -7,7 +7,7 @@ interface Viewer {
     isBanned: boolean;
 }
 
-const ViewersList = ({ creator }: { creator: string }) => {
+const ViewersList = ({ creator, filter }: { creator: string; filter?: string }) => {
     const [viewers, setViewers] = useState<Viewer[]>([]);
     const [page, setPage] = useState(1);
     const fistLoad = useRef(true);
@@ -20,7 +20,7 @@ const ViewersList = ({ creator }: { creator: string }) => {
 
     useEffect(() => {
         const fetchViewers = async () => {
-            const res = await fetch(`/api/viewers?page=${page}&creator=${creator}`);
+            const res = await fetch(`/api/viewers?page=${page}&creator=${creator}${filter ? `&filter=${filter}` : ""}`);
             const data = await res.json();
             setViewers(data);
         };
