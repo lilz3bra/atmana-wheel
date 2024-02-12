@@ -79,6 +79,7 @@ model Giveaways {
   creatorId          String                @db.ObjectId
   creator            User                  @relation(fields: [creatorId], references: [id])
   winner             String?
+  winners            Winners[]
   paused             Boolean?
   streamLimitEnabled Boolean               @default(false)
   streamLimit        Int                   @default(0)
@@ -126,6 +127,7 @@ model Viewer {
   isBanned            Boolean
   isApproved          Boolean
   streams             StreamViewers[]
+  won                 Winners[]
 
   @@unique([twitchId])
 }
@@ -171,4 +173,13 @@ model StreamViewers {
   isBanned  Boolean @default(false)
 
   @@unique([creatorId, viewerId], name: "UniqueViewerForCreator")
+}
+
+model Winners {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  giveawayId String    @db.ObjectId
+  giveaway   Giveaways @relation(fields: [giveawayId], references: [id])
+  viewerId   String    @db.ObjectId
+  viewer     Viewer    @relation(fields: [viewerId], references: [id])
+  dateDrawn  DateTime  @default(now())
 }
