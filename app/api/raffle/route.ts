@@ -73,6 +73,7 @@ export async function PUT(req: Request) {
     }
 }
 
+/** Return the participants for a giveaway */
 export async function GET(req: NextRequest) {
     // Validate authorization
     const session = await getServerSession(authOptions);
@@ -99,19 +100,17 @@ export async function GET(req: NextRequest) {
     try {
         const temp = await prisma.giveawayRedemptions.findMany({
             where: { giveawayId: raffle, viewer: { streams: { some: { creatorId: { equals: creatorId }, isBanned: false } } } },
-            select: { viewer: { select: { name: true } }, ammount: true },
+            select: { viewer: { select: { name: true, id: true } }, ammount: true },
         });
-        const result = temp.reduce((acc, redemption) => {
-            const viewerName = redemption.viewer.name;
-            acc[viewerName] = redemption.ammount;
-            return acc;
-        }, {} as Record<string, number>);
+        const list = temp.map((i) => {
+            return { ...i.viewer, ammount: i.ammount };
+        });
         let tot = 0;
-        Object.keys(result!).forEach((name) => {
-            const weight = result![name];
+        Object.keys(list).forEach((_, index) => {
+            const weight = list[index].ammount;
             tot += weight;
         });
-        return NextResponse.json({ total: tot, list: result });
+        return NextResponse.json({ total: tot, list: list });
     } catch (error) {
         console.log(error);
         return NextResponse.json({ error }, { status: 500 });
