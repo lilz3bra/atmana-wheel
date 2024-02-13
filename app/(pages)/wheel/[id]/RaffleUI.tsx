@@ -58,11 +58,11 @@ const RaffleUI = ({ giveaway }: Props) => {
         }
     };
 
-    const drawWinner = () => {
+    const drawWinner = async () => {
         setPaused(true);
         pauseResume();
         clearInter();
-        if (!isDeleted) getParticipants();
+        if (!isDeleted) await getParticipants();
         setVisible(true);
     };
 
@@ -91,8 +91,6 @@ const RaffleUI = ({ giveaway }: Props) => {
             clearInter();
         }
     }, [isPaused, isDeleted]);
-
-    useEffect(() => {}, [users]);
 
     const clearInter = () => {
         if (inter.current !== null) {
