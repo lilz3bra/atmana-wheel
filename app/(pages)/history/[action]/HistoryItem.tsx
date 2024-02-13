@@ -11,9 +11,9 @@ interface item {
     name: string;
     cost: number;
     prize: string;
-    winner: string | null;
+    winners: { viewer: { id: string; name: string } }[];
     paid: boolean;
-    createdAt?: Date;
+    createdAt?: Date | null;
 }
 interface Props {
     item: item;
@@ -39,19 +39,19 @@ const HistoryItem = ({ item, filter }: Props) => {
         router.refresh();
     };
 
-    if (filter === "" || (filter === "winnerunpaid" && !item.paid && item.winner) || (filter === "paid" && item.paid) || (filter === "notdrawn" && !item.winner)) {
+    if (filter === "" || (filter === "winnerunpaid" && !item.paid && item.winners) || (filter === "paid" && item.paid) || (filter === "notdrawn" && !item.winners)) {
         return (
             <div className="m-2 bg-slate-800 p-2 rounded-xl flex flex-col align-middle justify-center items-center">
                 <p className="font-bold truncate max-w-full">{item.name}</p>
                 <p className="truncate max-w-full">Prize: {item.prize}</p>
                 <p>Cost: {item.cost}</p>
                 {item.createdAt && <p>Created: {item.createdAt.toLocaleDateString()}</p>}
-                <div className={`${!item.winner ? "text-red-700" : item.paid ? "text-green-700" : "text-yellow-500"} flex flex-col items-center max-w-full`}>
+                <div className={`${!item.winners ? "text-red-700" : item.paid ? "text-green-700" : "text-yellow-500"} flex flex-col items-center max-w-full`}>
                     <p>Winner:</p>
-                    <span className="text-center truncate max-w-full font-bold">{!item.winner ? " Not drawn" : " " + item.winner}</span>
+                    <span className="text-center truncate max-w-full font-bold">{!item.winners ? " Not drawn" : " " + item.winners[0].viewer.name}</span>
                 </div>
                 <div className="flex flex-row whitespace-nowrap justify-center gap-4 mt-2">
-                    <Hint text={`${!item.winner ? "D" : "Re-D"}raw winner`} extraCss="flex flex-row justify-center">
+                    <Hint text={`${!item.winners ? "D" : "Re-D"}raw winner`} extraCss="flex flex-row justify-center">
                         <div className="p-2 bg-blue-500 cursor-pointer hover:bg-blue-700 rounded-xl text-white w-fit" onClick={() => router.push(`/wheel/${item.id}`)}>
                             <FontAwesomeIcon icon={faCircleHalfStroke} />
                         </div>
@@ -63,7 +63,7 @@ const HistoryItem = ({ item, filter }: Props) => {
                             </div>
                         </Hint>
                     )}
-                    {!item.paid && item.winner && (
+                    {!item.paid && item.winners && (
                         <Hint text="Mark as paid" extraCss="flex flex-row justify-center">
                             <div className="p-2 bg-blue-500  cursor-pointer hover:bg-blue-700 rounded-xl text-white w-fit" onClick={() => markPaid(item)}>
                                 <FontAwesomeIcon icon={faMoneyBill1Wave} />
