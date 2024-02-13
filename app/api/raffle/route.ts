@@ -167,15 +167,18 @@ export async function POST(req: NextRequest) {
 
         // Get data stored in the jwt sent
         const thisUser = session.user;
+        const creator = await prisma.giveaways.findFirst({ where: { creatorId: thisUser.id } });
+        if (!creator) return NextResponse.json({}, { status: 403 });
 
         // Get the raffle id from req and make sure one was passed
         const raffle = req.nextUrl.searchParams.get("raffleId");
         if (!raffle || raffle === "") return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
 
         const data = await req.json();
-        // Make the db query
-        const db = await prisma.giveaways.update({ where: { creatorId: thisUser.id, id: raffle }, data: data });
-        // Send the results
+
+        // Insert into the db
+        const db = await prisma.winners.create({ data: { giveawayId: raffle, viewerId: data.winner } });
+        // Send the results back
         return NextResponse.json(db);
     } catch (error) {
         console.log(error);
