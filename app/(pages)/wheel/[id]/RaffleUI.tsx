@@ -17,7 +17,7 @@ interface Props {
 
 interface Resp {
     total: number;
-    list: UsersList;
+    list: UsersList[];
 }
 const RaffleUI = ({ giveaway }: Props) => {
     const [users, setUsers] = useState<Resp | null>(null);
@@ -40,11 +40,9 @@ const RaffleUI = ({ giveaway }: Props) => {
         }
     };
 
-    const sortUsers = (us: UsersList) => {
-        const keyValArray = Object.entries(us!);
-        keyValArray.sort((a, b) => b[1] - a[1]);
-        const sortedObj = Object.fromEntries(keyValArray);
-        return sortedObj;
+    const sortUsers = (us: UsersList[]) => {
+        const sortedUsers = [...us].sort((a, b) => b.ammount - a.ammount);
+        return sortedUsers;
     };
     const sortedUsers = users ? sortUsers(users.list) : null;
 
@@ -68,8 +66,8 @@ const RaffleUI = ({ giveaway }: Props) => {
         setVisible(true);
     };
 
-    const updateDb = async (winner: Array<Object>) => {
-        const res = await fetch(`/api/raffle?raffleId=${giveaway.id}`, { method: "POST", body: JSON.stringify({ winner: winner }) });
+    const updateDb = async (winner: string) => {
+        const res = await fetch(`/api/raffle?raffleId=${giveaway.id}`, { method: "POST", body: JSON.stringify({ winner }) });
         if (!isDeleted) {
             deleteReward();
         }
@@ -159,7 +157,9 @@ const RaffleUI = ({ giveaway }: Props) => {
                             <div className="m-auto w-2/3 h-1/2 justify-center text-center gap-2">
                                 {typeof sortedUsers !== "undefined" ? <ParticipantsList users={sortedUsers!} tot={users.total} /> : loading && <Loading />}
                             </div>
-                            {visible && typeof users !== "undefined" ? <Modal entries={users.list} onClose={() => setVisible(false)} returnCallback={updateDb} /> : null}
+                            {visible && typeof users !== "undefined" ? (
+                                <Modal entries={users.list} onClose={() => setVisible(false)} returnCallback={updateDb} totalCount={users.total} />
+                            ) : null}
                         </>
                     )}
                 </>
