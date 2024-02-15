@@ -31,11 +31,13 @@ export async function addToQueue({ giveawayId, creatorId, viewerId, viewerName }
             update: { ammount: { increment: 1 } },
             create: { viewerId: viewer.id, giveawayId: giveawayId },
         });
-        await prisma.streamViewers.upsert({
+        const r = await prisma.streamViewers.upsert({
             where: { UniqueViewerForCreator: { creatorId: creatorId, viewerId: viewer.id } },
-            update: {},
+            update: { viewerId: viewer.id },
             create: { creatorId: creatorId, viewerId: viewer.id },
         });
+        console.log(r.viewerId);
+        return viewer.name;
     } catch (error) {
         console.log(error);
     }
