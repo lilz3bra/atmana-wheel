@@ -33,11 +33,9 @@ export async function addToQueue({ giveawayId, creatorId, viewerId, viewerName }
         });
         const r = await prisma.streamViewers.upsert({
             where: { UniqueViewerForCreator: { creatorId: creatorId, viewerId: viewer.id } },
-            update: { viewerId: viewer.id },
+            update: {},
             create: { creatorId: creatorId, viewerId: viewer.id },
         });
-        console.log(r.viewerId);
-        return viewer.name;
     } catch (error) {
         console.log(error);
     }
