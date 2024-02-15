@@ -17,22 +17,32 @@ const History = async ({ params }: Props) => {
     }
     const currentUser = session?.user?.id;
     let fetchedItems;
-    if (params.action === "prompt") {
-        fetchedItems = await prisma.prompts.findMany({
-            where: {
-                creatorId: currentUser,
-                hidden: false,
-            },
-        });
-    }
-    if (params.action === "wheel") {
-        fetchedItems = await prisma.giveaways.findMany({
-            where: {
-                creatorId: currentUser,
-                hidden: false,
-            },
-        });
-    }
+    // if (params.action === "prompt") {
+    //     fetchedItems = await prisma.prompts.findMany({
+    //         where: {
+    //             creatorId: currentUser,
+    //             hidden: false,
+    //         },
+    //     });
+    // }
+    // if (params.action === "wheel") {
+    fetchedItems = await prisma.giveaways.findMany({
+        where: {
+            creatorId: currentUser,
+            hidden: false,
+        },
+        select: {
+            id: true,
+            twitchId: true,
+            name: true,
+            cost: true,
+            prize: true,
+            paid: true,
+            createdAt: true,
+            winners: { include: { viewer: { select: { name: true, id: true } } } },
+        },
+    });
+    // }
 
     return <HistoryList items={fetchedItems!} />;
 };

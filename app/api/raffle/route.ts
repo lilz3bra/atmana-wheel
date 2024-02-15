@@ -73,6 +73,7 @@ export async function PUT(req: Request) {
     }
 }
 
+/** Return the participants for a giveaway */
 export async function GET(req: NextRequest) {
     // Validate authorization
     const session = await getServerSession(authOptions);
@@ -84,27 +85,32 @@ export async function GET(req: NextRequest) {
     // Get the raffle id from req and make sure one was passed
     const raffle = req.nextUrl.searchParams.get("raffleId");
     if (!raffle || raffle === "") return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
+    const creator = req.nextUrl.searchParams.get("creatorId");
+    let creatorId;
+    if (creator) {
+        const isMod = await prisma.moderator.findFirst({ where: { creatorId: creator, moderatorId: thisUser.id } });
+        if (isMod) {
+            creatorId = creator;
+        } else {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+    } else {
+        creatorId = thisUser.id;
+    }
     try {
         const temp = await prisma.giveawayRedemptions.findMany({
-            where: { giveawayId: raffle, viewer: { isBanned: false } },
-            select: {
-                viewer: {
-                    select: { name: true, id: true },
-                },
-                ammount: true,
-            },
+            where: { giveawayId: raffle, viewer: { streams: { some: { creatorId: { equals: creatorId }, isBanned: false } } } },
+            select: { viewer: { select: { name: true, id: true } }, ammount: true },
         });
-        const result = temp.reduce((acc, redemption) => {
-            const viewerName = redemption.viewer.name;
-            acc[viewerName] = redemption.ammount;
-            return acc;
-        }, {} as Record<string, number>);
+        const list = temp.map((i) => {
+            return { ...i.viewer, ammount: i.ammount };
+        });
         let tot = 0;
-        Object.keys(result!).forEach((name) => {
-            const weight = result![name];
+        Object.keys(list).forEach((_, index) => {
+            const weight = list[index].ammount;
             tot += weight;
         });
-        return NextResponse.json({ total: tot, list: result });
+        return NextResponse.json({ total: tot, list: list });
     } catch (error) {
         console.log(error);
         return NextResponse.json({ error }, { status: 500 });
@@ -161,15 +167,18 @@ export async function POST(req: NextRequest) {
 
         // Get data stored in the jwt sent
         const thisUser = session.user;
+        const creator = await prisma.giveaways.findFirst({ where: { creatorId: thisUser.id } });
+        if (!creator) return NextResponse.json({}, { status: 403 });
 
         // Get the raffle id from req and make sure one was passed
         const raffle = req.nextUrl.searchParams.get("raffleId");
         if (!raffle || raffle === "") return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
 
         const data = await req.json();
-        // Make the db query
-        const db = await prisma.giveaways.update({ where: { creatorId: thisUser.id, id: raffle }, data: data });
-        // Send the results
+
+        // Insert into the db
+        const db = await prisma.winners.create({ data: { giveawayId: raffle, viewerId: data.winner } });
+        // Send the results back
         return NextResponse.json(db);
     } catch (error) {
         console.log(error);

@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { authOptions, getTwitchClientToken } from "../auth/[...nextauth]/route";
-import { verifyMessage } from "./_helpers";
+import { verifyMessage, addToQueue } from "./_helpers";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request) {
@@ -13,15 +13,11 @@ export async function POST(req: Request) {
         if (await verifyMessage(req, msg)) {
             const giveaway = await prisma.giveaways.findFirst({ where: { twitchId: data.event.reward.id }, select: { id: true, creatorId: true } });
             if (giveaway) {
-                const viewer = await prisma.viewer.upsert({
-                    where: { twitchId: data.event.user_id },
-                    update: { name: data.event.user_name },
-                    create: { name: data.event.user_name, twitchId: data.event.user_id, isBanned: false, isApproved: false },
-                });
-                const res = await prisma.giveawayRedemptions.upsert({
-                    where: { ViewerRedemptions: { viewerId: viewer.id, giveawayId: giveaway.id } },
-                    update: { ammount: { increment: 1 } },
-                    create: { viewerId: viewer.id, giveawayId: giveaway.id },
+                addToQueue({
+                    giveawayId: giveaway.id,
+                    creatorId: giveaway.creatorId,
+                    viewerId: data.event.user_id,
+                    viewerName: data.event.user_name,
                 });
                 return NextResponse.json({}, { status: 200 });
             } else {

@@ -8,8 +8,9 @@ interface item {
     name: string;
     cost: number;
     prize: string;
-    winner: string | null;
+    winners: { viewer: { id: string; name: string } }[];
     paid: boolean;
+    createdAt?: Date | null;
 }
 interface Props {
     items: item[];

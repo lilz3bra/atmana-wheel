@@ -1,20 +1,31 @@
 import { useEffect, useRef, useState, useLayoutEffect } from "react";
+interface Particle {
+    x: number;
+    y: number;
+    size: number;
+    color: string;
+    angle: number;
+    speed: number;
+    gravity: number;
+    rotation: number;
+    rotationSpeed: number;
+}
 
-export const Wheel = ({ entries, callback, closing }) => {
-    const canvasRef = useRef(null);
+export const Wheel = ({ entries, callback, closing, totalCount }: { entries: UsersList[]; callback: Function; closing: Boolean; totalCount: number }) => {
+    const canvasRef = useRef<HTMLCanvasElement>(null);
     const firstRun = useRef(true);
     const firstDraw = useRef(true);
-    const timerHandle = useRef(0);
+    const timerHandle: React.MutableRefObject<number> = useRef<number>(0);
     const timerDelay = 33;
     const angleCurrent = useRef(0);
     const angleDelta = useRef(0);
 
     const size = useRef(190);
 
-    const segments = useRef();
-    const seg_colors = useRef();
-    const winner = useRef();
-    const lastPointed = useRef();
+    const segments = useRef<SegmentList[]>([]);
+    const seg_colors = useRef<string[]>();
+    const winner = useRef<SegmentList>();
+    const lastPointed = useRef<SegmentList>();
     const isResizing = useRef(false);
     const [maxSpeed, setMaxSpeed] = useState(Math.PI / 8);
     const upTime = 2000; // Acceleration time (in ms)
@@ -22,16 +33,12 @@ export const Wheel = ({ entries, callback, closing }) => {
     const spinStart = useRef(0);
     const centerX = useRef(200);
     const centerY = useRef(200);
-    let totalCount = 0;
 
     const winSFX = new Audio("/assets/tada.mp3");
     const tickSFX = new Audio("/assets/tick.mp3");
     const [width, setWidth] = useState((window.innerWidth * 2) / 3);
     const [height, setHeight] = useState(window.innerHeight * (5 / 6));
 
-    Object.keys(entries).forEach((name) => {
-        totalCount += entries[name];
-    });
     useLayoutEffect(() => {
         const handleResize = () => {
             setWidth(window.innerWidth * 0.5);
@@ -82,23 +89,22 @@ export const Wheel = ({ entries, callback, closing }) => {
     const init = () => {
         const canvas = canvasRef.current;
         // draw on the canvas here
+        if (canvas) {
+            canvas.addEventListener("click", spin);
+            segments.current = Object.entries(entries).map(([_, obj]) => ({
+                ...obj,
+                angle: (obj.ammount / totalCount) * Math.PI * 2,
+            }));
+            seg_colors.current = genColor(segments.current.length);
+            angleCurrent.current = (0.5 / totalCount) * Math.PI * 2;
+            centerX.current = window.innerWidth * 0.5 * (2 / 3) - 100;
+            centerY.current = (window.innerHeight * (5 / 6)) / 2;
+            size.current = (window.innerHeight * (5 / 6)) / 2 - 10;
 
-        canvas.addEventListener("click", spin);
-        segments.current = Object.entries(entries).map(([name, weight]) => ({
-            username: name,
-            count: weight,
-            angle: (weight / totalCount) * Math.PI * 2,
-        }));
-
-        seg_colors.current = genColor(segments.current.length);
-        angleCurrent.current = (0.5 / totalCount) * Math.PI * 2;
-        centerX.current = window.innerWidth * 0.5 * (2 / 3) - 100;
-        centerY.current = (window.innerHeight * (5 / 6)) / 2;
-        size.current = (window.innerHeight * (5 / 6)) / 2 - 10;
-
-        return () => {
-            canvas.removeEventListener("click", spin);
-        };
+            return () => {
+                canvas.removeEventListener("click", spin);
+            };
+        }
     };
 
     const spin = () => {
@@ -108,7 +114,7 @@ export const Wheel = ({ entries, callback, closing }) => {
             spinStart.current = Date.now();
             let newSpeed = Math.PI / (16 + Math.random());
             setMaxSpeed(newSpeed); // Randomly vary how fast the spin is
-            timerHandle.current = setInterval(onTimerTick, timerDelay);
+            timerHandle.current = window.setInterval(onTimerTick, timerDelay);
         }
     };
 
@@ -128,10 +134,10 @@ export const Wheel = ({ entries, callback, closing }) => {
             angleDelta.current = maxSpeed * 1.7 * (1 / duration) ** progress;
             if (angleDelta.current <= 0.0007) {
                 finished = true;
-                callback(winner.current);
+                callback(winner.current!.id);
                 winSFX.volume = 0.25;
                 winSFX.play();
-                drawConfetti(winner.current);
+                drawConfetti(winner.current?.name!);
             } // We are done
         }
 
@@ -149,133 +155,139 @@ export const Wheel = ({ entries, callback, closing }) => {
         if (canvasRef.current) {
             // clear last frame
             const ctx = canvasRef.current.getContext("2d");
-            ctx.clearRect(0, 0, width, height);
-            // draw wheel
-            let lastAngle = angleCurrent.current; // Moved inside the draw function
-            let len = segments.current.length;
-            const PI2 = Math.PI * 2;
+            if (ctx) {
+                ctx.clearRect(0, 0, width, height);
+                // draw wheel
+                let lastAngle = angleCurrent.current; // Moved inside the draw function
+                let len = segments.current.length;
+                const PI2 = Math.PI * 2;
 
-            ctx.lineWidth = 1;
-            ctx.strokeStyle = "#000000";
-            ctx.textBaseline = "middle";
-            ctx.textAlign = "center";
-            ctx.font = "1.4em Arial";
+                ctx.lineWidth = 1;
+                ctx.strokeStyle = "#000000";
+                ctx.textBaseline = "middle";
+                ctx.textAlign = "center";
+                ctx.font = "1.4em Arial";
 
-            for (let i = 1; i <= len; i++) {
-                let angle = segments.current[i - 1].angle + lastAngle;
-                drawSegment(i - 1, lastAngle, angle);
-                lastAngle = angle; // Update the last angle
-            }
-
-            // Draw a center circle
-            ctx.beginPath();
-            ctx.arc(centerX.current, centerY.current, 20, 0, PI2, false);
-            ctx.closePath();
-
-            ctx.fillStyle = "#ffffff";
-            ctx.strokeStyle = "#000000";
-            ctx.fill();
-            ctx.stroke();
-
-            // Draw outer circle
-            ctx.beginPath();
-            ctx.arc(centerX.current, centerY.current, size.current, 0, PI2, false);
-            ctx.closePath();
-
-            ctx.lineWidth = 10;
-            ctx.strokeStyle = "#000000";
-            ctx.stroke();
-
-            // draw needle
-            ctx.lineWidth = 1;
-            ctx.strokeStyle = "#000000";
-            ctx.fileStyle = "#ffffff";
-
-            ctx.beginPath();
-
-            ctx.moveTo(centerX.current + size.current - 40, centerY.current);
-            ctx.lineTo(centerX.current + size.current + 20, centerY.current - 10);
-            ctx.lineTo(centerX.current + size.current + 20, centerY.current + 10);
-            ctx.closePath();
-
-            ctx.stroke();
-            ctx.fill();
-
-            // Which segment is being pointed to?
-            let anglePercentage = 1 - (angleCurrent.current % (Math.PI * 2)) / (Math.PI * 2);
-            let currentCount = anglePercentage * totalCount;
-            let accumulatedCount = 0;
-            let pointed = 0;
-
-            for (let i = 0; i < len; i++) {
-                accumulatedCount += segments.current[i].count;
-                if (currentCount < accumulatedCount) {
-                    pointed = i;
-                    break;
+                for (let i = 1; i <= len; i++) {
+                    let angle = segments.current[i - 1].angle + lastAngle;
+                    drawSegment(i - 1, lastAngle, angle);
+                    lastAngle = angle; // Update the last angle
                 }
-            }
-            ctx.textAlign = "left";
-            ctx.textBaseline = "middle";
-            ctx.fillStyle = "#000000";
-            ctx.font = "2em Arial";
-            ctx.fillText(segments.current[pointed].username, centerX.current + size.current + 25, centerY.current);
-            winner.current = segments.current[pointed].username;
-            if (lastPointed.current !== winner.current) {
-                tickSFX.volume = 0.25;
-                tickSFX.play();
-                lastPointed.current = winner.current;
+
+                // Draw a center circle
+                ctx.beginPath();
+                ctx.arc(centerX.current, centerY.current, 20, 0, PI2, false);
+                ctx.closePath();
+
+                ctx.fillStyle = "#ffffff";
+                ctx.strokeStyle = "#000000";
+                ctx.fill();
+                ctx.stroke();
+
+                // Draw outer circle
+                ctx.beginPath();
+                ctx.arc(centerX.current, centerY.current, size.current, 0, PI2, false);
+                ctx.closePath();
+
+                ctx.lineWidth = 10;
+                ctx.strokeStyle = "#000000";
+                ctx.stroke();
+
+                // draw needle
+                ctx.lineWidth = 1;
+                ctx.strokeStyle = "#000000";
+                ctx.fillStyle = "#ffffff";
+
+                ctx.beginPath();
+
+                ctx.moveTo(centerX.current + size.current - 40, centerY.current);
+                ctx.lineTo(centerX.current + size.current + 20, centerY.current - 10);
+                ctx.lineTo(centerX.current + size.current + 20, centerY.current + 10);
+                ctx.closePath();
+
+                ctx.stroke();
+                ctx.fill();
+
+                // Which segment is being pointed to?
+                let anglePercentage = 1 - (angleCurrent.current % (Math.PI * 2)) / (Math.PI * 2);
+                let currentCount = anglePercentage * totalCount;
+                let accumulatedCount = 0;
+                let pointed = 0;
+
+                for (let i = 0; i < len; i++) {
+                    accumulatedCount += segments.current[i].ammount;
+                    if (currentCount < accumulatedCount) {
+                        pointed = i;
+                        break;
+                    }
+                }
+                ctx.textAlign = "left";
+                ctx.textBaseline = "middle";
+                ctx.fillStyle = "#000000";
+                ctx.font = "2em Arial";
+                ctx.fillText(segments.current[pointed].name, centerX.current + size.current + 25, centerY.current);
+                winner.current = segments.current[pointed];
+                if (lastPointed.current !== winner.current) {
+                    tickSFX.volume = 0.25;
+                    tickSFX.play();
+                    lastPointed.current = winner.current;
+                }
             }
         }
     };
 
-    const drawSegment = (key, lastAngle, angle) => {
-        const ctx = canvasRef.current.getContext("2d");
-        const value = segments.current[key];
+    const drawSegment = (key: number, lastAngle: number, angle: number) => {
+        if (canvasRef.current && seg_colors.current) {
+            const ctx = canvasRef.current.getContext("2d");
+            if (ctx) {
+                const value = segments.current[key];
 
-        ctx.save();
-        ctx.beginPath();
+                ctx.save();
+                ctx.beginPath();
 
-        // Start in the centre
-        ctx.moveTo(centerX.current, centerY.current);
-        ctx.arc(centerX.current, centerY.current, size.current, lastAngle, angle, false); // Draw a arc around the edge
-        ctx.lineTo(centerX.current, centerY.current); // Now draw a line back to the centre
+                // Start in the centre
+                ctx.moveTo(centerX.current, centerY.current);
+                ctx.arc(centerX.current, centerY.current, size.current, lastAngle, angle, false); // Draw a arc around the edge
+                ctx.lineTo(centerX.current, centerY.current); // Now draw a line back to the centre
 
-        // Clip anything that follows to this area
-        ctx.closePath();
+                // Clip anything that follows to this area
+                ctx.closePath();
 
-        ctx.fillStyle = seg_colors.current[key];
-        ctx.fill();
-        ctx.stroke();
+                ctx.fillStyle = seg_colors.current[key];
+                ctx.fill();
+                ctx.stroke();
 
-        // Now draw the text
-        ctx.save(); // The save ensures this works on Android devices
-        ctx.translate(centerX.current, centerY.current);
-        ctx.rotate((lastAngle + angle) / 2);
+                // Now draw the text
+                ctx.save(); // The save ensures this works on Android devices
+                ctx.translate(centerX.current, centerY.current);
+                ctx.rotate((lastAngle + angle) / 2);
 
-        ctx.fillStyle = "#000000";
-        // ctx.translate(size / 2 + 20, 0); // This line is updated
-        // ctx.rotate(-((lastAngle + angle) / 2)); // This line is added
-        const username = value.username.substr(0, 15) + (value.username.length > 15 ? "..." : "");
-        ctx.fillText(username, size.current / 2 + 20, 0, size.current / 2 + 20); // This line is updated
-        ctx.restore();
+                ctx.fillStyle = "#000000";
+                // ctx.translate(size / 2 + 20, 0); // This line is updated
+                // ctx.rotate(-((lastAngle + angle) / 2)); // This line is added
+                const username = value.name.substring(0, 15) + (value.name.length > 15 ? "..." : "");
+                ctx.fillText(username, size.current / 2 + 20, 0, size.current / 2 + 20); // This line is updated
+                ctx.restore();
 
-        ctx.restore();
+                ctx.restore();
+            }
+        }
     };
 
-    const drawConfetti = (winnerName) => {
+    const drawConfetti = (winnerName: string) => {
         const confettiCanvas = document.createElement("canvas");
         confettiCanvas.width = window.innerWidth;
         confettiCanvas.height = window.innerHeight;
         confettiCanvas.style.position = "absolute";
-        confettiCanvas.style.top = 0;
-        confettiCanvas.style.left = 0;
+        confettiCanvas.style.top = "0";
+        confettiCanvas.style.left = "0";
         confettiCanvas.style.pointerEvents = "none"; // Make the canvas non-interactable
 
         document.body.appendChild(confettiCanvas);
 
         const confettiCtx = confettiCanvas.getContext("2d");
 
-        const particles = [];
+        const particles: Particle[] = [];
 
         // Set up particle parameters
         const size = 10;
@@ -320,6 +332,7 @@ export const Wheel = ({ entries, callback, closing }) => {
 
         // Draw particles
         const drawParticles = () => {
+            if (!confettiCtx) return;
             confettiCtx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
             confettiCtx.save();
             // confettiCtx.globalCompositeOperation = 'destination-out';
@@ -378,12 +391,14 @@ export const Wheel = ({ entries, callback, closing }) => {
     return <canvas ref={canvasRef} width={width} height={height} />;
 };
 
-function hsv_to_rgb(h, s, v) {
+function hsv_to_rgb(h: number, s: number, v: number) {
     // convert hsv to rgb and return the hex value
     let h_i, f, p, q, t;
-    let r, g, b;
+    let r = 0,
+        g = 0,
+        b = 0;
 
-    h_i = Number.parseInt(h * 6);
+    h_i = Number.parseInt((h * 6).toString());
     f = h * 6 - h_i;
     p = v * (1 - s);
     q = v * (1 - f * s);
@@ -418,10 +433,10 @@ function hsv_to_rgb(h, s, v) {
         g = p;
         b = q;
     }
-    return "#" + Number.parseInt(r * 256).toString(16) + Number.parseInt(g * 256).toString(16) + Number.parseInt(b * 256).toString(16);
+    return "#" + Number.parseInt((r * 256).toString()).toString(16) + Number.parseInt((g * 256).toString()).toString(16) + Number.parseInt((b * 256).toString()).toString(16);
 }
 
-function genColor(num) {
+function genColor(num: number) {
     // generate random colors using golden ratio to avoid colors being too close to eachother
     const gRatio = 0.618033988749895;
     let h = Math.random(); // starting random seed

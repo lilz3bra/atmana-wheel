@@ -12,4 +12,11 @@ interface Entry {
     weight: number;
 }
 
-type UsersList = { [name: string]: number };
+interface UsersList {
+    name: string;
+    ammount: number;
+    id: string;
+}
+interface SegmentList extends UsersList {
+    angle: number;
+}
