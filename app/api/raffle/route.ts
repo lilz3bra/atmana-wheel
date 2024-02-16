@@ -87,7 +87,7 @@ export async function GET(req: NextRequest) {
     if (!raffle || raffle === "") return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
     const creator = req.nextUrl.searchParams.get("creatorId");
     let creatorId;
-    if (creator) {
+    if (creator && creator !== thisUser.id) {
         const isMod = await prisma.moderator.findFirst({ where: { creatorId: creator, moderatorId: thisUser.id } });
         if (isMod) {
             creatorId = creator;
