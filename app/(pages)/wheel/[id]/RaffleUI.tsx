@@ -12,6 +12,7 @@ interface Props {
         id: string;
         twitchId: string;
         paused: boolean | null;
+        creatorId: string;
     };
 }
 
@@ -30,7 +31,7 @@ const RaffleUI = ({ giveaway }: Props) => {
     const inter = useRef<number | null>(null);
 
     const getParticipants = async () => {
-        const res = await fetch(`/api/raffle?raffleId=${giveaway.id}`);
+        const res = await fetch(`/api/raffle?raffleId=${giveaway.id}&creatorId=${giveaway.creatorId}`);
         if (res.status !== 200) {
             setError(true);
         } else {
