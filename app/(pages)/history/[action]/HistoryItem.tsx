@@ -39,16 +39,21 @@ const HistoryItem = ({ item, filter }: Props) => {
         router.refresh();
     };
 
-    if (filter === "" || (filter === "winnerunpaid" && !item.paid && item.winners) || (filter === "paid" && item.paid) || (filter === "notdrawn" && !item.winners)) {
+    if (
+        filter === "" ||
+        (filter === "winnerunpaid" && !item.paid && item.winners.length !== 0) ||
+        (filter === "paid" && item.paid) ||
+        (filter === "notdrawn" && item.winners.length === 0)
+    ) {
         return (
             <div className="m-2 bg-slate-800 p-2 rounded-xl flex flex-col align-middle justify-center items-center">
                 <p className="font-bold truncate max-w-full">{item.name}</p>
                 <p className="truncate max-w-full">Prize: {item.prize}</p>
                 <p>Cost: {item.cost}</p>
                 {item.createdAt && <p>Created: {item.createdAt.toLocaleDateString()}</p>}
-                <div className={`${!item.winners ? "text-red-700" : item.paid ? "text-green-700" : "text-yellow-500"} flex flex-col items-center max-w-full`}>
+                <div className={`${item.winners.length === 0 ? "text-red-700" : item.paid ? "text-green-700" : "text-yellow-500"} flex flex-col items-center max-w-full`}>
                     <p>Winner:</p>
-                    <span className="text-center truncate max-w-full font-bold">{!item.winners ? " Not drawn" : " " + item.winners[0].viewer.name}</span>
+                    <span className="text-center truncate max-w-full font-bold">{item.winners.length === 0 ? " Not drawn" : " " + item.winners[0].viewer.name}</span>
                 </div>
                 <div className="flex flex-row whitespace-nowrap justify-center gap-4 mt-2">
                     <Hint text={`${!item.winners ? "D" : "Re-D"}raw winner`} extraCss="flex flex-row justify-center">
@@ -63,7 +68,7 @@ const HistoryItem = ({ item, filter }: Props) => {
                             </div>
                         </Hint>
                     )}
-                    {!item.paid && item.winners && (
+                    {!item.paid && item.winners.length !== 0 && (
                         <Hint text="Mark as paid" extraCss="flex flex-row justify-center">
                             <div className="p-2 bg-blue-500  cursor-pointer hover:bg-blue-700 rounded-xl text-white w-fit" onClick={() => markPaid(item)}>
                                 <FontAwesomeIcon icon={faMoneyBill1Wave} />
