@@ -99,8 +99,33 @@ export async function GET(req: NextRequest) {
     }
     try {
         const temp = await prisma.giveawayRedemptions.findMany({
-            where: { giveawayId: raffle, viewer: { streams: { some: { creatorId: { equals: creatorId }, isBanned: false } } } },
-            select: { viewer: { select: { name: true, id: true } }, ammount: true },
+            where: {
+                AND: [
+                    { giveawayId: raffle },
+                    { giveaway: { creatorId: creatorId } },
+                    {
+                        viewer: {
+                            streams: {
+                                some: {
+                                    creatorId: {
+                                        equals: creatorId,
+                                    },
+                                },
+                                none: { isBanned: true },
+                            },
+                        },
+                    },
+                ],
+            },
+            select: {
+                viewer: {
+                    select: {
+                        name: true,
+                        id: true,
+                    },
+                },
+                ammount: true,
+            },
         });
         const list = temp.map((i) => {
             return { ...i.viewer, ammount: i.ammount };
