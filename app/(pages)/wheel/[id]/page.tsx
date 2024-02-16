@@ -23,20 +23,29 @@ export default async function WheelPage({ params }: Props) {
     });
     // Fetch this user's id in the db
     const thisUser = await prisma.account.findFirst({ where: { providerAccountId: session.user.providerAccountId }, select: { userId: true } });
-    if (giveaway) {
+    if (giveaway && thisUser) {
         // Check if the current user is the creator of the giveaway
-        if (thisUser?.userId === giveaway.creatorId) {
+        if (thisUser.userId === giveaway.creatorId) {
             return (
                 <div id="main-content" className="flex flex-col  justify-center items-center m-4">
                     <RaffleUI giveaway={giveaway!} />
                 </div>
             );
         } else {
-            return (
-                <div id="main-content" className="flex flex-col  justify-center items-center m-4 text-4xl">
-                    You dont have permissions to view this
-                </div>
-            );
+            const isMod = await prisma.moderator.findFirst({ where: { moderatorId: thisUser.userId, creatorId: giveaway.creatorId }, select: { id: true } });
+            if (isMod) {
+                return (
+                    <div id="main-content" className="flex flex-col  justify-center items-center m-4">
+                        <RaffleUI giveaway={giveaway!} />
+                    </div>
+                );
+            } else {
+                return (
+                    <div id="main-content" className="flex flex-col  justify-center items-center m-4 text-4xl">
+                        You dont have permissions to view this
+                    </div>
+                );
+            }
         }
     } else {
         // If we dont get a result from the query, the giveaway doesn't exist -> we shouldnt even load the controls
