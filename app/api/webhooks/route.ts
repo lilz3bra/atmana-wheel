@@ -1,8 +1,11 @@
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { authOptions, getTwitchClientToken } from "../auth/[...nextauth]/route";
-import { verifyMessage, addToQueue } from "./_helpers";
+import { verifyMessage } from "./_helpers";
+import { addToDb } from "./_addToDb";
 import { prisma } from "@/lib/prisma";
+
+let gaQueue: Record<string, { id: string; creatorId: string }> = {};
 
 export async function POST(req: Request) {
     const msg = await req.text();
@@ -11,9 +14,15 @@ export async function POST(req: Request) {
         return new Response(data.challenge, { status: 200, headers: { "Content-Type": "text/plain" } });
     } else {
         if (await verifyMessage(req, msg)) {
-            const giveaway = await prisma.giveaways.findFirst({ where: { twitchId: data.event.reward.id }, select: { id: true, creatorId: true } });
+            let giveaway;
+            if (data.event.reward.id in gaQueue) {
+                giveaway = { id: gaQueue[data.event.reward.id].id, creatorId: gaQueue[data.event.reward.id].creatorId };
+            } else {
+                giveaway = await prisma.giveaways.findFirst({ where: { twitchId: data.event.reward.id }, select: { id: true, creatorId: true } });
+                if (giveaway) gaQueue[data.event.reward.id] = { id: giveaway.id, creatorId: giveaway.creatorId };
+            }
             if (giveaway) {
-                addToQueue({
+                addToDb({
                     giveawayId: giveaway.id,
                     creatorId: giveaway.creatorId,
                     viewerId: data.event.user_id,

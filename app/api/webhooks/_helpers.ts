@@ -1,7 +1,6 @@
 import { Session } from "next-auth";
 import { getTwitchClientToken } from "../auth/[...nextauth]/route";
 import crypto from "crypto";
-import { prisma } from "@/lib/prisma";
 
 export async function createRewardsSub(session: Session, id: string) {
     const thisUser = session.user;
@@ -18,27 +17,6 @@ export async function createRewardsSub(session: Session, id: string) {
     const result = await fetch(eventSubCreateUrl, { method: "POST", headers, body });
     const eventData = await result.json();
     return eventData;
-}
-export async function addToQueue({ giveawayId, creatorId, viewerId, viewerName }: { creatorId: string; giveawayId: string; viewerId: string; viewerName: string }) {
-    try {
-        const viewer = await prisma.viewer.upsert({
-            where: { twitchId: viewerId },
-            update: { name: viewerName },
-            create: { name: viewerName, twitchId: viewerId, isBanned: false, isApproved: false },
-        });
-        await prisma.giveawayRedemptions.upsert({
-            where: { ViewerRedemptions: { viewerId: viewer.id, giveawayId: giveawayId } },
-            update: { ammount: { increment: 1 } },
-            create: { viewerId: viewer.id, giveawayId: giveawayId },
-        });
-        const r = await prisma.streamViewers.upsert({
-            where: { UniqueViewerForCreator: { creatorId: creatorId, viewerId: viewer.id } },
-            update: {},
-            create: { creatorId: creatorId, viewerId: viewer.id },
-        });
-    } catch (error) {
-        console.log(error);
-    }
 }
 // Build the message used to get the HMAC.
 async function getHmacMessage(request: Request, rawMessage: string) {
