@@ -225,16 +225,16 @@ export async function PATCH(req: NextRequest) {
         if (!raffle || raffle === "") return NextResponse.json({ error: "Missing parameters" }, { status: 400 });
 
         // Get whatever was json sent in the body
-        const op = await req.json();
+        const bodyJson = await req.json();
         let options;
 
         // Send the request
-        if (op.twData) {
-            const creator = await prisma.giveaways.findFirst({ where: { id: op.id }, select: { creatorId: true } });
+        if (bodyJson.twData) {
+            const creator = await prisma.giveaways.findFirst({ where: { id: bodyJson.id }, select: { creatorId: true } });
             if (creator?.creatorId !== thisUser.id) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-            options = JSON.stringify(op.twData);
+            options = JSON.stringify(bodyJson.twData);
         } else {
-            options = JSON.stringify(op);
+            options = JSON.stringify(bodyJson);
         }
         const res = await fetch(`${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards?broadcaster_id=${thisUser?.providerAccountId}&id=${raffle}`, {
             method: "PATCH",
@@ -242,19 +242,25 @@ export async function PATCH(req: NextRequest) {
             body: options,
         });
         const resData = await res.json();
-        if (op.twData) {
+        if (bodyJson.twData) {
             await prisma.giveaways.update({
-                where: { id: op.id },
+                where: { id: bodyJson.id },
                 data: {
-                    name: op.twData.title,
-                    cost: op.twData.cost,
-                    prize: op.prize,
-                    streamLimitEnabled: op.twData.is_max_per_stream_enabled,
-                    userLimitEnabled: op.twData.is_max_per_user_per_stream_enabled,
-                    streamLimit: op.twData.max_per_stream,
-                    userLimit: op.twData.max_per_user_per_stream,
+                    name: bodyJson.twData.title,
+                    cost: bodyJson.twData.cost,
+                    prize: bodyJson.prize,
+                    streamLimitEnabled: bodyJson.twData.is_max_per_stream_enabled,
+                    userLimitEnabled: bodyJson.twData.is_max_per_user_per_stream_enabled,
+                    streamLimit: bodyJson.twData.max_per_stream,
+                    userLimit: bodyJson.twData.max_per_user_per_stream,
                 },
             }); // Return the db document
+        }
+        if (bodyJson.is_paused) {
+            await prisma.giveaways.update({
+                where: { id: bodyJson.id },
+                data: { paused: bodyJson.is_paused },
+            });
         }
         // Return whatever twitch sent back
         return NextResponse.json(resData, { status: res.status });
