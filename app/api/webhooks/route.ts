@@ -25,7 +25,7 @@ export async function POST(req: Request) {
             }
             if (giveaway) {
                 const inngest = new Inngest({ eventKey: process.env.INNGEST_EVENT_KEY!, id: "streamViewers" });
-                inngest.send({
+                await inngest.send({
                     name: "webhook.claim",
                     data: {
                         giveawayId: giveaway.id,
