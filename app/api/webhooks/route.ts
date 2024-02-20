@@ -9,7 +9,6 @@ import { Inngest } from "inngest";
 let gaQueue: Record<string, { id: string; creatorId: string }> = {};
 
 export async function POST(req: Request) {
-    const start = performance.now();
     const msg = await req.text();
     const data = await JSON.parse(msg);
     if (data.subscription.status === "webhook_callback_verification_pending") {
@@ -34,7 +33,6 @@ export async function POST(req: Request) {
                         viewerName: data.event.user_name,
                     },
                 });
-                console.log("Time to response:", performance.now() - start);
                 return NextResponse.json({}, { status: 200 });
             } else {
                 console.log("Invalid giveaway requested");
