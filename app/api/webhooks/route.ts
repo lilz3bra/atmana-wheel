@@ -2,7 +2,6 @@ import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { authOptions, getTwitchClientToken } from "../auth/[...nextauth]/route";
 import { verifyMessage } from "./_helpers";
-import { addToDb } from "./addToDb";
 import { prisma } from "@/lib/prisma";
 import { Inngest } from "inngest";
 
@@ -35,11 +34,11 @@ export async function POST(req: Request) {
                 });
                 return NextResponse.json({}, { status: 200 });
             } else {
-                console.log("Invalid giveaway requested");
+                console.error("Invalid giveaway requested");
                 return NextResponse.json({}, { status: 403 });
             }
         }
-        console.log("Invalid message received");
+        console.error("Invalid message received");
         return NextResponse.json({}, { status: 403 });
     }
 }
