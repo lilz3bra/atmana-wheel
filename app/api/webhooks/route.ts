@@ -29,7 +29,7 @@ export async function POST(req: Request) {
                     viewerId: data.event.user_id,
                     viewerName: data.event.user_name,
                 });
-                console.log("Queue:", gaQueue, "Time to response:", performance.now() - start);
+                console.log("Time to response:", performance.now() - start);
                 return NextResponse.json({}, { status: 200 });
             } else {
                 console.log("Invalid giveaway requested");

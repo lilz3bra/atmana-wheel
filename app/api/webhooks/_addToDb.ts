@@ -2,26 +2,33 @@ import { prisma } from "@/lib/prisma";
 import QueueOperation from "./_DbQueue";
 
 export async function addToDb({ giveawayId, creatorId, viewerId, viewerName }: { creatorId: string; giveawayId: string; viewerId: string; viewerName: string }) {
-    console.log(giveawayId, creatorId, viewerId, viewerName);
     try {
         const start = performance.now();
+        // Look for the viewer
         let viewer = await prisma.viewer.findFirst({ where: { twitchId: viewerId } });
+        console.log("Viewer before checks:", viewer);
         if (viewer) {
+            // Viewer was found, have they updated their name?
             if (viewer.name !== viewerName) {
-                prisma.viewer.update({ where: { id: viewer.id }, data: { name: viewerName } });
+                const updated = await prisma.viewer.update({ where: { id: viewer.id }, data: { name: viewerName } });
+                await QueueOperation(giveawayId, updated.id);
             }
+            await prisma.streamViewers.upsert({
+                where: { UniqueViewerForCreator: { creatorId: creatorId, viewerId: viewer.id } },
+                update: {},
+                create: { creatorId: creatorId, viewerId: viewer.id },
+            });
         } else {
-            viewer = await prisma.viewer.create({ data: { name: viewerName, twitchId: viewerId, isBanned: false, isApproved: false } });
+            // Viewer didnt exist, we should create it
+            const newViewer = await prisma.viewer.create({ data: { name: viewerName, twitchId: viewerId, isBanned: false, isApproved: false } });
+            await QueueOperation(giveawayId, newViewer.id);
+            await prisma.streamViewers.upsert({
+                where: { UniqueViewerForCreator: { creatorId: creatorId, viewerId: newViewer.id } },
+                update: {},
+                create: { creatorId: creatorId, viewerId: newViewer.id },
+            });
         }
         console.log("Viewer: ", viewer, "Time to queue:", performance.now() - start);
-        await QueueOperation(giveawayId, viewer.id);
-        const t2 = performance.now();
-        const r = await prisma.streamViewers.upsert({
-            where: { UniqueViewerForCreator: { creatorId: creatorId, viewerId: viewer.id } },
-            update: {},
-            create: { creatorId: creatorId, viewerId: viewer.id },
-        });
-        console.log("Stream viewer insert time:", performance.now() - t2);
     } catch (error) {
         console.error(giveawayId, creatorId, viewerId, viewerName, error);
     }
