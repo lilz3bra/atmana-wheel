@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 let gaQueue: Record<string, { id: string; creatorId: string }> = {};
 
 export async function POST(req: Request) {
+    const start = performance.now();
     const msg = await req.text();
     const data = await JSON.parse(msg);
     if (data.subscription.status === "webhook_callback_verification_pending") {
@@ -15,7 +16,6 @@ export async function POST(req: Request) {
     } else {
         if (await verifyMessage(req, msg)) {
             let giveaway;
-            const start = performance.now();
             if (data.event.reward.id in gaQueue) {
                 giveaway = { id: gaQueue[data.event.reward.id].id, creatorId: gaQueue[data.event.reward.id].creatorId };
             } else {
@@ -30,6 +30,8 @@ export async function POST(req: Request) {
                     viewerName: data.event.user_name,
                 });
                 console.log("Time to response:", performance.now() - start);
+                const elapsedTime = performance.now() - start;
+                if (elapsedTime < 800) await new Promise((resolve) => setTimeout(resolve, 1000 - elapsedTime));
                 return NextResponse.json({}, { status: 200 });
             } else {
                 console.log("Invalid giveaway requested");
