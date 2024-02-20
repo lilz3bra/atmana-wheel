@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { authOptions, getTwitchClientToken } from "../auth/[...nextauth]/route";
 import { verifyMessage } from "./_helpers";
-import { addToDb } from "./_addToDb";
+import { addToDb } from "./addToDb";
 import { prisma } from "@/lib/prisma";
 
 let gaQueue: Record<string, { id: string; creatorId: string }> = {};
