@@ -234,7 +234,7 @@ export async function PATCH(req: NextRequest) {
             if (creator?.creatorId !== thisUser.id) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
             options = JSON.stringify(bodyJson.twData);
         } else {
-            options = JSON.stringify(bodyJson);
+            options = JSON.stringify({ is_paused: bodyJson.is_paused });
         }
         const res = await fetch(`${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards?broadcaster_id=${thisUser?.providerAccountId}&id=${raffle}`, {
             method: "PATCH",
