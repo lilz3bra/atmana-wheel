@@ -2,8 +2,8 @@ import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { authOptions, getTwitchClientToken } from "../auth/[...nextauth]/route";
 import { verifyMessage } from "./_helpers";
-import { addToDb } from "./_addToDb";
 import { prisma } from "@/lib/prisma";
+import { Inngest } from "inngest";
 
 let gaQueue: Record<string, { id: string; creatorId: string }> = {};
 
@@ -15,7 +15,6 @@ export async function POST(req: Request) {
     } else {
         if (await verifyMessage(req, msg)) {
             let giveaway;
-            const start = performance.now();
             if (data.event.reward.id in gaQueue) {
                 giveaway = { id: gaQueue[data.event.reward.id].id, creatorId: gaQueue[data.event.reward.id].creatorId };
             } else {
@@ -23,20 +22,23 @@ export async function POST(req: Request) {
                 if (giveaway) gaQueue[data.event.reward.id] = { id: giveaway.id, creatorId: giveaway.creatorId };
             }
             if (giveaway) {
-                addToDb({
-                    giveawayId: giveaway.id,
-                    creatorId: giveaway.creatorId,
-                    viewerId: data.event.user_id,
-                    viewerName: data.event.user_name,
+                const inngest = new Inngest({ eventKey: process.env.INNGEST_EVENT_KEY!, id: "atmana" });
+                await inngest.send({
+                    name: "webhook.claim",
+                    data: {
+                        giveawayId: giveaway.id,
+                        creatorId: giveaway.creatorId,
+                        viewerId: data.event.user_id,
+                        viewerName: data.event.user_name,
+                    },
                 });
-                console.log("Queue:", gaQueue, "Time to response:", performance.now() - start);
                 return NextResponse.json({}, { status: 200 });
             } else {
-                console.log("Invalid giveaway requested");
+                console.error("Invalid giveaway requested");
                 return NextResponse.json({}, { status: 403 });
             }
         }
-        console.log("Invalid message received");
+        console.error("Invalid message received");
         return NextResponse.json({}, { status: 403 });
     }
 }

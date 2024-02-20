@@ -68,7 +68,7 @@ export async function PUT(req: Request) {
             return NextResponse.json(db, { status: res.status });
         }
     } catch (error) {
-        console.log(error);
+        console.error(error);
         return NextResponse.json({ error: error }, { status: 500 });
     }
 }
@@ -137,7 +137,7 @@ export async function GET(req: NextRequest) {
         });
         return NextResponse.json({ total: tot, list: list });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         return NextResponse.json({ error }, { status: 500 });
     }
 }
@@ -172,14 +172,14 @@ export async function DELETE(req: NextRequest) {
                     }
                 }
             } else {
-                console.log(res.status, res.statusText);
+                console.error(res.status, res.statusText);
                 return NextResponse.json({}, { status: res.status === 204 ? 200 : res.status });
             }
             // Return 200 if deleted successfully, otherwise pass the code
             return NextResponse.json({}, { status: res.status === 204 ? 200 : res.status });
         }
     } catch (error) {
-        console.log(error);
+        console.error(error);
         return NextResponse.json({ error }, { status: 500 });
     }
 }
@@ -206,7 +206,7 @@ export async function POST(req: NextRequest) {
         // Send the results back
         return NextResponse.json(db);
     } catch (error) {
-        console.log(error);
+        console.error(error);
         return NextResponse.json({ error }, { status: 500 });
     }
 }
@@ -265,7 +265,7 @@ export async function PATCH(req: NextRequest) {
         // Return whatever twitch sent back
         return NextResponse.json(resData, { status: res.status });
     } catch (error) {
-        console.log(error);
+        console.error(error);
         return NextResponse.json({ error }, { status: 500 });
     }
 }
