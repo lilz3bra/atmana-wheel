@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import QueueOperation from "./_DbQueue";
 
 export async function addToDb({ giveawayId, creatorId, viewerId, viewerName }: { creatorId: string; giveawayId: string; viewerId: string; viewerName: string }) {
+    console.log(giveawayId, creatorId, viewerId, viewerName);
     try {
         const viewer = await prisma.viewer.upsert({
             where: { twitchId: viewerId },
