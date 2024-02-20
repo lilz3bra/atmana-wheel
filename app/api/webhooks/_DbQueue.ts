@@ -19,7 +19,7 @@ function isLocked(uniquePair: string): boolean {
 async function processQueue(uniquePair: string): Promise<void> {
     if (isLocked(uniquePair)) {
         // If the DB entry is locked
-        await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait before retrying, in case more requests are arriving
+        await new Promise((resolve) => setTimeout(resolve, 100)); // Wait before retrying, in case more requests are arriving
         await processQueue(uniquePair);
     }
     if (!queue[uniquePair]) return; // If there is nothing for this pair in the queue we return without doing anything
