@@ -15,13 +15,13 @@ export async function POST(req: Request) {
     } else {
         if (await verifyMessage(req, msg)) {
             let giveaway;
+            const start = performance.now();
             if (data.event.reward.id in gaQueue) {
                 giveaway = { id: gaQueue[data.event.reward.id].id, creatorId: gaQueue[data.event.reward.id].creatorId };
             } else {
                 giveaway = await prisma.giveaways.findFirst({ where: { twitchId: data.event.reward.id }, select: { id: true, creatorId: true } });
                 if (giveaway) gaQueue[data.event.reward.id] = { id: giveaway.id, creatorId: giveaway.creatorId };
             }
-            console.log(gaQueue);
             if (giveaway) {
                 addToDb({
                     giveawayId: giveaway.id,
@@ -29,6 +29,7 @@ export async function POST(req: Request) {
                     viewerId: data.event.user_id,
                     viewerName: data.event.user_name,
                 });
+                console.log("Queue:", gaQueue, "Time to response:", performance.now() - start);
                 return NextResponse.json({}, { status: 200 });
             } else {
                 console.log("Invalid giveaway requested");
