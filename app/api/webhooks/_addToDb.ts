@@ -8,6 +8,7 @@ export async function addToDb({ giveawayId, creatorId, viewerId, viewerName }: {
             update: { name: viewerName },
             create: { name: viewerName, twitchId: viewerId, isBanned: false, isApproved: false },
         });
+        console.log(viewer);
         await QueueOperation(giveawayId, viewer.id);
         const r = await prisma.streamViewers.upsert({
             where: { UniqueViewerForCreator: { creatorId: creatorId, viewerId: viewer.id } },
@@ -15,6 +16,6 @@ export async function addToDb({ giveawayId, creatorId, viewerId, viewerName }: {
             create: { creatorId: creatorId, viewerId: viewer.id },
         });
     } catch (error) {
-        console.log(error);
+        console.error(giveawayId, creatorId, viewerId, viewerName, error);
     }
 }
