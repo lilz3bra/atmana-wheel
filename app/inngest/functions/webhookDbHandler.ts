@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { inngest } from "../inngest.client";
 import QueueOperation from "@/api/webhooks/_DbQueue";
 
-export const streamViewers = inngest.createFunction({ id: "streamViewers", name: "Viewers on stream" }, { event: "viewer/addViewerOnStream" }, async ({ event, step }) => {
+export const streamViewers = inngest.createFunction({ id: "streamViewers", name: "Viewers on stream" }, { event: "webhook.claim" }, async ({ event, step }) => {
     const creatorId: string = event.data.creatorId;
     const giveawayId: string = event.data.giveawayId;
     const viewerId: string = event.data.viewerId;

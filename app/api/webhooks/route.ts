@@ -24,7 +24,7 @@ export async function POST(req: Request) {
                 if (giveaway) gaQueue[data.event.reward.id] = { id: giveaway.id, creatorId: giveaway.creatorId };
             }
             if (giveaway) {
-                const inngest = new Inngest({ eventKey: process.env.INNGEST_EVENT_KEY!, id: "streamViewers" });
+                const inngest = new Inngest({ eventKey: process.env.INNGEST_EVENT_KEY!, id: "atmana" });
                 await inngest.send({
                     name: "webhook.claim",
                     data: {
