@@ -7,34 +7,36 @@ export const streamViewers = inngest.createFunction({ id: "streamViewers", name:
     const giveawayId: string = event.data.giveawayId;
     const viewerId: string = event.data.viewerId;
     const viewerName: string = event.data.viewerName;
-    try {
-        const start = performance.now();
-        // Look for the viewer
-        let viewer = await prisma.viewer.findFirst({ where: { twitchId: viewerId } });
-        console.log("Viewer before checks:", viewer);
-        if (viewer) {
-            // Viewer was found, have they updated their name?
-            if (viewer.name !== viewerName) {
-                const updated = await prisma.viewer.update({ where: { id: viewer.id }, data: { name: viewerName } });
-                await QueueOperation(giveawayId, updated.id);
+
+    const viewer = await step.run("fetch-viewer", async () => {
+        const v = await prisma.viewer.findFirst({ where: { twitchId: viewerId } });
+        if (v) {
+            if (v.name !== viewerName) {
+                await prisma.viewer.update({ where: { id: v.id }, data: { name: viewerName } });
             }
-            await prisma.streamViewers.upsert({
+            return v;
+        } else {
+            const vi = await prisma.viewer.create({ data: { name: viewerName, twitchId: viewerId, isBanned: false, isApproved: false } });
+            return vi;
+        }
+    });
+
+    if (viewer) {
+        const viewerOnStream = step.run("upsert-viewer-on-stream", async () => {
+            return await prisma.streamViewers.upsert({
                 where: { UniqueViewerForCreator: { creatorId: creatorId, viewerId: viewer.id } },
                 update: {},
                 create: { creatorId: creatorId, viewerId: viewer.id },
             });
-        } else {
-            // Viewer didnt exist, we should create it
-            const newViewer = await prisma.viewer.create({ data: { name: viewerName, twitchId: viewerId, isBanned: false, isApproved: false } });
-            await QueueOperation(giveawayId, newViewer.id);
-            await prisma.streamViewers.upsert({
-                where: { UniqueViewerForCreator: { creatorId: creatorId, viewerId: newViewer.id } },
-                update: {},
-                create: { creatorId: creatorId, viewerId: newViewer.id },
+        });
+        const redemption = step.run("insert-redemption", async () => {
+            return await prisma.giveawayRedemptions.upsert({
+                where: { ViewerRedemptions: { viewerId: viewerId, giveawayId: giveawayId } },
+                update: { ammount: { increment: 1 } },
+                create: { viewerId: viewerId, giveawayId: giveawayId },
             });
-        }
-        console.log("Viewer: ", viewer, "Time to queue:", performance.now() - start);
-    } catch (error) {
-        console.error(giveawayId, creatorId, viewerId, viewerName, error);
+        });
+        const [createdVoS, createdRedemption] = await Promise.all([viewerOnStream, redemption]);
+        return { createdVoS, createdRedemption };
     }
 });
