@@ -4,6 +4,7 @@ import { authOptions, getTwitchClientToken } from "../auth/[...nextauth]/route";
 import { verifyMessage } from "./_helpers";
 import { addToDb } from "./addToDb";
 import { prisma } from "@/lib/prisma";
+import { Inngest } from "inngest";
 
 let gaQueue: Record<string, { id: string; creatorId: string }> = {};
 
@@ -23,15 +24,17 @@ export async function POST(req: Request) {
                 if (giveaway) gaQueue[data.event.reward.id] = { id: giveaway.id, creatorId: giveaway.creatorId };
             }
             if (giveaway) {
-                addToDb({
-                    giveawayId: giveaway.id,
-                    creatorId: giveaway.creatorId,
-                    viewerId: data.event.user_id,
-                    viewerName: data.event.user_name,
+                const inngest = new Inngest({ eventKey: process.env.INNGEST_EVENT_KEY!, id: "streamViewers" });
+                inngest.send({
+                    name: "webhook.claim",
+                    data: {
+                        giveawayId: giveaway.id,
+                        creatorId: giveaway.creatorId,
+                        viewerId: data.event.user_id,
+                        viewerName: data.event.user_name,
+                    },
                 });
                 console.log("Time to response:", performance.now() - start);
-                const elapsedTime = performance.now() - start;
-                if (elapsedTime < 800) await new Promise((resolve) => setTimeout(resolve, 1000 - elapsedTime));
                 return NextResponse.json({}, { status: 200 });
             } else {
                 console.log("Invalid giveaway requested");
