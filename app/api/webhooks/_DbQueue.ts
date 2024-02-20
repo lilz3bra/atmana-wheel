@@ -38,7 +38,7 @@ async function processQueue(uniquePair: string): Promise<void> {
         delete locked[uniquePair];
         return;
     } catch (error) {
-        console.log(error);
+        console.log(error, uniquePair, queue);
         delete locked[uniquePair];
     }
 }

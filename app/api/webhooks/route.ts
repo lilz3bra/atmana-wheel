@@ -13,6 +13,7 @@ export async function POST(req: Request) {
     if (data.subscription.status === "webhook_callback_verification_pending") {
         return new Response(data.challenge, { status: 200, headers: { "Content-Type": "text/plain" } });
     } else {
+        console.log(msg);
         if (await verifyMessage(req, msg)) {
             let giveaway;
             if (data.event.reward.id in gaQueue) {
@@ -21,6 +22,7 @@ export async function POST(req: Request) {
                 giveaway = await prisma.giveaways.findFirst({ where: { twitchId: data.event.reward.id }, select: { id: true, creatorId: true } });
                 if (giveaway) gaQueue[data.event.reward.id] = { id: giveaway.id, creatorId: giveaway.creatorId };
             }
+            console.log(giveaway);
             if (giveaway) {
                 addToDb({
                     giveawayId: giveaway.id,
