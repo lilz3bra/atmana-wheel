@@ -4,11 +4,14 @@ import QueueOperation from "./_DbQueue";
 export async function addToDb({ giveawayId, creatorId, viewerId, viewerName }: { creatorId: string; giveawayId: string; viewerId: string; viewerName: string }) {
     console.log(giveawayId, creatorId, viewerId, viewerName);
     try {
-        const viewer = await prisma.viewer.upsert({
-            where: { twitchId: viewerId },
-            update: { name: viewerName },
-            create: { name: viewerName, twitchId: viewerId, isBanned: false, isApproved: false },
-        });
+        let viewer = await prisma.viewer.findFirst({ where: { twitchId: viewerId } });
+        if (viewer) {
+            if (viewer.name !== viewerName) {
+                prisma.viewer.update({ where: { id: viewer.id }, data: { name: viewerName } });
+            }
+        } else {
+            viewer = await prisma.viewer.create({ data: { name: viewerName, twitchId: viewerId, isBanned: false, isApproved: false } });
+        }
         console.log(viewer);
         await QueueOperation(giveawayId, viewer.id);
         const r = await prisma.streamViewers.upsert({
