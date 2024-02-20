@@ -31,9 +31,9 @@ export const streamViewers = inngest.createFunction({ id: "streamViewers", name:
         });
         const redemption = step.run("insert-redemption", async () => {
             return await prisma.giveawayRedemptions.upsert({
-                where: { ViewerRedemptions: { viewerId: viewerId, giveawayId: giveawayId } },
+                where: { ViewerRedemptions: { viewerId: viewer.id, giveawayId: giveawayId } },
                 update: { ammount: { increment: 1 } },
-                create: { viewerId: viewerId, giveawayId: giveawayId },
+                create: { viewerId: viewer.id, giveawayId: giveawayId },
             });
         });
         const [createdVoS, createdRedemption] = await Promise.all([viewerOnStream, redemption]);
