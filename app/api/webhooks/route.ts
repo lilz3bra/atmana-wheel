@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-import { authOptions, getTwitchClientToken } from "../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/authOptions";
+import { getTwitchClientToken } from "@/lib/getTwitchClientToken";
 import { verifyMessage } from "./_helpers";
 import { prisma } from "@/lib/prisma";
 import { Inngest } from "inngest";

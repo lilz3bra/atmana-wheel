@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 
 import HistoryList from "./HistoryList";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/authOptions";
 import { prisma } from "@/lib/prisma";
 
 interface Props {
