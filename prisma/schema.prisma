@@ -182,4 +182,5 @@ model Winners {
   viewerId   String    @db.ObjectId
   viewer     Viewer    @relation(fields: [viewerId], references: [id])
   dateDrawn  DateTime  @default(now())
+  paid       Boolean?  @default(false)
 }
