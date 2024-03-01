@@ -1,5 +1,5 @@
 import { Session } from "next-auth";
-import { getTwitchClientToken } from "../auth/[...nextauth]/route";
+import { getTwitchClientToken } from "@/lib/getTwitchClientToken";
 import crypto from "crypto";
 
 export async function createRewardsSub(session: Session, id: string) {

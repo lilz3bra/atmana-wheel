@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/authOptions";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(req: NextRequest) {
@@ -9,31 +9,16 @@ export async function POST(req: NextRequest) {
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const data = await req.json();
-    const banUnban = async (data: { action: string; viewerId: string; creator: string }) => {
-        let res;
-        if (data.action === "ban") {
-            res = await prisma.streamViewers.update({
-                where: {
-                    UniqueViewerForCreator: {
-                        creatorId: data.creator,
-                        viewerId: data.viewerId,
-                    },
+    const banUnban = async (data: { state: boolean; viewerId: string; creator: string }) => {
+        await prisma.streamViewers.update({
+            where: {
+                UniqueViewerForCreator: {
+                    creatorId: data.creator,
+                    viewerId: data.viewerId,
                 },
-                data: { isBanned: true },
-            });
-        }
-        if (data.action === "unban") {
-            res = await prisma.streamViewers.update({
-                where: {
-                    UniqueViewerForCreator: {
-                        creatorId: data.creator,
-                        viewerId: data.viewerId,
-                    },
-                },
-                data: { isBanned: false },
-            });
-        }
-        return NextResponse.json({ res });
+            },
+            data: { isBanned: !data.state },
+        });
     };
 
     if (data.creator) {
