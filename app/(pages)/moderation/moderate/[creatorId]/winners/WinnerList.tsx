@@ -17,7 +17,7 @@ interface Winners {
     };
 }
 
-const ViewerList = ({ creatorId }: { creatorId: string }) => {
+const WinnerList = ({ creatorId }: { creatorId: string }) => {
     const [page, setPage] = useState(1);
     const [winners, setWinners] = useState<Winners[]>([]);
     const [filter, setFilter] = useState(false);
@@ -54,7 +54,7 @@ const ViewerList = ({ creatorId }: { creatorId: string }) => {
                     <input type="checkbox" name="filter" onChange={() => setFilter(!filter)} />
                 </label>
             </div>
-            <div className="w-fit flex flex-col gap-1 m-auto ">
+            <div className="w-fit flex flex-col gap-1 m-auto mb-4 p-2 ">
                 {winners.map((w, index) => {
                     return <WinnerItem key={w.id} creator={creatorId} winner={w} index={index} />;
                 })}
@@ -63,4 +63,4 @@ const ViewerList = ({ creatorId }: { creatorId: string }) => {
     );
 };
 
-export default ViewerList;
+export default WinnerList;
