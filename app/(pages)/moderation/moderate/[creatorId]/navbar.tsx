@@ -23,10 +23,10 @@ export default async function ModNavBar({ slug }: { slug: string }) {
                 <Link className="block p-2 cursor-pointer bg-slate-600 hover:bg-blue-700 rounded-xl text-center m-2" href={`/moderation/moderate/${slug}/viewers`}>
                     Viewers
                 </Link>
-                <Link className="block p-2 cursor-pointer bg-slate-600 hover:bg-blue-700 rounded-xl text-center m-2" href={`/moderation/moderate/${slug}/winners/1`}>
+                <Link className="block p-2 cursor-pointer bg-slate-600 hover:bg-blue-700 rounded-xl text-center m-2" href={`/moderation/moderate/${slug}/winners`}>
                     Winners
                 </Link>
-                <Link className="block p-2 cursor-pointer bg-slate-600 hover:bg-blue-700 rounded-xl text-center m-2" href={`/moderation/moderate/${slug}/active/1`}>
+                <Link className="block p-2 cursor-pointer bg-slate-600 hover:bg-blue-700 rounded-xl text-center m-2" href={`/moderation/moderate/${slug}/active`}>
                     Active
                 </Link>
             </div>
