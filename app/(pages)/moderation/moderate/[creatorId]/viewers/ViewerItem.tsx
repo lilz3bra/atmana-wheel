@@ -1,7 +1,12 @@
 "use client";
 import React, { useState } from "react";
+import { banViewer } from "./banViewer";
+import Hint from "@/components/Hint/Hint";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUserCheck, faUserSlash } from "@fortawesome/free-solid-svg-icons";
 
 interface Viewer {
+    id: string;
     viewer: {
         name: string;
         id: string;
@@ -13,17 +18,8 @@ const ViewerItem = ({ creator, viewer, index }: { creator: string; viewer: Viewe
     const [isBanned, setBanned] = useState(viewer.isBanned);
 
     const sendBanRequest = async () => {
-        setBanned(!isBanned);
-
-        const res = await fetch("/api/moderation", {
-            method: "POST",
-            body: JSON.stringify({ creator: creator, viewerId: viewer.viewer.id, state: isBanned }),
-        });
-
-        // If the request failed, rollback to the previous state
-        if (res.status !== 200) {
-            setBanned(!isBanned);
-        }
+        const r = await banViewer(viewer.id, !isBanned);
+        setBanned(r);
     };
 
     return (
@@ -34,9 +30,13 @@ const ViewerItem = ({ creator, viewer, index }: { creator: string; viewer: Viewe
                 gridAutoFlow: "column",
             }}>
             <div>{viewer.viewer.name}</div>
-            <button onClick={() => sendBanRequest()} className="bg-slate-700 rounded-xl p-1 hover:bg-slate-800 w-fit">
-                {isBanned ? "Unban" : "Ban"}
-            </button>
+            {
+                <Hint text={isBanned ? "Unban" : "Ban"} extraCss="flex flex-row justify-center">
+                    <button className="p-2 bg-blue-500  cursor-pointer hover:bg-blue-700 rounded-xl text-white w-fit" onClick={sendBanRequest}>
+                        {isBanned ? <FontAwesomeIcon icon={faUserCheck} /> : <FontAwesomeIcon icon={faUserSlash} />}
+                    </button>
+                </Hint>
+            }
         </div>
     );
 };
