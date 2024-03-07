@@ -33,7 +33,7 @@ const RaffleUI = ({ giveaway }: Props) => {
 
     const getParticipants = async () => {
         setUpdating(true); // Obscure the page to avoid interactions while we are loading
-        if (isPaused) await new Promise((resolve) => setTimeout(resolve, 1000)); // Give time for the api to insert the last few claims
+        if (isPaused) await new Promise((resolve) => setTimeout(resolve, 5000)); // Give time for the api to insert the last few claims
         const res = await fetch(`/api/raffle?raffleId=${giveaway.id}&creatorId=${giveaway.creatorId}`);
         if (res.status !== 200) {
             setError(true);
@@ -68,7 +68,7 @@ const RaffleUI = ({ giveaway }: Props) => {
     };
 
     const drawWinner = async () => {
-        pauseResume();
+        await pauseResume();
         clearInter();
         if (!isDeleted) await getParticipants();
         setVisible(true);
