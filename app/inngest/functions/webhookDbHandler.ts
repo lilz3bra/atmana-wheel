@@ -34,11 +34,13 @@ export const streamViewers = inngest.createFunction(
                         create: { creatorId: entry.creatorId, viewerId: viewer.id },
                     });
 
-                    return await prisma.giveawayRedemptions.upsert({
+                    const redemption = await prisma.giveawayRedemptions.upsert({
                         where: { ViewerRedemptions: { viewerId: viewer.id, giveawayId: entry.giveawayId } },
                         update: { ammount: { increment: entry.count } },
                         create: { viewerId: viewer.id, giveawayId: entry.giveawayId },
                     });
+                    console.log(redemption);
+                    return redemption;
                 } catch (err) {
                     console.error("Error inserting:", entry);
                 }
