@@ -31,8 +31,8 @@ const page = async ({ params }: Props) => {
                     <p className="truncate max-w-full">Prize: {giveawayData.prize}</p>
                     <p>Cost: {giveawayData.cost}</p>
                     {giveawayData.createdAt && <p>Created: {giveawayData.createdAt.toLocaleDateString()}</p>}
-                    <div className="flex flex-row whitespace-nowrap justify-center gap-4 mt-2">
-                        <Hint text="View" extraCss="flex flex-row justify-center">
+                    <div className="flex flex-row whitespace-nowrap justify-center gap-4 mt-2 ">
+                        <Hint text="View" extraCss="flex flex-row justify-center align-middle items-center">
                             <Link href={`active/${giveawayData.id}`} className="p-2 bg-blue-500 h-8 w-8 cursor-pointer hover:bg-blue-700 rounded-xl text-white">
                                 <FontAwesomeIcon icon={faEye} />
                             </Link>
