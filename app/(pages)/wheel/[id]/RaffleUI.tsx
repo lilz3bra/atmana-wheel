@@ -32,8 +32,6 @@ const RaffleUI = ({ giveaway }: Props) => {
     const inter = useRef<number | null>(null);
 
     const getParticipants = async () => {
-        setUpdating(true); // Obscure the page to avoid interactions while we are loading
-        if (isPaused) await new Promise((resolve) => setTimeout(resolve, 1000)); // Give time for the api to insert the last few claims
         const res = await fetch(`/api/raffle?raffleId=${giveaway.id}&creatorId=${giveaway.creatorId}`);
         if (res.status !== 200) {
             setError(true);
@@ -42,7 +40,6 @@ const RaffleUI = ({ giveaway }: Props) => {
             setUsers(result);
             if (loading) loading.current = false;
         }
-        setUpdating(false);
     };
 
     const sortUsers = (us: UsersList[]) => {
@@ -52,30 +49,29 @@ const RaffleUI = ({ giveaway }: Props) => {
     const sortedUsers = users ? sortUsers(users.list) : null;
 
     const deleteReward = async () => {
-        setUpdating(true); // Obscure the page to avoid interactions while we are loading
         const res = await fetch(`/api/raffle?raffleId=${giveaway.twitchId}&id=${giveaway.id}`, { method: "DELETE" });
         if (res.status === 200) setDeleted(true);
-        setUpdating(false);
     };
 
-    const pauseResume = async () => {
-        setUpdating(true); // Obscure the page to avoid interactions while we are loading
-        const res = await fetch(`/api/raffle?raffleId=${giveaway.twitchId}`, { method: "PATCH", body: JSON.stringify({ is_paused: !isPaused, id: giveaway.id }) });
-        if (res.status === 200) {
-            setPaused(!isPaused);
-        }
-        setUpdating(false);
+    const pauseResume = async (shouldPause: boolean) => {
+        setPaused(shouldPause);
+        await fetch(`/api/raffle?raffleId=${giveaway.twitchId}`, { method: "PATCH", body: JSON.stringify({ is_paused: shouldPause, id: giveaway.id }) });
     };
 
     const drawWinner = async () => {
-        pauseResume();
         clearInter();
-        if (!isDeleted) await getParticipants();
+        if (!isDeleted) {
+            setUpdating(true);
+            await pauseResume(true);
+            await new Promise((resolve) => setTimeout(resolve, 5000));
+            await getParticipants();
+            setUpdating(false);
+        }
         setVisible(true);
     };
 
     const updateDb = async (winner: string) => {
-        const res = await fetch(`/api/raffle?raffleId=${giveaway.id}`, { method: "POST", body: JSON.stringify({ winner }) });
+        await fetch(`/api/raffle?raffleId=${giveaway.id}`, { method: "POST", body: JSON.stringify({ winner }) });
         if (!isDeleted) {
             deleteReward();
         }
@@ -128,7 +124,9 @@ const RaffleUI = ({ giveaway }: Props) => {
                 <>
                     {/* Obscure the page to avoid interactions while we are loading */}
                     {updating && (
-                        <div className="z-0 bg-black bg-opacity-90 w-screen h-screen absolute left-0 top-0 flex justify-center align-middle items-center text-3xl">Please wait</div>
+                        <div className="z-0 bg-black bg-opacity-90 w-screen h-screen absolute left-0 top-0 flex justify-center align-middle items-center text-3xl">
+                            Please wait while we get the last few entries
+                        </div>
                     )}
                     <div className="flex flex-row m-2 justify-between items-center gap-2">
                         <Hint text={`Draw a winner`} extraCss="flex flex-row justify-center">
@@ -144,7 +142,9 @@ const RaffleUI = ({ giveaway }: Props) => {
                                     </button>
                                 </Hint>
                                 <Hint text={`${isPaused ? "Resume" : "Paused"}`}>
-                                    <button onClick={pauseResume} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 w-8 justify-center flex flex-row">
+                                    <button
+                                        onClick={() => (isPaused ? pauseResume(false) : pauseResume(true))}
+                                        className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 w-8 justify-center flex flex-row">
                                         <FontAwesomeIcon icon={isPaused ? faPlay : faPause} />
                                     </button>
                                 </Hint>
