@@ -7,9 +7,9 @@ interface Props {
 
 const Hint = ({ children, text, extraCss }: Props) => {
     return (
-        <div className={`w-full group ${typeof extraCss !== "undefined" ? extraCss : ""}`}>
+        <div className={`w-fit group ${typeof extraCss !== "undefined" ? extraCss : ""}`}>
             {children}
-            <div className="bg-black bg-opacity-80 hidden group-hover:block group-hover:absolute  translate-y-10 rounded-lg p-2 m-auto">{text}</div>
+            <div className="bg-black bg-opacity-80 hidden group-hover:block group-hover:absolute  translate-y-11 rounded-lg p-2 m-auto">{text}</div>
         </div>
     );
 };
