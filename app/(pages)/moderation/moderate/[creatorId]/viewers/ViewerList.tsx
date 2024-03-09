@@ -2,7 +2,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { getViewers } from "./getViewers";
 import ViewerItem from "./ViewerItem";
-import TSB from "./TripleStateButton";
+import TripleStateButton from "@/components/TripleStateButton";
 import DebouncedTextBox from "@/components/DebouncedTextBox";
 
 interface Viewer {
@@ -49,10 +49,13 @@ const ViewersList = ({ creatorId }: { creatorId: string }) => {
                 <button onClick={() => setPage(page + 1)} className="bg-slate-700 rounded-xl p-1 hover:bg-slate-800 w-fit">
                     Next
                 </button>
-                <TSB
+                <TripleStateButton
                     callbackFn={(status: boolean | null) => {
                         handleFilterChange(status);
                     }}
+                    trueText="Only banned"
+                    nullText="All"
+                    falseText="Only not banned"
                 />
                 <DebouncedTextBox
                     className="text-black rounded-md p-1"
