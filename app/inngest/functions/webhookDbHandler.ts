@@ -42,7 +42,8 @@ export const streamViewers = inngest.createFunction(
                     console.log(redemption);
                     return redemption;
                 } catch (err) {
-                    console.error("Error inserting:", entry);
+                    console.error("Error inserting:", entry, err);
+                    return { err };
                 }
             });
         });
