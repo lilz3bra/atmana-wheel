@@ -24,7 +24,7 @@ export const streamViewers = inngest.createFunction({ id: "streamViewers", name:
 
             const redemption = await prisma.giveawayRedemptions.upsert({
                 where: { ViewerRedemptions: { viewerId: viewer.id, giveawayId: event.data.giveawayId } },
-                update: { ammount: { increment: event.data.count } },
+                update: { ammount: { increment: 1 } },
                 create: { viewerId: viewer.id, giveawayId: event.data.giveawayId },
             });
             return redemption;
