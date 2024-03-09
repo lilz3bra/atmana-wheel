@@ -6,7 +6,7 @@ interface CountMap {
 }
 
 export const streamViewers = inngest.createFunction(
-    { id: "streamViewers", name: "Viewers on stream", batchEvents: { maxSize: 30, timeout: "5s" } },
+    { id: "streamViewers", name: "Viewers on stream", batchEvents: { maxSize: 5, timeout: "3s" } },
     { event: "webhook.claim" },
     async ({ events, step }) => {
         const data = events.reduce((acc, item) => {
@@ -20,6 +20,7 @@ export const streamViewers = inngest.createFunction(
         const result = await step.run("record data to DB", async () => {
             let results: any[] = [];
             Object.entries(data).forEach(async ([key, entry]) => {
+                console.log("Recording entries for", entry.viewerName, entry.count);
                 try {
                     let viewer = await prisma.viewer.findFirst({ where: { twitchId: entry.viewerId }, select: { id: true, name: true } });
                     if (viewer) {

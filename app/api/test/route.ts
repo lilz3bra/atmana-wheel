@@ -6,7 +6,7 @@ export async function POST(req: NextRequest) {
     const id = req.nextUrl.searchParams.get("id");
     const name = req.nextUrl.searchParams.get("name");
     const giveaway = await prisma.giveaways.findFirst({ where: { twitchId: "1111" }, select: { id: true, creatorId: true } });
-    if (!giveaway) return;
+    if (!giveaway) return NextResponse.json({}, { status: 404 });
     const inngest = new Inngest({ eventKey: process.env.INNGEST_EVENT_KEY!, id: "atmana" });
     await inngest.send({
         name: "webhook.claim",
