@@ -3,17 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { Inngest } from "inngest";
 
 export async function POST(req: NextRequest) {
-    const n = Number(req.nextUrl.searchParams.get("n")) || 1;
     const id = req.nextUrl.searchParams.get("id");
-    if (id === null) return NextResponse.json({});
-    for (var i = 0; i < n; i++) {
-        flood(id);
-        await new Promise((resolve) => setTimeout(resolve, 50));
-    }
-    return NextResponse.json({});
-}
-
-async function flood(id: string) {
+    const name = req.nextUrl.searchParams.get("name");
     const giveaway = await prisma.giveaways.findFirst({ where: { twitchId: "1111" }, select: { id: true, creatorId: true } });
     if (!giveaway) return;
     const inngest = new Inngest({ eventKey: process.env.INNGEST_EVENT_KEY!, id: "atmana" });
@@ -23,7 +14,8 @@ async function flood(id: string) {
             giveawayId: giveaway.id,
             creatorId: giveaway.creatorId,
             viewerId: id,
-            viewerName: "lilz3bra",
+            viewerName: name,
         },
     });
+    return NextResponse.json({});
 }

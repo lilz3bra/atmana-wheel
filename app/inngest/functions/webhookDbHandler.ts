@@ -18,6 +18,7 @@ export const streamViewers = inngest.createFunction(
         }, {} as CountMap);
 
         const result = await step.run("record data to DB", async () => {
+            let results: any[] = [];
             Object.entries(data).forEach(async ([key, entry]) => {
                 try {
                     let viewer = await prisma.viewer.findFirst({ where: { twitchId: entry.viewerId }, select: { id: true, name: true } });
@@ -40,12 +41,14 @@ export const streamViewers = inngest.createFunction(
                         create: { viewerId: viewer.id, giveawayId: entry.giveawayId },
                     });
                     console.log(redemption);
-                    return redemption;
+                    results.push(redemption);
                 } catch (err: any) {
                     console.error("Error inserting:", entry, err);
+                    results.push(err);
                     throw new Error(err);
                 }
             });
+            return results;
         });
         return { success: true, recorded: result };
     }
