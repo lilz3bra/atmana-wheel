@@ -6,7 +6,7 @@ interface CountMap {
 }
 
 export const streamViewers = inngest.createFunction(
-    { id: "streamViewers", name: "Viewers on stream", batchEvents: { maxSize: 5, timeout: "3s" } },
+    { id: "streamViewers", name: "Viewers on stream", batchEvents: { maxSize: 50, timeout: "5s" } },
     { event: "webhook.claim" },
     async ({ events, step }) => {
         const data = events.reduce((acc, item) => {
@@ -19,6 +19,7 @@ export const streamViewers = inngest.createFunction(
 
         const result = await step.run("record data to DB", async () => {
             let results: any[] = [];
+            console.log(data);
             Object.entries(data).forEach(async ([key, entry]) => {
                 console.log("Recording entries for", entry.viewerName, entry.count);
                 try {
