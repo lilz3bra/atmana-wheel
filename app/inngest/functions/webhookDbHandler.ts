@@ -20,7 +20,7 @@ export const streamViewers = inngest.createFunction(
         const result = await step.run("record data to DB", async () => {
             let results: any[] = [];
             console.log(data);
-            Object.entries(data).forEach(async ([key, entry]) => {
+            const promises = Object.entries(data).map(async ([key, entry]) => {
                 console.log("Recording entries for", entry.viewerName, entry.count);
                 try {
                     let viewer = await prisma.viewer.findFirst({ where: { twitchId: entry.viewerId }, select: { id: true, name: true } });
@@ -50,6 +50,7 @@ export const streamViewers = inngest.createFunction(
                     throw new Error(err);
                 }
             });
+            await Promise.all(promises);
             return results;
         });
         return { success: true, recorded: result };
