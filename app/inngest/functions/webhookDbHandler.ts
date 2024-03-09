@@ -5,33 +5,53 @@ interface CountMap {
     [key: string]: { viewerId: string; giveawayId: string; creatorId: string; viewerName: string; count: number };
 }
 
-export const streamViewers = inngest.createFunction({ id: "streamViewers", name: "Viewers on stream" }, { event: "webhook.claim" }, async ({ event, step }) => {
-    const result = await step.run("record data to DB", async () => {
-        try {
-            let viewer = await prisma.viewer.findFirst({ where: { twitchId: event.data.viewerId }, select: { id: true, name: true } });
-            if (viewer) {
-                if (viewer.name !== event.data.viewerName) {
-                    await prisma.viewer.update({ where: { id: viewer.id }, data: { name: event.data.viewerName } });
-                }
-            } else {
-                viewer = await prisma.viewer.create({ data: { name: event.data.viewerName, twitchId: event.data.viewerId, isBanned: false, isApproved: false } });
-            }
-            await prisma.streamViewers.upsert({
-                where: { UniqueViewerForCreator: { creatorId: event.data.creatorId, viewerId: viewer.id } },
-                update: {},
-                create: { creatorId: event.data.creatorId, viewerId: viewer.id },
-            });
+export const streamViewers = inngest.createFunction(
+    { id: "streamViewers", name: "Viewers on stream", batchEvents: { maxSize: 50, timeout: "5s" } },
+    { event: "webhook.claim" },
+    async ({ events, step }) => {
+        const data = events.reduce((acc, item) => {
+            const { viewerName, viewerId, giveawayId, creatorId } = item.data;
+            const key = `${viewerId}_${giveawayId}`;
+            acc[key] = acc[key] || { viewerId, giveawayId, creatorId, viewerName, count: 0 };
+            acc[key].count++;
+            return acc;
+        }, {} as CountMap);
 
-            const redemption = await prisma.giveawayRedemptions.upsert({
-                where: { ViewerRedemptions: { viewerId: viewer.id, giveawayId: event.data.giveawayId } },
-                update: { ammount: { increment: 1 } },
-                create: { viewerId: viewer.id, giveawayId: event.data.giveawayId },
+        const result = await step.run("record data to DB", async () => {
+            let results: any[] = [];
+            console.log(data);
+            Object.entries(data).forEach(async ([key, entry]) => {
+                console.log("Recording entries for", entry.viewerName, entry.count);
+                try {
+                    let viewer = await prisma.viewer.findFirst({ where: { twitchId: entry.viewerId }, select: { id: true, name: true } });
+                    if (viewer) {
+                        if (viewer.name !== entry.viewerName) {
+                            await prisma.viewer.update({ where: { id: viewer.id }, data: { name: entry.viewerName } });
+                        }
+                    } else {
+                        viewer = await prisma.viewer.create({ data: { name: entry.viewerName, twitchId: entry.viewerId, isBanned: false, isApproved: false } });
+                    }
+                    await prisma.streamViewers.upsert({
+                        where: { UniqueViewerForCreator: { creatorId: entry.creatorId, viewerId: viewer.id } },
+                        update: {},
+                        create: { creatorId: entry.creatorId, viewerId: viewer.id },
+                    });
+
+                    const redemption = await prisma.giveawayRedemptions.upsert({
+                        where: { ViewerRedemptions: { viewerId: viewer.id, giveawayId: entry.giveawayId } },
+                        update: { ammount: { increment: entry.count } },
+                        create: { viewerId: viewer.id, giveawayId: entry.giveawayId },
+                    });
+                    console.log(redemption);
+                    results.push(redemption);
+                } catch (err: any) {
+                    console.error("Error inserting:", entry, err);
+                    results.push(err);
+                    throw new Error(err);
+                }
             });
-            return redemption;
-        } catch (err: any) {
-            console.error("Error inserting:", event.data, err);
-            throw new Error(err);
-        }
-    });
-    return { success: true, recorded: result };
-});
+            return results;
+        });
+        return { success: true, recorded: result };
+    }
+);
