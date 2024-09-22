@@ -95,23 +95,50 @@ const Rueda = ({
     const colores = useMemo(() => genColor(10000), []);
     const [rotacion, setRotacion] = useState(0);
     const [ganador, setGanador] = useState("");
-    const [agarrado, setAgarrado] = useState(false);
+    const [velocidad, setVelocidad] = useState(0);
+    const [girando, setGirando] = useState(false);
+    const [paro, setParo] = useState(false);
+    const FRICCION = useRef(1.005);
+    const winSFX = new Audio("/assets/tada.mp3");
+    const tickSFX = new Audio("/assets/tick.mp3");
 
     const tamanioFuente = ancho < 700 ? 16 : ancho < 900 ? 26 : 36;
 
-    // useTick((delta, { FPS = 60 }) => {
-    //     setRotacion((rotacion + delta / 100) % TAU);
-    // });
+    useTick((delta, { FPS = 60 }) => {
+        if (girando) {
+            if (velocidad > 2000) {
+                setParo(true);
+                setGirando(false);
+            }
+            setRotacion((rotacion + delta / velocidad) % TAU);
+            setVelocidad(velocidad * FRICCION.current);
+        }
+    });
 
-    const handleClick = useCallback(() => {
-        console.log("click");
-    }, []);
+    const comenzarAgarrar = (e: PIXI.FederatedMouseEvent) => {
+        if (!girando) {
+            setGirando(true);
+            setVelocidad(Math.random() * 10 + 5);
+        }
+    };
 
     useEffect(() => {
         const currentAngle = TAU - rotacion;
         const winner = participantes.find((p) => currentAngle >= p.comienzo! && currentAngle <= p.fin!);
-        if (winner) setGanador(winner.name);
+        if (winner && winner.name !== ganador) {
+            setGanador(winner.name);
+            tickSFX.volume = 0.25;
+            tickSFX.play();
+        }
     }, [rotacion]);
+
+    useEffect(() => {
+        if (paro) {
+            winSFX.volume = 0.25;
+            winSFX.play();
+            setParo(false);
+        }
+    }, [paro]);
     const partes = useMemo(
         () =>
             participantes.map((p, indice) => (
@@ -129,7 +156,7 @@ const Rueda = ({
         [participantes, centroX, centroY, radio, colores]
     );
     return (
-        <Container click={handleClick} ref={ref.current}>
+        <Container interactive={true} click={comenzarAgarrar} ref={ref.current}>
             <Container rotation={rotacion} pivot={[centroX, centroY]} position={[centroX, centroY]}>
                 {partes}
             </Container>
