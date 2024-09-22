@@ -1,6 +1,6 @@
 import ReactModal from "react-modal";
 import { useState } from "react";
-import { Wheel } from "./Wheel";
+import Wheel from "./Wheel";
 
 function Modal({
     entries,
@@ -39,7 +39,7 @@ function Modal({
                 X
             </button>
             {entries ? (
-                <Wheel entries={entries} callback={returnCallback} closing={isClosing} totalCount={totalCount} />
+                <Wheel entradas={entries} callback={returnCallback} cerrando={isClosing} totalEntradas={totalCount} />
             ) : null}
         </ReactModal>
     );
