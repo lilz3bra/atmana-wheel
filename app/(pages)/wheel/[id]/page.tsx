@@ -13,7 +13,7 @@ interface Props {
 export default async function WheelPage({ params }: Props) {
     const session = await getServerSession(authOptions);
     if (!session) {
-        redirect("api/auth/signin");
+        redirect("/api/auth/signin");
     }
     const giveaway = await prisma.giveaways.findFirst({
         where: {
@@ -23,6 +23,7 @@ export default async function WheelPage({ params }: Props) {
     });
     // Fetch this user's id in the db
     const thisUser = await prisma.account.findFirst({ where: { providerAccountId: session.user.providerAccountId }, select: { userId: true } });
+
     if (giveaway && thisUser) {
         // Check if the current user is the creator of the giveaway
         if (thisUser.userId === giveaway.creatorId) {

@@ -224,7 +224,7 @@ const Aguja = PixiComponent<{ radio: number; centroX: number; centroY: number },
     },
 });
 
-const Wheel = ({
+const NewWheel = ({
     entradas,
     callback,
     cerrando,
@@ -280,4 +280,4 @@ const Wheel = ({
     );
 };
 
-export default Wheel;
+export default NewWheel;
