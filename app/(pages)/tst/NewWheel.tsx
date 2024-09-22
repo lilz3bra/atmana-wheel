@@ -1,6 +1,16 @@
 import * as PIXI from "pixi.js";
 import { Graphics, PixiComponent, Stage, useTick, Container, Text, applyDefaultProps } from "@pixi/react";
-import React, { Fragment, use, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import React, {
+    Fragment,
+    StrictMode,
+    use,
+    useCallback,
+    useEffect,
+    useLayoutEffect,
+    useMemo,
+    useRef,
+    useState,
+} from "react";
 
 const TAU = Math.PI * 2;
 
@@ -75,13 +85,13 @@ const Rueda = ({
 }: {
     ancho: number;
     alto: number;
-    participantes: UsersList[];
+    participantes: Segment[];
     total: number;
 }) => {
     const ref = useRef();
     const [centroX, setX] = useState(ancho / 2);
     const [centroY, setY] = useState(alto / 2);
-    const [radio, setRadio] = useState(Math.min(ancho, alto) / 2);
+    const [radio, setRadio] = useState(Math.min(centroX, centroY));
     const colores = useMemo(() => genColor(10000), []);
     const [rotacion, setRotacion] = useState(0);
     const [ganador, setGanador] = useState("");
@@ -89,12 +99,14 @@ const Rueda = ({
 
     const tamanioFuente = ancho < 700 ? 16 : ancho < 900 ? 26 : 36;
 
-    // useTick((delta) => {
-    //     setRotacion((rotacion + delta / 500) % TAU);
-    // });
+    useTick((delta) => {
+        setRotacion((rotacion + delta / 100) % TAU);
+    });
+
     const handleClick = useCallback(() => {
         console.log("click");
     }, []);
+
     useEffect(() => {
         setRadio(Math.min(ancho, alto) / 2);
         setX(ancho / 2);
@@ -108,11 +120,7 @@ const Rueda = ({
     }, [rotacion]);
 
     return (
-        <Container
-            interactive={true}
-            click={() => {
-                console.log("click");
-            }}>
+        <Container interactive={true} click={handleClick}>
             <Container rotation={rotacion} pivot={[centroX, centroY]} position={[centroX, centroY]} scale={1}>
                 {participantes.map((p, indice) => (
                     <Porcion
@@ -152,22 +160,23 @@ const DibujoPorcion = ({ ...props }) => {
     }, [x, y, radius, startAngle, endAngle, color]);
     return <Graphics ref={instancia} />;
 };
+
 const Porcion = ({ name, ...props }: { name: string; [key: string]: any }) => {
     const { x, y, radius, startAngle, endAngle, color } = props;
-    const centroParaTexto = -radius + name.length * 16;
     const angulo = endAngle - startAngle;
     return (
-        <>
-            <DibujoPorcion x={x} y={y} radius={radius} startAngle={startAngle} endAngle={endAngle} color={color} />
+        <Container>
+            <DibujoPorcion x={x} y={y} radius={radius - 10} startAngle={startAngle} endAngle={endAngle} color={color} />
             {angulo > 0.13 && (
                 <Text
                     text={name}
-                    position={[x, y]}
-                    rotation={(startAngle - endAngle!) / 2 + startAngle!}
-                    pivot={[centroParaTexto, 18]}
+                    x={x}
+                    y={y}
+                    rotation={angulo / 2 + startAngle}
+                    pivot={[-radius + Math.min(250, name.length * 16) + 20, 18]}
                 />
             )}
-        </>
+        </Container>
     );
 };
 
@@ -176,6 +185,9 @@ const Aguja = PixiComponent<{ radio: number; centroX: number; centroY: number },
     applyProps: (instancia, _, propiedades) => {
         const puntaAguja = propiedades.centroX + propiedades.radio;
         instancia.clear();
+        instancia.beginFill(0xffffff);
+        instancia.drawCircle(propiedades.centroX, propiedades.centroY, 40);
+        instancia.endFill();
         instancia.lineStyle(2, 0x000000, 1);
         instancia.beginFill(0xffffff);
         instancia.moveTo(puntaAguja - 20, propiedades.centroY);
@@ -192,7 +204,7 @@ const NewWheel = ({
     cerrando,
     totalEntradas,
 }: {
-    entradas: UsersList[];
+    entradas: User[];
     callback: Function;
     cerrando: Boolean;
     totalEntradas: number;
@@ -225,7 +237,7 @@ const NewWheel = ({
         };
     }, []);
 
-    const lista = entradas.reduce<UsersList[]>((acc, entrada, indice) => {
+    const lista = entradas.reduce<Segment[]>((acc, entrada, indice) => {
         const anchoPorcion = TAU * (entrada.ammount / totalEntradas);
         const comienzo = indice === 0 ? 0 : acc[indice - 1].fin!;
         const fin = comienzo + anchoPorcion;
