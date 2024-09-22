@@ -2,7 +2,17 @@ import ReactModal from "react-modal";
 import { useState } from "react";
 import { Wheel } from "./Wheel";
 
-function Modal({ entries, totalCount, onClose, returnCallback }: { entries: UsersList[]; onClose: Function; returnCallback: Function; totalCount: number }) {
+function Modal({
+    entries,
+    totalCount,
+    onClose,
+    returnCallback,
+}: {
+    entries: User[];
+    onClose: Function;
+    returnCallback: Function;
+    totalCount: number;
+}) {
     const [isOpen, setIsOpen] = useState(true);
     const [isClosing, setIsClosing] = useState(false);
 
@@ -28,7 +38,9 @@ function Modal({ entries, totalCount, onClose, returnCallback }: { entries: User
                 onClick={handleCloseModal}>
                 X
             </button>
-            {entries ? <Wheel entries={entries} callback={returnCallback} closing={isClosing} totalCount={totalCount} /> : null}
+            {entries ? (
+                <Wheel entries={entries} callback={returnCallback} closing={isClosing} totalCount={totalCount} />
+            ) : null}
         </ReactModal>
     );
 }
