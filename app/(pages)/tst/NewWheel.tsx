@@ -89,9 +89,9 @@ const Rueda = ({
     total: number;
 }) => {
     const ref = useRef();
-    const [centroX, setX] = useState(ancho / 2);
-    const [centroY, setY] = useState(alto / 2);
-    const [radio, setRadio] = useState(Math.min(centroX, centroY));
+    const centroX = useMemo(() => ancho / 2, [ancho]);
+    const centroY = useMemo(() => alto / 2, [alto]);
+    const radio = useMemo(() => Math.min(centroX, centroY), [centroX, centroY]);
     const colores = useMemo(() => genColor(10000), []);
     const [rotacion, setRotacion] = useState(0);
     const [ganador, setGanador] = useState("");
@@ -99,41 +99,39 @@ const Rueda = ({
 
     const tamanioFuente = ancho < 700 ? 16 : ancho < 900 ? 26 : 36;
 
-    useTick((delta) => {
-        setRotacion((rotacion + delta / 100) % TAU);
-    });
+    // useTick((delta, { FPS = 60 }) => {
+    //     setRotacion((rotacion + delta / 100) % TAU);
+    // });
 
     const handleClick = useCallback(() => {
         console.log("click");
     }, []);
 
     useEffect(() => {
-        setRadio(Math.min(ancho, alto) / 2);
-        setX(ancho / 2);
-        setY(alto / 2);
-    }, [ancho, alto]);
-
-    useEffect(() => {
         const currentAngle = TAU - rotacion;
         const winner = participantes.find((p) => currentAngle >= p.comienzo! && currentAngle <= p.fin!);
         if (winner) setGanador(winner.name);
     }, [rotacion]);
-
+    const partes = useMemo(
+        () =>
+            participantes.map((p, indice) => (
+                <Porcion
+                    key={p.id}
+                    name={p.name}
+                    x={centroX}
+                    y={centroY}
+                    radius={radio}
+                    startAngle={p.comienzo}
+                    endAngle={p.fin}
+                    color={colores[indice]}
+                />
+            )),
+        [participantes, centroX, centroY, radio, colores]
+    );
     return (
-        <Container interactive={true} click={handleClick}>
-            <Container rotation={rotacion} pivot={[centroX, centroY]} position={[centroX, centroY]} scale={1}>
-                {participantes.map((p, indice) => (
-                    <Porcion
-                        key={p.id}
-                        name={p.name}
-                        x={centroX}
-                        y={centroY}
-                        radius={radio}
-                        startAngle={p.comienzo}
-                        endAngle={p.fin}
-                        color={colores[indice]}
-                    />
-                ))}
+        <Container click={handleClick} ref={ref.current}>
+            <Container rotation={rotacion} pivot={[centroX, centroY]} position={[centroX, centroY]}>
+                {partes}
             </Container>
             <Container>
                 <Aguja radio={Math.min(ancho, alto) / 2} centroX={centroX} centroY={centroY} />
@@ -162,10 +160,11 @@ const DibujoPorcion = ({ ...props }) => {
 };
 
 const Porcion = ({ name, ...props }: { name: string; [key: string]: any }) => {
+    const ref = useRef();
     const { x, y, radius, startAngle, endAngle, color } = props;
     const angulo = endAngle - startAngle;
     return (
-        <Container>
+        <Container ref={ref.current}>
             <DibujoPorcion x={x} y={y} radius={radius - 10} startAngle={startAngle} endAngle={endAngle} color={color} />
             {angulo > 0.13 && (
                 <Text
