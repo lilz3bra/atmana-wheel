@@ -20,4 +20,5 @@ interface User {
 interface Segment extends User {
     comienzo: number;
     fin: number;
+    shortName: string;
 }
