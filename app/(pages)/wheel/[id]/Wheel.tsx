@@ -105,17 +105,23 @@ const Wheel = ({
         };
     }, []);
 
-    const lista = entradas.reduce<Segment[]>((acc, entrada, indice) => {
-        const anchoPorcion = TAU * (entrada.ammount / totalEntradas);
-        const comienzo = indice === 0 ? 0 : acc[indice - 1].fin!;
-        const fin = comienzo + anchoPorcion;
-        const longitudNombre = entrada.name.length;
-        const shortName =
-            longitudNombre > 11
-                ? entrada.name.substring(0, 5) + "..." + entrada.name.substring(longitudNombre - 5, longitudNombre)
-                : entrada.name;
-        return [...acc, { ...entrada, comienzo, fin, shortName }];
-    }, []);
+    const lista = useMemo(
+        () =>
+            entradas.reduce<Segment[]>((acc, entrada, indice) => {
+                const anchoPorcion = TAU * (entrada.ammount / totalEntradas);
+                const comienzo = indice === 0 ? 0 : acc[indice - 1].fin!;
+                const fin = comienzo + anchoPorcion;
+                const longitudNombre = entrada.name.length;
+                const shortName =
+                    longitudNombre > 11
+                        ? entrada.name.substring(0, 5) +
+                          "..." +
+                          entrada.name.substring(longitudNombre - 5, longitudNombre)
+                        : entrada.name;
+                return [...acc, { ...entrada, comienzo, fin, shortName }];
+            }, []),
+        [entradas]
+    );
 
     const Rueda = ({ participantes }: { participantes: Segment[] }) => {
         const ref = useRef();
@@ -129,8 +135,8 @@ const Wheel = ({
         const [girando, setGirando] = useState(false);
         const [paro, setParo] = useState(false);
         const FRICCION = useRef(1.002);
-        const winSFX = new Audio("/assets/tada.mp3");
-        const tickSFX = new Audio("/assets/tick.mp3");
+        const winSFX = useRef(new Audio("/assets/tada.mp3"));
+        const tickSFX = useRef(new Audio("/assets/tick.mp3"));
         const time = useRef(0);
         const tamanioFuente = ancho < 700 ? 16 : ancho < 900 ? 20 : 26;
 
@@ -145,11 +151,11 @@ const Wheel = ({
             }
         });
 
-        const comenzarAgarrar = () => {
+        const tirar = () => {
             if (!girando) {
                 time.current = performance.now();
                 setGirando(true);
-                setVelocidad(15);
+                setVelocidad(Math.floor(Math.random() * 25) + 5);
             }
         };
 
@@ -158,15 +164,15 @@ const Wheel = ({
             const winner = participantes.find((p) => currentAngle >= p.comienzo! && currentAngle <= p.fin!);
             if (winner && winner.id !== ganador.id) {
                 setGanador(winner);
-                tickSFX.volume = 0.25;
-                tickSFX.play();
+                tickSFX.current.volume = 0.25;
+                tickSFX.current.play();
             }
         }, [rotacion]);
 
         useEffect(() => {
             if (paro) {
-                winSFX.volume = 0.25;
-                winSFX.play();
+                winSFX.current.volume = 0.25;
+                winSFX.current.play();
                 callback(ganador.id);
 
                 setParo(false);
@@ -192,7 +198,7 @@ const Wheel = ({
         );
 
         return (
-            <Container interactive={true} click={comenzarAgarrar} ref={ref.current}>
+            <Container interactive={true} click={tirar} ref={ref.current}>
                 <Container rotation={rotacion} pivot={[radio + 10, centroY]} position={[radio + 10, centroY]}>
                     {partes}
                 </Container>
