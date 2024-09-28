@@ -155,7 +155,7 @@ const Wheel = ({
             if (!girando) {
                 time.current = performance.now();
                 setGirando(true);
-                setVelocidad(Math.floor(Math.random() * 25) + 5);
+                setVelocidad(Math.floor(Math.random() * 15) + 5);
             }
         };
 
