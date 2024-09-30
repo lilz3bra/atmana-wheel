@@ -15,7 +15,7 @@ export default async function WheelPage({ params }: Props) {
     if (!session) {
         redirect("/api/auth/signin");
     }
-    redirect("/mainenance");
+    redirect("/maintenance");
     // const giveaway = await prisma.giveaways.findFirst({
     //     where: {
     //         id: params.id,
