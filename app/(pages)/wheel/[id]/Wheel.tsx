@@ -3,6 +3,8 @@ import { Graphics, PixiComponent, Stage, useTick, Container, Text } from "@pixi/
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 const TAU = Math.PI * 2;
+const winSFX = new Audio("/assets/tada.mp3");
+const tickSFX = new Audio("/assets/tick.mp3");
 
 function genColor(num: number): string[] {
     // generate random colors using golden ratio to avoid colors being too close to eachother
@@ -105,17 +107,23 @@ const Wheel = ({
         };
     }, []);
 
-    const lista = entradas.reduce<Segment[]>((acc, entrada, indice) => {
-        const anchoPorcion = TAU * (entrada.ammount / totalEntradas);
-        const comienzo = indice === 0 ? 0 : acc[indice - 1].fin!;
-        const fin = comienzo + anchoPorcion;
-        const longitudNombre = entrada.name.length;
-        const shortName =
-            longitudNombre > 11
-                ? entrada.name.substring(0, 5) + "..." + entrada.name.substring(longitudNombre - 5, longitudNombre)
-                : entrada.name;
-        return [...acc, { ...entrada, comienzo, fin, shortName }];
-    }, []);
+    const lista = useMemo(
+        () =>
+            entradas.reduce<Segment[]>((acc, entrada, indice) => {
+                const anchoPorcion = TAU * (entrada.ammount / totalEntradas);
+                const comienzo = indice === 0 ? 0 : acc[indice - 1].fin!;
+                const fin = comienzo + anchoPorcion;
+                const longitudNombre = entrada.name.length;
+                const shortName =
+                    longitudNombre > 11
+                        ? entrada.name.substring(0, 5) +
+                          "..." +
+                          entrada.name.substring(longitudNombre - 5, longitudNombre)
+                        : entrada.name;
+                return [...acc, { ...entrada, comienzo, fin, shortName }];
+            }, []),
+        [entradas]
+    );
 
     const Rueda = ({ participantes }: { participantes: Segment[] }) => {
         const ref = useRef();
@@ -129,13 +137,14 @@ const Wheel = ({
         const [girando, setGirando] = useState(false);
         const [paro, setParo] = useState(false);
         const FRICCION = useRef(1.002);
-        const winSFX = new Audio("/assets/tada.mp3");
-        const tickSFX = new Audio("/assets/tick.mp3");
+        // const winSFX = useRef(new Audio("/assets/tada.mp3"));
+        // const tickSFX = useRef(new Audio("/assets/tick.mp3"));
         const time = useRef(0);
         const tamanioFuente = ancho < 700 ? 16 : ancho < 900 ? 20 : 26;
 
         useTick((delta) => {
             if (girando) {
+                if (delta > 1.6) console.log(delta);
                 if (velocidad > 2000) {
                     setParo(true);
                     setGirando(false);
@@ -145,11 +154,12 @@ const Wheel = ({
             }
         });
 
-        const comenzarAgarrar = () => {
+        const tirar = () => {
             if (!girando) {
+                tickSFX.volume = 0.25;
                 time.current = performance.now();
                 setGirando(true);
-                setVelocidad(15);
+                setVelocidad(Math.floor(Math.random() * 8) + 5);
             }
         };
 
@@ -158,7 +168,6 @@ const Wheel = ({
             const winner = participantes.find((p) => currentAngle >= p.comienzo! && currentAngle <= p.fin!);
             if (winner && winner.id !== ganador.id) {
                 setGanador(winner);
-                tickSFX.volume = 0.25;
                 tickSFX.play();
             }
         }, [rotacion]);
@@ -192,8 +201,13 @@ const Wheel = ({
         );
 
         return (
-            <Container interactive={true} click={comenzarAgarrar} ref={ref.current}>
-                <Container rotation={rotacion} pivot={[radio + 10, centroY]} position={[radio + 10, centroY]}>
+            <Container interactive={true} click={tirar} ref={ref.current}>
+                <Container
+                    rotation={rotacion}
+                    pivot={[radio + 10, centroY]}
+                    position={[radio + 10, centroY]}
+                    cacheAsBitmap={true}
+                    cacheAsBitmapMultisample={PIXI.MSAA_QUALITY.HIGH}>
                     {partes}
                 </Container>
                 <Container>
@@ -227,6 +241,11 @@ const Wheel = ({
         const ref = useRef();
         const { x, y, radius, startAngle, endAngle, color } = props;
         const angulo = endAngle - startAngle;
+        const tamanioTexto = angulo > 0.14 ? 26 : 20;
+        const puntoPivot = new PIXI.Point(
+            -radius + Math.min(220, name.length * 16) - (angulo > 0.14 ? 20 : 56),
+            angulo > 0.14 ? 18 : 14
+        );
         return (
             <Container ref={ref.current}>
                 <DibujoPorcion
@@ -237,13 +256,14 @@ const Wheel = ({
                     endAngle={endAngle}
                     color={color}
                 />
-                {angulo > 0.13 && (
+                {angulo > 0.1 && (
                     <Text
                         text={name}
                         x={x}
                         y={y}
                         rotation={angulo / 2 + startAngle}
-                        pivot={[-radius + Math.min(250, name.length * 16) + 20, 18]}
+                        pivot={puntoPivot}
+                        style={new PIXI.TextStyle({ fontSize: tamanioTexto })}
                     />
                 )}
             </Container>
