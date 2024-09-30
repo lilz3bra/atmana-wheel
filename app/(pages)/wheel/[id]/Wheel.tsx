@@ -3,6 +3,8 @@ import { Graphics, PixiComponent, Stage, useTick, Container, Text } from "@pixi/
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 const TAU = Math.PI * 2;
+const winSFX = new Audio("/assets/tada.mp3");
+const tickSFX = new Audio("/assets/tick.mp3");
 
 function genColor(num: number): string[] {
     // generate random colors using golden ratio to avoid colors being too close to eachother
@@ -135,13 +137,14 @@ const Wheel = ({
         const [girando, setGirando] = useState(false);
         const [paro, setParo] = useState(false);
         const FRICCION = useRef(1.002);
-        const winSFX = useRef(new Audio("/assets/tada.mp3"));
-        const tickSFX = useRef(new Audio("/assets/tick.mp3"));
+        // const winSFX = useRef(new Audio("/assets/tada.mp3"));
+        // const tickSFX = useRef(new Audio("/assets/tick.mp3"));
         const time = useRef(0);
         const tamanioFuente = ancho < 700 ? 16 : ancho < 900 ? 20 : 26;
 
         useTick((delta) => {
             if (girando) {
+                if (delta > 1.6) console.log(delta);
                 if (velocidad > 2000) {
                     setParo(true);
                     setGirando(false);
@@ -153,9 +156,10 @@ const Wheel = ({
 
         const tirar = () => {
             if (!girando) {
+                tickSFX.volume = 0.25;
                 time.current = performance.now();
                 setGirando(true);
-                setVelocidad(Math.floor(Math.random() * 15) + 5);
+                setVelocidad(Math.floor(Math.random() * 8) + 5);
             }
         };
 
@@ -164,15 +168,14 @@ const Wheel = ({
             const winner = participantes.find((p) => currentAngle >= p.comienzo! && currentAngle <= p.fin!);
             if (winner && winner.id !== ganador.id) {
                 setGanador(winner);
-                tickSFX.current.volume = 0.25;
-                tickSFX.current.play();
+                tickSFX.play();
             }
         }, [rotacion]);
 
         useEffect(() => {
             if (paro) {
-                winSFX.current.volume = 0.25;
-                winSFX.current.play();
+                winSFX.volume = 0.25;
+                winSFX.play();
                 callback(ganador.id);
 
                 setParo(false);
@@ -199,7 +202,12 @@ const Wheel = ({
 
         return (
             <Container interactive={true} click={tirar} ref={ref.current}>
-                <Container rotation={rotacion} pivot={[radio + 10, centroY]} position={[radio + 10, centroY]}>
+                <Container
+                    rotation={rotacion}
+                    pivot={[radio + 10, centroY]}
+                    position={[radio + 10, centroY]}
+                    cacheAsBitmap={true}
+                    cacheAsBitmapMultisample={PIXI.MSAA_QUALITY.HIGH}>
                     {partes}
                 </Container>
                 <Container>
@@ -233,6 +241,11 @@ const Wheel = ({
         const ref = useRef();
         const { x, y, radius, startAngle, endAngle, color } = props;
         const angulo = endAngle - startAngle;
+        const tamanioTexto = angulo > 0.14 ? 26 : 20;
+        const puntoPivot = new PIXI.Point(
+            -radius + Math.min(220, name.length * 16) - (angulo > 0.14 ? 20 : 56),
+            angulo > 0.14 ? 18 : 14
+        );
         return (
             <Container ref={ref.current}>
                 <DibujoPorcion
@@ -243,13 +256,14 @@ const Wheel = ({
                     endAngle={endAngle}
                     color={color}
                 />
-                {angulo > 0.13 && (
+                {angulo > 0.1 && (
                     <Text
                         text={name}
                         x={x}
                         y={y}
                         rotation={angulo / 2 + startAngle}
-                        pivot={[-radius + Math.min(250, name.length * 16) + 20, 18]}
+                        pivot={puntoPivot}
+                        style={new PIXI.TextStyle({ fontSize: tamanioTexto })}
                     />
                 )}
             </Container>
