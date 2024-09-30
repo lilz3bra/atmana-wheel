@@ -36,3 +36,4 @@ next-env.d.ts
 /.firebase/*
 app/api/test/route.ts
 # app/(pages)/tst/*
+oldWheel.tsx
