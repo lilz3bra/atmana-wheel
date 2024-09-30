@@ -29,7 +29,7 @@ function Modal({
             isOpen={isOpen}
             id="modal"
             contentLabel="Register dialog"
-            className="absolute block top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 max-w-full w-2/3 h-5/6 rounded-xl"
+            className="absolute block top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 max-w-full w-2/3 h-5/6 rounded-xl bg-slate-800"
             overlayClassName="fixed top-0 right-0 bottom-0 left-0 bg-black/50"
             appElement={root}
             onRequestClose={handleCloseModal}>
