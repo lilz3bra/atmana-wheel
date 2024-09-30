@@ -256,7 +256,7 @@ const Wheel = ({
                     endAngle={endAngle}
                     color={color}
                 />
-                {angulo > 0.1 && (
+                {angulo > 0.08 && (
                     <Text
                         text={name}
                         x={x}
