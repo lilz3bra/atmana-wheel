@@ -1,6 +1,6 @@
 import ReactModal from "react-modal";
 import { useState } from "react";
-import Wheel from "./Wheel";
+import { Wheel } from "./Wheel";
 
 function Modal({
     entries,
