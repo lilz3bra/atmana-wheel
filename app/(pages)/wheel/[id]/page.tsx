@@ -13,7 +13,7 @@ interface Props {
 export default async function WheelPage({ params }: Props) {
     const session = await getServerSession(authOptions);
     if (!session) {
-        redirect("api/auth/signin");
+        redirect("/api/auth/signin");
     }
     const giveaway = await prisma.giveaways.findFirst({
         where: {
