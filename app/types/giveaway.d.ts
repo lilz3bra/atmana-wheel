@@ -12,13 +12,11 @@ interface Entry {
     weight: number;
 }
 
-interface User {
+interface UsersList {
     name: string;
     ammount: number;
     id: string;
 }
-interface Segment extends User {
-    comienzo: number;
-    fin: number;
-    shortName: string;
+interface SegmentList extends UsersList {
+    angle: number;
 }

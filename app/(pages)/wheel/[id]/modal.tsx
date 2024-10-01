@@ -8,7 +8,7 @@ function Modal({
     onClose,
     returnCallback,
 }: {
-    entries: User[];
+    entries: UsersList[];
     onClose: Function;
     returnCallback: Function;
     totalCount: number;
@@ -39,7 +39,7 @@ function Modal({
                 X
             </button>
             {entries ? (
-                <Wheel entradas={entries} callback={returnCallback} cerrando={isClosing} totalEntradas={totalCount} />
+                <Wheel entries={entries} callback={returnCallback} closing={isClosing} totalCount={totalCount} />
             ) : null}
         </ReactModal>
     );

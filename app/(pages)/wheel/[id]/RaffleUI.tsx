@@ -18,7 +18,7 @@ interface Props {
 
 interface Resp {
     total: number;
-    list: User[];
+    list: UsersList[];
 }
 const RaffleUI = ({ giveaway }: Props) => {
     const [users, setUsers] = useState<Resp | null>(null);
@@ -42,7 +42,7 @@ const RaffleUI = ({ giveaway }: Props) => {
         }
     };
 
-    const sortUsers = (us: User[]) => {
+    const sortUsers = (us: UsersList[]) => {
         const sortedUsers = [...us].sort((a, b) => b.ammount - a.ammount);
         return sortedUsers;
     };
@@ -55,10 +55,7 @@ const RaffleUI = ({ giveaway }: Props) => {
 
     const pauseResume = async (shouldPause: boolean) => {
         setPaused(shouldPause);
-        await fetch(`/api/raffle?raffleId=${giveaway.twitchId}`, {
-            method: "PATCH",
-            body: JSON.stringify({ is_paused: shouldPause, id: giveaway.id }),
-        });
+        await fetch(`/api/raffle?raffleId=${giveaway.twitchId}`, { method: "PATCH", body: JSON.stringify({ is_paused: shouldPause, id: giveaway.id }) });
     };
 
     const drawWinner = async () => {
@@ -133,18 +130,14 @@ const RaffleUI = ({ giveaway }: Props) => {
                     )}
                     <div className="flex flex-row m-2 justify-between items-center gap-2">
                         <Hint text={`Draw a winner`} extraCss="flex flex-row justify-center">
-                            <button
-                                onClick={drawWinner}
-                                className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 w-8 justify-center flex flex-row">
+                            <button onClick={drawWinner} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 w-8 justify-center flex flex-row">
                                 <FontAwesomeIcon icon={faTicket} />
                             </button>
                         </Hint>
                         {!isDeleted && (
                             <>
                                 <Hint text="Update entries">
-                                    <button
-                                        onClick={getParticipants}
-                                        className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 w-8 justify-center flex flex-row">
+                                    <button onClick={getParticipants} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 w-8 justify-center flex flex-row">
                                         <FontAwesomeIcon icon={faArrowsRotate} />
                                     </button>
                                 </Hint>
@@ -156,9 +149,7 @@ const RaffleUI = ({ giveaway }: Props) => {
                                     </button>
                                 </Hint>
                                 <Hint text="Delete">
-                                    <button
-                                        onClick={deleteReward}
-                                        className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 w-8 justify-center flex flex-row">
+                                    <button onClick={deleteReward} className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 w-8 justify-center flex flex-row">
                                         <FontAwesomeIcon icon={faTrashCan} />
                                     </button>
                                 </Hint>
@@ -171,24 +162,13 @@ const RaffleUI = ({ giveaway }: Props) => {
                                 {Object.keys(users.list).length} Participants ({users.total} entries)
                             </h1>
                             {giveaway.twitchId === "" && (
-                                <h1 className="font-bold text-lg text-red-400 text-center">
-                                    This reward was deleted from twitch, the participants list cannot be updated.
-                                </h1>
+                                <h1 className="font-bold text-lg text-red-400 text-center">This reward was deleted from twitch, the participants list cannot be updated.</h1>
                             )}
                             <div className="m-auto w-2/3 h-1/2 justify-center text-center gap-2">
-                                {typeof sortedUsers !== "undefined" ? (
-                                    <ParticipantsList users={sortedUsers!} tot={users.total} />
-                                ) : (
-                                    loading && <Loading />
-                                )}
+                                {typeof sortedUsers !== "undefined" ? <ParticipantsList users={sortedUsers!} tot={users.total} /> : loading && <Loading />}
                             </div>
                             {visible && typeof users !== "undefined" ? (
-                                <Modal
-                                    entries={users.list}
-                                    onClose={() => setVisible(false)}
-                                    returnCallback={updateDb}
-                                    totalCount={users.total}
-                                />
+                                <Modal entries={users.list} onClose={() => setVisible(false)} returnCallback={updateDb} totalCount={users.total} />
                             ) : null}
                         </>
                     )}

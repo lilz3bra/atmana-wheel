@@ -1,7 +1,7 @@
 "use client";
 import React from "react";
 interface Props {
-    users: User[];
+    users: UsersList[];
     tot: number;
 }
 const ParticipantsList = ({ users, tot }: Props) => {
@@ -11,8 +11,7 @@ const ParticipantsList = ({ users, tot }: Props) => {
         const percentage = ((weight / tot) * 100).toFixed(2);
         userElements.push(
             <p key={users![index].name}>
-                <span className="font-bold">{users![index].name}</span>: {weight} entr{weight > 1 ? "ies" : "y"}{" "}
-                <span className="italic">({percentage}%)</span>
+                <span className="font-bold">{users![index].name}</span>: {weight} entr{weight > 1 ? "ies" : "y"} <span className="italic">({percentage}%)</span>
             </p>
         );
     });
