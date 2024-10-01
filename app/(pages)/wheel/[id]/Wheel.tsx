@@ -139,7 +139,6 @@ const Wheel = ({
         const FRICCION = useRef(1.002);
         // const winSFX = useRef(new Audio("/assets/tada.mp3"));
         // const tickSFX = useRef(new Audio("/assets/tick.mp3"));
-        const time = useRef(0);
         const tamanioFuente = ancho < 700 ? 16 : ancho < 900 ? 20 : 26;
 
         useTick((delta) => {
@@ -157,9 +156,10 @@ const Wheel = ({
         const tirar = () => {
             if (!girando) {
                 tickSFX.volume = 0.25;
-                time.current = performance.now();
                 setGirando(true);
-                setVelocidad(Math.floor(Math.random() * 8) + 5);
+                const vel = Math.random() * 8 + 5;
+                console.log(vel);
+                setVelocidad(vel);
             }
         };
 
@@ -179,7 +179,6 @@ const Wheel = ({
                 callback(ganador.id);
 
                 setParo(false);
-                console.log((performance.now() - time.current) / 1000);
             }
         }, [paro]);
 
