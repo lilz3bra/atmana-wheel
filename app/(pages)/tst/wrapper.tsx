@@ -17,7 +17,7 @@ const Wrapper = () => {
     const [qty, setQty] = useState(4);
     const [len, setLen] = useState(10);
     const returnCallback = (entry: string) => {
-        console.log(entry);
+        console.log("Winner id: ", entry);
     };
     const isClosing = false;
     const [totalCount, setTotal] = useState(0);

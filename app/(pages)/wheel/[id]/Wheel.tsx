@@ -1,5 +1,6 @@
 import * as PIXI from "pixi.js";
-import { Graphics, PixiComponent, Stage, useTick, Container, Text } from "@pixi/react";
+import { Graphics, Container, Text } from "pixi.js";
+import { Application, useExtend, useTick } from "@pixi/react";
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 
 const TAU = Math.PI * 2;
@@ -79,6 +80,7 @@ const Wheel = ({
     cerrando: Boolean;
     totalEntradas: number;
 }) => {
+    useExtend({ Container, Graphics, Text });
     const [ancho, setAncho] = useState(window.innerWidth / 2);
     const [alto, setAlto] = useState((window.innerHeight * 5) / 6);
     const estaCambiando = useRef(false);
@@ -136,20 +138,28 @@ const Wheel = ({
         const [velocidad, setVelocidad] = useState(0);
         const [girando, setGirando] = useState(false);
         const [paro, setParo] = useState(false);
-        const FRICCION = useRef(1.002);
+        const FRICCION = useRef(0.0001);
         // const winSFX = useRef(new Audio("/assets/tada.mp3"));
         // const tickSFX = useRef(new Audio("/assets/tick.mp3"));
         const tamanioFuente = ancho < 700 ? 16 : ancho < 900 ? 20 : 26;
+        const [startTime, setStartTime] = useState(0);
 
         useTick((delta) => {
             if (girando) {
-                if (delta > 1.6) console.log(delta);
-                if (velocidad > 2000) {
+                if (delta.deltaTime > 1.6) console.log("Long frame: ", delta);
+                if (velocidad < 0.000001) {
                     setParo(true);
                     setGirando(false);
                 }
-                setRotacion((rotacion + delta / velocidad) % TAU);
-                setVelocidad(velocidad * FRICCION.current);
+                const deltaRotacion = (velocidad - FRICCION.current) * delta.deltaTime;
+                const rotAng = (rotacion + deltaRotacion) % TAU;
+                if (velocidad > 0.3) {
+                    console.log(`Delta rotacion: ${deltaRotacion} > Velocidad: ${velocidad}\nDelta: ${delta}`);
+                }
+                if (deltaRotacion > velocidad + 0.001) {
+                }
+                setRotacion(rotAng);
+                setVelocidad(deltaRotacion);
             }
         });
 
@@ -157,8 +167,9 @@ const Wheel = ({
             if (!girando) {
                 tickSFX.volume = 0.25;
                 setGirando(true);
-                const vel = Math.random() * 8 + 5;
-                console.log(vel);
+                setStartTime(performance.now());
+                const vel = 0.3;
+                console.log("Speed: ", vel);
                 setVelocidad(vel);
             }
         };
@@ -177,7 +188,7 @@ const Wheel = ({
                 winSFX.volume = 0.25;
                 winSFX.play();
                 callback(ganador.id);
-
+                console.log("Time spinning: ", (performance.now() - startTime) / 1000);
                 setParo(false);
             }
         }, [paro]);
@@ -200,25 +211,25 @@ const Wheel = ({
         );
 
         return (
-            <Container interactive={true} click={tirar} ref={ref.current}>
-                <Container
+            <container eventMode={"dynamic"} onClick={tirar} ref={ref.current}>
+                <container
                     rotation={rotacion}
                     pivot={[radio + 10, centroY]}
                     position={[radio + 10, centroY]}
                     cacheAsBitmap={true}
                     cacheAsBitmapMultisample={PIXI.MSAA_QUALITY.HIGH}>
                     {partes}
-                </Container>
-                <Container>
+                </container>
+                <container>
                     <Aguja radio={radio} centroX={radio + 10} centroY={centroY} />
-                    <Text
+                    <text
                         text={ganador.name}
                         x={2 * radio + 25}
                         y={centroY - 18}
                         style={new PIXI.TextStyle({ fill: "white", fontSize: tamanioFuente })}
                     />
-                </Container>
-            </Container>
+                </container>
+            </container>
         );
     };
 
@@ -268,30 +279,51 @@ const Wheel = ({
             </Container>
         );
     };
-
-    const Aguja = PixiComponent<{ radio: number; centroX: number; centroY: number }, PIXI.Graphics>("Aguja", {
-        create: () => new PIXI.Graphics(),
-        applyProps: (instancia, _, propiedades) => {
-            const puntaAguja = propiedades.centroX + propiedades.radio - 30;
-            instancia.clear();
-            instancia.beginFill(0xffffff);
-            instancia.drawCircle(propiedades.centroX, propiedades.centroY, 40);
-            instancia.endFill();
-            instancia.lineStyle(2, 0x000000, 1);
-            instancia.beginFill(0xffffff);
-            instancia.moveTo(puntaAguja, propiedades.centroY);
-            instancia.lineTo(puntaAguja + 40, propiedades.centroY - 10);
-            instancia.lineTo(puntaAguja + 40, propiedades.centroY + 10);
-            instancia.lineTo(puntaAguja, propiedades.centroY);
-            instancia.endFill();
-        },
-    });
+    const Aguja = ({ radio, centroX, centroY }: { radio: number; centroX: number; centroY: number }) => {
+        return (
+            <Graphics
+                draw={(instancia) => {
+                    const puntaAguja = centroX + radio - 30;
+                    instancia.clear();
+                    instancia.beginFill(0xffffff);
+                    instancia.drawCircle(centroX, centroY, 40);
+                    instancia.endFill();
+                    instancia.lineStyle(2, 0x000000, 1);
+                    instancia.beginFill(0xffffff);
+                    instancia.moveTo(puntaAguja, centroY);
+                    instancia.lineTo(puntaAguja + 40, centroY - 10);
+                    instancia.lineTo(puntaAguja + 40, centroY + 10);
+                    instancia.lineTo(puntaAguja, centroY);
+                    instancia.endFill();
+                }}
+            />
+        );
+    };
+    // const Aguja = PixiComponent<{ radio: number; centroX: number; centroY: number }, PIXI.Graphics>("Aguja", {
+    //     create: () => new PIXI.Graphics(),
+    //     applyProps: (instancia, _, propiedades) => {
+    //         const puntaAguja = propiedades.centroX + propiedades.radio - 30;
+    //         instancia.clear();
+    //         instancia.beginFill(0xffffff);
+    //         instancia.drawCircle(propiedades.centroX, propiedades.centroY, 40);
+    //         instancia.endFill();
+    //         instancia.lineStyle(2, 0x000000, 1);
+    //         instancia.beginFill(0xffffff);
+    //         instancia.moveTo(puntaAguja, propiedades.centroY);
+    //         instancia.lineTo(puntaAguja + 40, propiedades.centroY - 10);
+    //         instancia.lineTo(puntaAguja + 40, propiedades.centroY + 10);
+    //         instancia.lineTo(puntaAguja, propiedades.centroY);
+    //         instancia.endFill();
+    //     },
+    // });
 
     return (
         <div className="flex justify-center my-2">
-            <Stage width={ancho} height={alto} options={{ backgroundColor: 0x1e293b }}>
-                <Rueda participantes={lista} />
-            </Stage>
+            <Application background={0x1e293b}>
+                <container width={ancho} height={alto}>
+                    <Rueda participantes={lista} />
+                </container>
+            </Application>
         </div>
     );
 };
