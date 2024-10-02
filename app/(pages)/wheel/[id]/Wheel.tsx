@@ -6,6 +6,7 @@ import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "re
 const TAU = Math.PI * 2;
 const winSFX = new Audio("/assets/tada.mp3");
 const tickSFX = new Audio("/assets/tick.mp3");
+const FRICCION = 0.0001;
 
 function genColor(num: number): string[] {
     // generate random colors using golden ratio to avoid colors being too close to eachother
@@ -116,19 +117,13 @@ const Wheel = ({
                 const comienzo = indice === 0 ? 0 : acc[indice - 1].fin!;
                 const fin = comienzo + anchoPorcion;
                 const longitudNombre = entrada.name.length;
-                const shortName =
-                    longitudNombre > 11
-                        ? entrada.name.substring(0, 5) +
-                          "..." +
-                          entrada.name.substring(longitudNombre - 5, longitudNombre)
-                        : entrada.name;
+                const shortName = longitudNombre > 11 ? entrada.name.substring(0, 8) + "..." : entrada.name;
                 return [...acc, { ...entrada, comienzo, fin, shortName }];
             }, []),
         [entradas]
     );
 
     const Rueda = ({ participantes }: { participantes: Segment[] }) => {
-        const ref = useRef();
         const centroX = useMemo(() => ancho / 2, [ancho]);
         const centroY = useMemo(() => alto / 2, [alto]);
         const radio = useMemo(() => Math.min(centroX, centroY), [centroX, centroY]);
@@ -138,37 +133,34 @@ const Wheel = ({
         const [velocidad, setVelocidad] = useState(0);
         const [girando, setGirando] = useState(false);
         const [paro, setParo] = useState(false);
-        const FRICCION = useRef(0.0001);
-        // const winSFX = useRef(new Audio("/assets/tada.mp3"));
-        // const tickSFX = useRef(new Audio("/assets/tick.mp3"));
         const tamanioFuente = ancho < 700 ? 16 : ancho < 900 ? 20 : 26;
         const [startTime, setStartTime] = useState(0);
+        const [FPS, setFPS] = useState(0);
 
         useTick((delta) => {
-            if (girando) {
-                if (delta.deltaTime > 1.6) console.log("Long frame: ", delta);
-                if (velocidad < 0.000001) {
-                    setParo(true);
-                    setGirando(false);
-                }
-                const deltaRotacion = (velocidad - FRICCION.current) * delta.deltaTime;
-                const rotAng = (rotacion + deltaRotacion) % TAU;
-                if (velocidad > 0.3) {
-                    console.log(`Delta rotacion: ${deltaRotacion} > Velocidad: ${velocidad}\nDelta: ${delta}`);
-                }
-                if (deltaRotacion > velocidad + 0.001) {
-                }
-                setRotacion(rotAng);
-                setVelocidad(deltaRotacion);
+            // if (delta.deltaTime > 1.6) console.log("Long frame: ", delta.deltaTime, delta.FPS);
+            if (velocidad <= 0) {
+                setParo(true);
+                setGirando(false);
             }
-        });
+            const deltaRotacion = velocidad - FRICCION * delta.deltaTime;
+            const rotAng = (rotacion + deltaRotacion) % TAU;
+            // if (velocidad < deltaRotacion) {
+            //     console.log(
+            //         `Delta rotacion: ${deltaRotacion} > Velocidad: ${velocidad}\nDelta: ${delta.deltaTime}\nFPS: ${delta.FPS}`
+            //     );
+            // }
+            setRotacion(rotAng);
+            setFPS(delta.FPS);
+            setVelocidad(deltaRotacion);
+        }, girando);
 
         const tirar = () => {
             if (!girando) {
                 tickSFX.volume = 0.25;
                 setGirando(true);
                 setStartTime(performance.now());
-                const vel = 0.3;
+                const vel = 0.2;
                 console.log("Speed: ", vel);
                 setVelocidad(vel);
             }
@@ -193,62 +185,61 @@ const Wheel = ({
             }
         }, [paro]);
 
-        const partes = useMemo(
-            () =>
-                participantes.map((p, indice) => (
-                    <Porcion
-                        key={p.id}
-                        name={p.shortName}
-                        x={radio + 10}
-                        y={centroY}
-                        radius={radio}
-                        startAngle={p.comienzo}
-                        endAngle={p.fin}
-                        color={colores[indice]}
-                    />
-                )),
-            [participantes, centroX, centroY, radio, colores]
-        );
-
         return (
-            <container eventMode={"dynamic"} onClick={tirar} ref={ref.current}>
+            <>
                 <container
+                    eventMode={"dynamic"}
+                    onClick={tirar}
                     rotation={rotacion}
-                    pivot={[radio + 10, centroY]}
-                    position={[radio + 10, centroY]}
-                    cacheAsBitmap={true}
-                    cacheAsBitmapMultisample={PIXI.MSAA_QUALITY.HIGH}>
-                    {partes}
+                    pivot={new PIXI.Point(radio + 10, centroY)}
+                    position={new PIXI.Point(radio + 10, centroY)}
+                    isRenderGroup={true}>
+                    {useMemo(
+                        () =>
+                            participantes.map((p, indice) => (
+                                <Porcion
+                                    key={p.id}
+                                    name={p.shortName}
+                                    x={radio + 10}
+                                    y={centroY}
+                                    radius={radio}
+                                    startAngle={p.comienzo}
+                                    endAngle={p.fin}
+                                    color={colores[indice]}
+                                />
+                            )),
+                        [participantes, centroX, centroY, radio, colores]
+                    )}
                 </container>
                 <container>
-                    <Aguja radio={radio} centroX={radio + 10} centroY={centroY} />
-                    <text
+                    <graphics
+                        draw={(instancia) => {
+                            const puntaAguja = 2 * radio - 10;
+                            instancia.circle(radio + 10, centroY, 40);
+                            instancia.fill(0xffffff);
+                            instancia.moveTo(puntaAguja, centroY);
+                            instancia.lineTo(puntaAguja + 40, centroY - 10);
+                            instancia.lineTo(puntaAguja + 40, centroY + 10);
+                            instancia.lineTo(puntaAguja, centroY);
+                            instancia.fill(0xffffff);
+                            instancia.stroke({ width: 3, color: 0x000000 });
+                        }}
+                    />
+                    <pixiText
                         text={ganador.name}
-                        x={2 * radio + 25}
+                        x={2 * radio + 45}
                         y={centroY - 18}
                         style={new PIXI.TextStyle({ fill: "white", fontSize: tamanioFuente })}
                     />
+                    <pixiText text={`Vel: ${velocidad}\nFPS: ${FPS}`} />
+
+                    <pixiText text={``} />
                 </container>
-            </container>
+            </>
         );
     };
 
-    const DibujoPorcion = ({ ...props }) => {
-        const instancia = useRef<PIXI.Graphics>(new PIXI.Graphics());
-        const { x, y, radius, startAngle, endAngle, color } = props;
-        useEffect(() => {
-            instancia.current.clear();
-            instancia.current.beginFill(color);
-            instancia.current.moveTo(x, y);
-            instancia.current.arc(x, y, radius, startAngle, endAngle);
-            instancia.current.lineTo(x, y);
-            instancia.current.endFill();
-        }, [x, y, radius, startAngle, endAngle, color]);
-        return <Graphics ref={instancia} />;
-    };
-
     const Porcion = ({ name, ...props }: { name: string; [key: string]: any }) => {
-        const ref = useRef();
         const { x, y, radius, startAngle, endAngle, color } = props;
         const angulo = endAngle - startAngle;
         const tamanioTexto = angulo > 0.14 ? 26 : 20;
@@ -256,18 +247,19 @@ const Wheel = ({
             -radius + Math.min(220, name.length * 16) - (angulo > 0.14 ? 20 : 56),
             angulo > 0.14 ? 18 : 14
         );
+
+        const porcion = (instancia: PIXI.Graphics) => {
+            // instancia.current.clear();
+            instancia.moveTo(x, y);
+            instancia.arc(x, y, radius, startAngle, endAngle);
+            instancia.lineTo(x, y);
+            instancia.fill(color);
+        };
         return (
-            <Container ref={ref.current}>
-                <DibujoPorcion
-                    x={x}
-                    y={y}
-                    radius={radius - 10}
-                    startAngle={startAngle}
-                    endAngle={endAngle}
-                    color={color}
-                />
+            <container>
+                <graphics draw={porcion} />
                 {angulo > 0.08 && (
-                    <Text
+                    <pixiText
                         text={name}
                         x={x}
                         y={y}
@@ -276,53 +268,16 @@ const Wheel = ({
                         style={new PIXI.TextStyle({ fontSize: tamanioTexto })}
                     />
                 )}
-            </Container>
+            </container>
         );
     };
-    const Aguja = ({ radio, centroX, centroY }: { radio: number; centroX: number; centroY: number }) => {
-        return (
-            <Graphics
-                draw={(instancia) => {
-                    const puntaAguja = centroX + radio - 30;
-                    instancia.clear();
-                    instancia.beginFill(0xffffff);
-                    instancia.drawCircle(centroX, centroY, 40);
-                    instancia.endFill();
-                    instancia.lineStyle(2, 0x000000, 1);
-                    instancia.beginFill(0xffffff);
-                    instancia.moveTo(puntaAguja, centroY);
-                    instancia.lineTo(puntaAguja + 40, centroY - 10);
-                    instancia.lineTo(puntaAguja + 40, centroY + 10);
-                    instancia.lineTo(puntaAguja, centroY);
-                    instancia.endFill();
-                }}
-            />
-        );
-    };
-    // const Aguja = PixiComponent<{ radio: number; centroX: number; centroY: number }, PIXI.Graphics>("Aguja", {
-    //     create: () => new PIXI.Graphics(),
-    //     applyProps: (instancia, _, propiedades) => {
-    //         const puntaAguja = propiedades.centroX + propiedades.radio - 30;
-    //         instancia.clear();
-    //         instancia.beginFill(0xffffff);
-    //         instancia.drawCircle(propiedades.centroX, propiedades.centroY, 40);
-    //         instancia.endFill();
-    //         instancia.lineStyle(2, 0x000000, 1);
-    //         instancia.beginFill(0xffffff);
-    //         instancia.moveTo(puntaAguja, propiedades.centroY);
-    //         instancia.lineTo(puntaAguja + 40, propiedades.centroY - 10);
-    //         instancia.lineTo(puntaAguja + 40, propiedades.centroY + 10);
-    //         instancia.lineTo(puntaAguja, propiedades.centroY);
-    //         instancia.endFill();
-    //     },
-    // });
 
     return (
         <div className="flex justify-center my-2">
-            <Application background={0x1e293b}>
-                <container width={ancho} height={alto}>
-                    <Rueda participantes={lista} />
-                </container>
+            <Application background={0x1e293b} width={ancho} height={alto}>
+                {/* <container width={ancho} height={alto}> */}
+                <Rueda participantes={lista} />
+                {/* </container> */}
             </Application>
         </div>
     );
