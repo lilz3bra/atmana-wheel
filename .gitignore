@@ -37,3 +37,4 @@ next-env.d.ts
 app/api/test/route.ts
 # app/(pages)/tst/*
 oldWheel.tsx
+app/(pages)/tst/oldWheel.tsx
