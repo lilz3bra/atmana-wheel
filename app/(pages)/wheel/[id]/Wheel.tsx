@@ -6,7 +6,7 @@ import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "re
 const TAU = Math.PI * 2;
 const winSFX = new Audio("/assets/tada.mp3");
 const tickSFX = new Audio("/assets/tick.mp3");
-const FRICCION = 0.0001;
+const FRICCION = 0.00002;
 
 function genColor(num: number): string[] {
     // generate random colors using golden ratio to avoid colors being too close to eachother
@@ -127,7 +127,8 @@ const Wheel = ({
         const centroX = useMemo(() => ancho / 2, [ancho]);
         const centroY = useMemo(() => alto / 2, [alto]);
         const radio = useMemo(() => Math.min(centroX, centroY), [centroX, centroY]);
-        const colores = useMemo(() => genColor(10000), []);
+        const colores = useMemo(() => genColor(participantes.length % 10 === 1 ? 11 : 10), []);
+
         const [rotacion, setRotacion] = useState(0);
         const [ganador, setGanador] = useState({ name: "", id: "" });
         const [velocidad, setVelocidad] = useState(0);
@@ -160,7 +161,7 @@ const Wheel = ({
                 tickSFX.volume = 0.25;
                 setGirando(true);
                 setStartTime(performance.now());
-                const vel = 0.2;
+                const vel = Math.random() * 0.02 + 0.03;
                 console.log("Speed: ", vel);
                 setVelocidad(vel);
             }
@@ -205,7 +206,7 @@ const Wheel = ({
                                     radius={radio}
                                     startAngle={p.comienzo}
                                     endAngle={p.fin}
-                                    color={colores[indice]}
+                                    color={colores[indice % colores.length]}
                                 />
                             )),
                         [participantes, centroX, centroY, radio, colores]
