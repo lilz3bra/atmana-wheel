@@ -1,7 +1,10 @@
 "use client";
 
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Modal from "../wheel/[id]/modal";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
+import { faTicket } from "@fortawesome/free-solid-svg-icons";
 const NewWheel = dynamic(() => import("../wheel/[id]/Wheel").then((module) => module.default) as any, {
     ssr: false,
 }) as any;
@@ -16,6 +19,7 @@ const Wrapper = () => {
     const [entries, setEntries] = useState<Entry[]>([]);
     const [qty, setQty] = useState(4);
     const [len, setLen] = useState(10);
+    const [isVisible, setVisible] = useState(false);
     const returnCallback = (entry: string) => {
         console.log("Winner id: ", entry);
     };
@@ -43,7 +47,9 @@ const Wrapper = () => {
     const handleLenChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setLen(parseInt(e.target.value));
     };
-
+    const drawWinner = () => {
+        setVisible(true);
+    };
     return (
         <div className="bg-slate-800 flex gap-2 justify-center">
             <div className="flex flex-col gap-2 absolute left-2 ">
@@ -71,10 +77,20 @@ const Wrapper = () => {
                         className="text-black w-20"
                     />
                 </label>
+                <button
+                    onClick={drawWinner}
+                    className="rounded-xl bg-blue-500 hover:bg-blue-700 p-2 w-8 justify-center flex flex-row">
+                    <FontAwesomeIcon icon={faTicket} />
+                </button>
             </div>
-            <div className="absolute">
-                <NewWheel entradas={entries} callback={returnCallback} closing={isClosing} totalEntradas={totalCount} />
-            </div>
+            {isVisible && (
+                <Modal
+                    entries={entries}
+                    onClose={() => setVisible(false)}
+                    returnCallback={returnCallback}
+                    totalCount={totalCount}
+                />
+            )}
         </div>
     );
 };
