@@ -1,7 +1,6 @@
 import * as PIXI from "pixi.js";
-import { Graphics, Container, Text } from "pixi.js";
-import { Application, useExtend, useTick } from "@pixi/react";
-import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Graphics, Container, Text, Application } from "pixi.js";
+import React, { useEffect, useCallback, useMemo, useRef, useState } from "react";
 
 const TAU = Math.PI * 2;
 const winSFX = new Audio("/assets/tada.mp3");
@@ -81,34 +80,34 @@ const Wheel = ({
     cerrando: Boolean;
     totalEntradas: number;
 }) => {
-    useExtend({ Container, Graphics, Text });
-    const [ancho, setAncho] = useState(window.innerWidth / 2);
-    const [alto, setAlto] = useState((window.innerHeight * 5) / 6);
-    const estaCambiando = useRef(false);
+    // useExtend({ Container, Graphics, Text });
+    // const [ancho, setAncho] = useState(window.innerWidth / 2);
+    // const [alto, setAlto] = useState((window.innerHeight * 5) / 6);
+    // const estaCambiando = useRef(false);
 
-    useLayoutEffect(() => {
-        const manejarCambio = () => {
-            setAncho(window.innerWidth / 2);
-            setAlto((window.innerHeight * 5) / 6);
-        };
+    // // useLayoutEffect(() => {
+    // //     const manejarCambio = () => {
+    // //         setAncho(window.innerWidth / 2);
+    // //         setAlto((window.innerHeight * 5) / 6);
+    // //     };
 
-        window.addEventListener("resize", () => {
-            if (!estaCambiando.current) {
-                estaCambiando.current = true;
-                manejarCambio();
-                setTimeout(() => {
-                    estaCambiando.current = false;
-                }, 10);
-            }
-        });
+    // //     window.addEventListener("resize", () => {
+    // //         if (!estaCambiando.current) {
+    // //             estaCambiando.current = true;
+    // //             manejarCambio();
+    // //             setTimeout(() => {
+    // //                 estaCambiando.current = false;
+    // //             }, 10);
+    // //         }
+    // //     });
 
-        window.addEventListener("DOMContentLoaded", manejarCambio);
+    // //     window.addEventListener("DOMContentLoaded", manejarCambio);
 
-        return () => {
-            window.removeEventListener("resize", manejarCambio);
-            window.removeEventListener("DOMContentLoaded", manejarCambio);
-        };
-    }, []);
+    // //     return () => {
+    // //         window.removeEventListener("resize", manejarCambio);
+    // //         window.removeEventListener("DOMContentLoaded", manejarCambio);
+    // //     };
+    // // }, []);
 
     const lista = useMemo(
         () =>
@@ -123,165 +122,231 @@ const Wheel = ({
         [entradas]
     );
 
-    const Rueda = ({ participantes }: { participantes: Segment[] }) => {
-        const centroX = useMemo(() => ancho / 2, [ancho]);
-        const centroY = useMemo(() => alto / 2, [alto]);
-        const radio = useMemo(() => Math.min(centroX, centroY), [centroX, centroY]);
-        const colores = useMemo(() => genColor(participantes.length % 10 === 1 ? 11 : 10), []);
+    // const Rueda = ({ participantes }: { participantes: Segment[] }) => {
+    //     const { app } = useApplication();
 
-        const [rotacion, setRotacion] = useState(0);
-        const [ganador, setGanador] = useState({ name: "", id: "" });
-        const [velocidad, setVelocidad] = useState(0);
-        const [girando, setGirando] = useState(false);
-        const [paro, setParo] = useState(false);
-        const tamanioFuente = ancho < 700 ? 16 : ancho < 900 ? 20 : 26;
-        const [startTime, setStartTime] = useState(0);
-        const [FPS, setFPS] = useState(0);
+    //     const ancho = app.stage.width;
+    //     const alto = app.stage.height;
+    //     const centroX = useMemo(() => ancho / 2, [ancho]);
+    //     const centroY = useMemo(() => alto / 2, [alto]);
+    //     const radio = useMemo(() => Math.min(centroX, centroY), [centroX, centroY]);
+    //
+    //     useEffect(() => console.log(app.canvas.height), [app.canvas.height]);
+    //     const rotacion = useRef(0);
+    //     const [ganador, setGanador] = useState({ name: "", id: "" });
+    //     const [velocidad, setVelocidad] = useState(0);
+    //     const [girando, setGirando] = useState(false);
+    //     const [paro, setParo] = useState(false);
+    //     const tamanioFuente = ancho < 700 ? 16 : ancho < 900 ? 20 : 26;
+    //     const [startTime, setStartTime] = useState(0);
+    //     const [FPS, setFPS] = useState(0);
 
-        useTick((delta) => {
-            // if (delta.deltaTime > 1.6) console.log("Long frame: ", delta.deltaTime, delta.FPS);
-            if (velocidad <= 0) {
-                setParo(true);
-                setGirando(false);
+    //     useTick((delta) => {
+    //         // if (delta.deltaTime > 1.6) console.log("Long frame: ", delta.deltaTime, delta.FPS);
+    //         if (velocidad <= 0) {
+    //             setParo(true);
+    //             setGirando(false);
+    //         }
+    //         const deltaRotacion = velocidad - FRICCION * delta.deltaTime;
+    //         const rotAng = (rotacion.current + deltaRotacion) % TAU;
+    //         // if (velocidad < deltaRotacion) {
+    //         //     console.log(
+    //         //         `Delta rotacion: ${deltaRotacion} > Velocidad: ${velocidad}\nDelta: ${delta.deltaTime}\nFPS: ${delta.FPS}`
+    //         //     );
+    //         // }
+    //         rotacion.current = rotAng;
+    //         const currentAngle = TAU - rotacion.current;
+    //         const winner = participantes.find((p) => currentAngle >= p.comienzo! && currentAngle <= p.fin!);
+    //         if (winner && winner.id !== ganador.id) {
+    //             setGanador(winner);
+    //             tickSFX.play();
+    //         }
+    //         setFPS(delta.FPS);
+    //         setVelocidad(deltaRotacion);
+    //     }, girando);
+
+    //     const tirar = () => {
+    //         if (!girando) {
+    //             tickSFX.volume = 0.25;
+    //             setGirando(true);
+    //             setStartTime(performance.now());
+    //             const vel = Math.random() * 0.02 + 0.03;
+    //             console.log("Speed: ", vel);
+    //             setVelocidad(vel);
+    //         }
+    //     };
+
+    //     useEffect(() => {
+    //         if (paro) {
+    //             winSFX.volume = 0.25;
+    //             winSFX.play();
+    //             callback(ganador.id);
+    //             console.log("Time spinning: ", (performance.now() - startTime) / 1000);
+    //             setParo(false);
+    //         }
+    //     }, [paro]);
+
+    //     return (
+    //         <>
+    //             <container
+    //                 eventMode={"dynamic"}
+    //                 onClick={tirar}
+    //                 rotation={rotacion.current}
+    //                 pivot={new PIXI.Point(radio + 10, centroY)}
+    //                 position={new PIXI.Point(radio + 10, centroY)}
+    //                 isRenderGroup={true}>
+    //                 {useMemo(
+    //                     () =>
+    //                         participantes.map((p, indice) => (
+    //                             <Porcion
+    //                                 key={p.id}
+    //                                 name={p.shortName}
+    //                                 x={radio + 10}
+    //                                 y={centroY}
+    //                                 radius={radio}
+    //                                 startAngle={p.comienzo}
+    //                                 endAngle={p.fin}
+    //                                 color={colores[indice % colores.length]}
+    //                             />
+    //                         )),
+    //                     [participantes, centroX, centroY, radio, colores]
+    //                 )}
+    //             </container>
+    //             <container>
+    //                 <graphics
+    //                     draw={(instancia) => {
+    //                         const puntaAguja = 2 * radio - 10;
+    //                         instancia.circle(radio + 10, centroY, 40);
+    //                         instancia.fill(0xffffff);
+    //                         instancia.moveTo(puntaAguja, centroY);
+    //                         instancia.lineTo(puntaAguja + 40, centroY - 10);
+    //                         instancia.lineTo(puntaAguja + 40, centroY + 10);
+    //                         instancia.lineTo(puntaAguja, centroY);
+    //                         instancia.fill(0xffffff);
+    //                         instancia.stroke({ width: 3, color: 0x000000 });
+    //                     }}
+    //                 />
+    //                 <pixiText
+    //                     text={ganador.name}
+    //                     x={2 * radio + 45}
+    //                     y={centroY - 18}
+    //                     style={new PIXI.TextStyle({ fill: "white", fontSize: tamanioFuente })}
+    //                 />
+    //                 <pixiText text={`Vel: ${velocidad}\nFPS: ${FPS}`} />
+
+    //                 <pixiText text={``} />
+    //             </container>
+    //         </>
+    //     );
+    // };
+
+    // const Porcion = ({ name, ...props }: { name: string; [key: string]: any }) => {
+    //     const { x, y, radius, startAngle, endAngle, color } = props;
+    //     const angulo = endAngle - startAngle;
+    //     const tamanioTexto = angulo > 0.14 ? 26 : 20;
+    //     const puntoPivot = new PIXI.Point(
+    //         -radius + Math.min(220, name.length * 16) - (angulo > 0.14 ? 20 : 56),
+    //         angulo > 0.14 ? 18 : 14
+    //     );
+
+    //     const porcion = (instancia: PIXI.Graphics) => {
+    //         // instancia.current.clear();
+    //         instancia.moveTo(x, y);
+    //         instancia.arc(x, y, radius, startAngle, endAngle);
+    //         instancia.lineTo(x, y);
+    //         instancia.fill(color);
+    //     };
+    //     return (
+    //         <container>
+    //             <graphics draw={porcion} />
+    //             {angulo > 0.08 && (
+    //                 <pixiText
+    //                     text={name}
+    //                     x={x}
+    //                     y={y}
+    //                     rotation={angulo / 2 + startAngle}
+    //                     pivot={puntoPivot}
+    //                     style={new PIXI.TextStyle({ fontSize: tamanioTexto })}
+    //                 />
+    //             )}
+    //         </container>
+    //     );
+    // };
+
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+
+    const parentRef = useRef<HTMLDivElement>(null);
+    const colores = useMemo(() => genColor(entradas.length % 10 === 1 ? 11 : 10), []);
+    const init = useCallback(async () => {
+        const canvas = canvasRef.current;
+        const app = new Application();
+        await app.init({ resizeTo: parentRef.current!, canvas: canvas!, background: 0x1e293b });
+        shapes(app);
+        return app;
+    }, []);
+
+    const shapes = useCallback((app: Application) => {
+        const container = new Container({
+            isRenderGroup: true,
+            eventMode: "dynamic",
+            width: app.renderer.width,
+            height: app.renderer.height,
+        });
+        const centroX = app.renderer.width / 2;
+        const centroY = app.renderer.height / 2;
+        lista.map((p, indice) => {
+            const graphics = new Graphics();
+            const startAngle = p.comienzo!;
+            const endAngle = p.fin!;
+            const color = colores[indice % colores.length];
+            const angulo = endAngle - startAngle;
+            const tamanioTexto = angulo > 0.14 ? 26 : 20;
+            const puntoPivot = new PIXI.Point(
+                -100 + Math.min(220, p.shortName.length * 16) - (angulo > 0.14 ? 20 : 56),
+                angulo > 0.14 ? 18 : 14
+            );
+            graphics.moveTo(centroX, centroY);
+            graphics.arc(centroX, centroY, 200, startAngle, endAngle);
+            graphics.lineTo(centroX, centroY);
+            graphics.fill(color);
+            container.addChild(graphics);
+            if (angulo > 0.08) {
+                const text = new Text(p.shortName, {
+                    fontSize: tamanioTexto,
+                    fill: "white",
+                    // pivot: puntoPivot,
+                    // rotation: angulo / 2 + startAngle,
+                });
+                container.addChild(text);
             }
-            const deltaRotacion = velocidad - FRICCION * delta.deltaTime;
-            const rotAng = (rotacion + deltaRotacion) % TAU;
-            // if (velocidad < deltaRotacion) {
-            //     console.log(
-            //         `Delta rotacion: ${deltaRotacion} > Velocidad: ${velocidad}\nDelta: ${delta.deltaTime}\nFPS: ${delta.FPS}`
-            //     );
-            // }
-            setRotacion(rotAng);
-            setFPS(delta.FPS);
-            setVelocidad(deltaRotacion);
-        }, girando);
+        });
+        // container.position.set(centroX, centroY);
+        // container.pivot.set(centroX, centroY);
+        app.stage.addChild(container);
+    }, []);
 
-        const tirar = () => {
-            if (!girando) {
-                tickSFX.volume = 0.25;
-                setGirando(true);
-                setStartTime(performance.now());
-                const vel = Math.random() * 0.02 + 0.03;
-                console.log("Speed: ", vel);
-                setVelocidad(vel);
-            }
+    useEffect(() => {
+        const app = init();
+        return () => {
+            app.then((a) => a.stop());
         };
-
-        useEffect(() => {
-            const currentAngle = TAU - rotacion;
-            const winner = participantes.find((p) => currentAngle >= p.comienzo! && currentAngle <= p.fin!);
-            if (winner && winner.id !== ganador.id) {
-                setGanador(winner);
-                tickSFX.play();
-            }
-        }, [rotacion]);
-
-        useEffect(() => {
-            if (paro) {
-                winSFX.volume = 0.25;
-                winSFX.play();
-                callback(ganador.id);
-                console.log("Time spinning: ", (performance.now() - startTime) / 1000);
-                setParo(false);
-            }
-        }, [paro]);
-
-        return (
-            <>
-                <container
-                    eventMode={"dynamic"}
-                    onClick={tirar}
-                    rotation={rotacion}
-                    pivot={new PIXI.Point(radio + 10, centroY)}
-                    position={new PIXI.Point(radio + 10, centroY)}
-                    isRenderGroup={true}>
-                    {useMemo(
-                        () =>
-                            participantes.map((p, indice) => (
-                                <Porcion
-                                    key={p.id}
-                                    name={p.shortName}
-                                    x={radio + 10}
-                                    y={centroY}
-                                    radius={radio}
-                                    startAngle={p.comienzo}
-                                    endAngle={p.fin}
-                                    color={colores[indice % colores.length]}
-                                />
-                            )),
-                        [participantes, centroX, centroY, radio, colores]
-                    )}
-                </container>
-                <container>
-                    <graphics
-                        draw={(instancia) => {
-                            const puntaAguja = 2 * radio - 10;
-                            instancia.circle(radio + 10, centroY, 40);
-                            instancia.fill(0xffffff);
-                            instancia.moveTo(puntaAguja, centroY);
-                            instancia.lineTo(puntaAguja + 40, centroY - 10);
-                            instancia.lineTo(puntaAguja + 40, centroY + 10);
-                            instancia.lineTo(puntaAguja, centroY);
-                            instancia.fill(0xffffff);
-                            instancia.stroke({ width: 3, color: 0x000000 });
-                        }}
-                    />
-                    <pixiText
-                        text={ganador.name}
-                        x={2 * radio + 45}
-                        y={centroY - 18}
-                        style={new PIXI.TextStyle({ fill: "white", fontSize: tamanioFuente })}
-                    />
-                    <pixiText text={`Vel: ${velocidad}\nFPS: ${FPS}`} />
-
-                    <pixiText text={``} />
-                </container>
-            </>
-        );
-    };
-
-    const Porcion = ({ name, ...props }: { name: string; [key: string]: any }) => {
-        const { x, y, radius, startAngle, endAngle, color } = props;
-        const angulo = endAngle - startAngle;
-        const tamanioTexto = angulo > 0.14 ? 26 : 20;
-        const puntoPivot = new PIXI.Point(
-            -radius + Math.min(220, name.length * 16) - (angulo > 0.14 ? 20 : 56),
-            angulo > 0.14 ? 18 : 14
-        );
-
-        const porcion = (instancia: PIXI.Graphics) => {
-            // instancia.current.clear();
-            instancia.moveTo(x, y);
-            instancia.arc(x, y, radius, startAngle, endAngle);
-            instancia.lineTo(x, y);
-            instancia.fill(color);
-        };
-        return (
-            <container>
-                <graphics draw={porcion} />
-                {angulo > 0.08 && (
-                    <pixiText
-                        text={name}
-                        x={x}
-                        y={y}
-                        rotation={angulo / 2 + startAngle}
-                        pivot={puntoPivot}
-                        style={new PIXI.TextStyle({ fontSize: tamanioTexto })}
-                    />
-                )}
-            </container>
-        );
-    };
+    }, [init]);
 
     return (
-        <div className="flex justify-center my-2">
-            <Application background={0x1e293b} width={ancho} height={alto}>
-                {/* <container width={ancho} height={alto}> */}
-                <Rueda participantes={lista} />
-                {/* </container> */}
-            </Application>
+        <div className="w-full h-full  " ref={parentRef}>
+            <canvas ref={canvasRef} />
         </div>
     );
+
+    // return (
+    //     <div className="w-full h-full" ref={thisRef}>
+    //         <Application background={0x1e293b} resizeTo={thisRef}>
+    //             {/* <container width={ancho} height={alto}> */}
+    //             <Rueda participantes={lista} />
+    //             {/* </container> */}
+    //         </Application>
+    //     </div>
+    // );
 };
 
 export default Wheel;
