@@ -13,6 +13,7 @@ const page = async ({ params }: Props) => {
     });
     const totalTickets = viewers.reduce((sum, object) => sum + object.ammount, 0);
     console.log(viewers);
+    const sortedViewers = viewers.sort((a, b) => b.ammount - a.ammount);
     return (
         <div id="main-content" className="flex flex-col  justify-center items-center m-4">
             <>
@@ -20,9 +21,10 @@ const page = async ({ params }: Props) => {
                     {viewers.length} Participants ({totalTickets} entries)
                 </h1>
                 <div className="m-auto w-2/3 h-1/2 justify-center text-center gap-2">
-                    {viewers.map((entry) => (
+                    {sortedViewers.map((entry) => (
                         <p key={entry.viewer.name}>
-                            <span className="font-bold">{entry.viewer.name}</span>: {entry.ammount} entr{entry.ammount > 1 ? "ies" : "y"}{" "}
+                            <span className="font-bold">{entry.viewer.name}</span>: {entry.ammount} entr
+                            {entry.ammount > 1 ? "ies" : "y"}{" "}
                             <span className="italic">({((entry.ammount / totalTickets) * 100).toFixed(2)}%)</span>
                         </p>
                     ))}
