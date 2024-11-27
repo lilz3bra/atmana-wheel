@@ -110,19 +110,19 @@ export async function GET(req: NextRequest) {
             where: {
                 AND: [
                     { giveawayId: raffle },
-                    { giveaway: { creatorId: creatorId } },
-                    {
-                        viewer: {
-                            streams: {
-                                some: {
-                                    creatorId: {
-                                        equals: creatorId,
-                                    },
-                                },
-                                none: { isBanned: true },
-                            },
-                        },
-                    },
+                    // { giveaway: { creatorId: creatorId } },
+                    // {
+                    //     viewer: {
+                    //         streams: {
+                    //             some: {
+                    //                 creatorId: {
+                    //                     equals: creatorId,
+                    //                 },
+                    //             },
+                    //             none: { isBanned: true },
+                    //         },
+                    //     },
+                    // },
                 ],
             },
             select: {
