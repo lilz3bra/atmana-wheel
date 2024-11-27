@@ -105,26 +105,27 @@ export async function GET(req: NextRequest) {
         creatorId = thisUser.id;
     }
     try {
-        console.log("Starting redemptions query");
         const temp = await prisma.giveawayRedemptions.findMany({
             where: {
-                AND: [
-                    { giveawayId: raffle },
-                    // { giveaway: { creatorId: creatorId } },
-                    // {
-                    //     viewer: {
-                    //         streams: {
-                    //             some: {
-                    //                 creatorId: {
-                    //                     equals: creatorId,
-                    //                 },
-                    //             },
-                    //             none: { isBanned: true },
-                    //         },
-                    //     },
-                    // },
-                ],
+                // AND: [
+                // {
+                giveawayId: raffle,
             },
+            // { giveaway: { creatorId: creatorId } },
+            // {
+            //     viewer: {
+            //         streams: {
+            //             some: {
+            //                 creatorId: {
+            //                     equals: creatorId,
+            //                 },
+            //             },
+            //             none: { isBanned: true },
+            //         },
+            //     },
+            // },
+            // ],
+            // },
             select: {
                 viewer: {
                     select: {
@@ -135,12 +136,10 @@ export async function GET(req: NextRequest) {
                 ammount: true,
             },
         });
-        console.log("Mapping the entries");
         const list = temp.map((i) => {
             return { ...i.viewer, ammount: i.ammount };
         });
         let tot = 0;
-        console.log("Adding up the total");
         Object.keys(list).forEach((_, index) => {
             const weight = list[index].ammount;
             tot += weight;
