@@ -16,11 +16,18 @@ export async function PUT(req: Request) {
         // Get data stored in the jwt sent
         const thisUser = session.user;
         // Make the request
-        const res = await fetch(`${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards?broadcaster_id=${thisUser.providerAccountId}`, {
-            method: "POST",
-            headers: { authorization: "Bearer " + thisUser.access_token, "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, "Content-Type": "application/json" },
-            body: JSON.stringify(data.twData),
-        });
+        const res = await fetch(
+            `${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards?broadcaster_id=${thisUser.providerAccountId}`,
+            {
+                method: "POST",
+                headers: {
+                    authorization: "Bearer " + thisUser.access_token,
+                    "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(data.twData),
+            }
+        );
         const responseData = await res.json();
         // Check if the request was succesful
         if (res.status !== 200) {
@@ -98,6 +105,7 @@ export async function GET(req: NextRequest) {
         creatorId = thisUser.id;
     }
     try {
+        console.log("Starting redemptions query");
         const temp = await prisma.giveawayRedemptions.findMany({
             where: {
                 AND: [
@@ -127,10 +135,12 @@ export async function GET(req: NextRequest) {
                 ammount: true,
             },
         });
+        console.log("Mapping the entries");
         const list = temp.map((i) => {
             return { ...i.viewer, ammount: i.ammount };
         });
         let tot = 0;
+        console.log("Adding up the total");
         Object.keys(list).forEach((_, index) => {
             const weight = list[index].ammount;
             tot += weight;
@@ -157,13 +167,22 @@ export async function DELETE(req: NextRequest) {
 
         if (!!raffle) {
             // Send the delete request
-            const res = await fetch(`${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards?broadcaster_id=${thisUser?.providerAccountId}&id=${raffle}`, {
-                method: "DELETE",
-                headers: { "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, authorization: "Bearer " + thisUser.access_token },
-            });
+            const res = await fetch(
+                `${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards?broadcaster_id=${thisUser?.providerAccountId}&id=${raffle}`,
+                {
+                    method: "DELETE",
+                    headers: {
+                        "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY,
+                        authorization: "Bearer " + thisUser.access_token,
+                    },
+                }
+            );
             if (res.status === 204 && !!id) {
                 // Remove the twitch id from the database, so we know it doesnt exist anymore
-                const giveaway = await prisma.giveaways.findFirst({ where: { twitchId: raffle, id: id }, select: { listenerId: true } });
+                const giveaway = await prisma.giveaways.findFirst({
+                    where: { twitchId: raffle, id: id },
+                    select: { listenerId: true },
+                });
                 // Remove the eventsub listener. Check added to provide backwards compatibility
                 if (giveaway?.listenerId !== null && typeof giveaway?.listenerId !== "undefined") {
                     const status = await deleteListener(giveaway.listenerId);
@@ -230,17 +249,28 @@ export async function PATCH(req: NextRequest) {
 
         // Send the request
         if (bodyJson.twData) {
-            const creator = await prisma.giveaways.findFirst({ where: { id: bodyJson.id }, select: { creatorId: true } });
-            if (creator?.creatorId !== thisUser.id) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+            const creator = await prisma.giveaways.findFirst({
+                where: { id: bodyJson.id },
+                select: { creatorId: true },
+            });
+            if (creator?.creatorId !== thisUser.id)
+                return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
             options = JSON.stringify(bodyJson.twData);
         } else {
             options = JSON.stringify({ is_paused: bodyJson.is_paused });
         }
-        const res = await fetch(`${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards?broadcaster_id=${thisUser?.providerAccountId}&id=${raffle}`, {
-            method: "PATCH",
-            headers: { "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY, authorization: "Bearer " + thisUser.access_token, "Content-type": "Application/Json" },
-            body: options,
-        });
+        const res = await fetch(
+            `${process.env.NEXT_PUBLIC_TWITCH_URL}/channel_points/custom_rewards?broadcaster_id=${thisUser?.providerAccountId}&id=${raffle}`,
+            {
+                method: "PATCH",
+                headers: {
+                    "client-id": process.env.NEXT_PUBLIC_TWITCH_API_KEY,
+                    authorization: "Bearer " + thisUser.access_token,
+                    "Content-type": "Application/Json",
+                },
+                body: options,
+            }
+        );
         const resData = await res.json();
         if (bodyJson.twData) {
             await prisma.giveaways.update({
