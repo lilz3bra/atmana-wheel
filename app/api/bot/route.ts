@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
         });
         if (tickets.length === 0) {
             console.log(req.nextUrl.searchParams);
-            return new Response("You haven't entered any (active) giveaways", { status: 500 });
+            return new Response(`@${sender} you haven't entered any (active) giveaways`, { status: 500 });
         }
         const message = tickets.reduce((acc, t) => {
             if (acc !== `@${sender} you have these tickets: `) acc += "  |  ";
