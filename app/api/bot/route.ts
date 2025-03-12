@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
     try {
+        console.log(req.nextUrl.href);
         const sender = req.nextUrl.searchParams.get("sender");
         const channel = req.nextUrl.searchParams.get("channel");
         if (!sender || !channel) {
