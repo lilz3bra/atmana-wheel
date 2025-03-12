@@ -24,11 +24,11 @@ export async function GET(req: NextRequest) {
             return new Response("You haven't entered any (active) giveaways", { status: 500 });
         }
         const message = tickets.reduce((acc, t) => {
-            if (acc !== "") acc += "  |  ";
+            if (acc !== `@${sender} you have these tickets`) acc += "  |  ";
             const msg = t.giveaway.name + ": " + t.ammount;
             acc += msg;
             return acc;
-        }, "");
+        }, `@${sender} you have these tickets`);
         return new Response(message, { status: 200 });
     } catch (error: any) {
         console.log(error.message);
