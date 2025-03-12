@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 
 export async function GET(req: NextRequest) {
     try {
@@ -8,7 +8,7 @@ export async function GET(req: NextRequest) {
         const channel = req.nextUrl.searchParams.get("channel");
         if (!sender || !channel) {
             console.log(req.nextUrl.searchParams);
-            return NextResponse.json({}, { status: 500 });
+            return new Response("Something happened, sorry ¯(°_o)/¯", { status: 500 });
         }
 
         const tickets = await prisma.giveawayRedemptions.findMany({
@@ -21,16 +21,17 @@ export async function GET(req: NextRequest) {
         });
         if (tickets.length === 0) {
             console.log(req.nextUrl.searchParams);
-            return NextResponse.json({ message: "You haven't entered any (active) giveaways" });
+            return new Response("You haven't entered any (active) giveaways", { status: 500 });
         }
         const message = tickets.reduce((acc, t) => {
-            const msg = t.giveaway.name + ": " + t.ammount + "  |  ";
+            if (acc !== "") acc += "  |  ";
+            const msg = t.giveaway.name + ": " + t.ammount;
             acc += msg;
             return acc;
         }, "");
-        return NextResponse.json({ message });
+        return new Response(message, { status: 200 });
     } catch (error: any) {
         console.log(error.message);
-        return NextResponse.json({}, { status: 500 });
+        return new Response("Something happened, sorry ¯(°_o)/¯", { status: 500 });
     }
 }
